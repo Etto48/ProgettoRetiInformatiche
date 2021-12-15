@@ -1,5 +1,6 @@
 CC 				:=	g++
-CARGS 			:=	-g -Wall
+CARGS 			:=	-g -Wall -DDEBUG
+#CARGS			:=	-O3 -Wall
 
 DEV_OBJ			:=	$(patsubst %.c, %.o, $(shell find dev.d -name "*.c"))
 SERV_OBJ		:=	$(patsubst %.c, %.o, $(shell find serv.d -name "*.c"))

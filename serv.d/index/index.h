@@ -1,19 +1,25 @@
 #pragma once
 #include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <stdbool.h>
+#include <string.h>
+#include <malloc.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <time.h>
 
 #define USERNAME_MAX_LENGTH 20
-#define PASSWORD_MAX_LENGTH 20
+#define PASSWORD_MAX_LENGTH 32
 
 typedef struct _UserName
 {
-    char str[USERNAME_MAX_LENGTH];
+    char str[USERNAME_MAX_LENGTH+1];
 } UserName;
 
 typedef struct _Password
 {
-    char str[PASSWORD_MAX_LENGTH];
+    char str[PASSWORD_MAX_LENGTH+1];
 } Password;
 
 /**
@@ -40,8 +46,8 @@ typedef struct _IndexEntry
     struct _IndexEntry* next;
 } IndexEntry;
 
-AuthEntry* AuthList = NULL;
-IndexEntry* IndexList = NULL;
+extern AuthEntry* AuthList;
+extern IndexEntry* IndexList;
 
 /************
  *   AUTH   *
