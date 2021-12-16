@@ -1,4 +1,4 @@
 #pragma once
 
 #include <stdio.h>
-#include "sha256/sha256.h"
+#include "../global.d/sha256/sha256.h"
