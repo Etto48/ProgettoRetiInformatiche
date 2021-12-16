@@ -36,6 +36,7 @@ void AuthDestroy()
         next = i->next;
         free(i);
     }
+    AuthList = NULL;
 }
 
 bool AuthLoad(const char* filename)
@@ -50,22 +51,101 @@ bool AuthLoad(const char* filename)
         return false;
     }
     ssize_t reads = 0;
+    bool error = false;
     while(true)
     {
         AuthEntry new_entry;
         bzero(new_entry.username.str,USERNAME_MAX_LENGTH+1);
         bzero(new_entry.password.str,PASSWORD_MAX_LENGTH+1);
         reads = read(fd,new_entry.username.str, USERNAME_MAX_LENGTH);
-        if(reads==0)
+        if(reads==0)//EOF
             break;
-        else if (reads < USERNAME_MAX_LENGTH)
-            return false;
+        else if (reads < USERNAME_MAX_LENGTH)//Corrupted file
+        {
+            error = true;
+            break;
+        }
         reads = read(fd,new_entry.password.str, PASSWORD_MAX_LENGTH);
-        if (reads < PASSWORD_MAX_LENGTH)
-            return false;
-        
-    }
+        if (reads < PASSWORD_MAX_LENGTH)//Corrupted file
+        {
+            error = true;
+            break;
+        }
+        new_entry.next=AuthList;
 
+        AuthEntry* new_copy_entry = (AuthEntry*)malloc(sizeof(AuthEntry));
+        *new_copy_entry = new_entry;
+        AuthList = new_copy_entry;
+    }
+    if(error)
+    {
+        AuthDestroy();
+        return false;
+    }
+    
     close(fd);
     return true;
+}
+
+bool AuthSave(const char* filename)
+{
+    int fd = open(filename,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR);
+    if(fd<0)
+    {
+        #ifdef DEBUG
+            perror("Error opening authentication file");
+        #endif
+        return false;
+    }
+    for(AuthEntry* i = AuthList; i; i=i->next)
+    {
+        write(fd,i->username.str,USERNAME_MAX_LENGTH);   
+        write(fd,i->password.str,PASSWORD_MAX_LENGTH);   
+    }
+    close(fd);
+    return true;
+}
+
+bool IndexLogin(UserName username, Password password, uint16_t port)
+{
+    if(!AuthCheck(username,password))
+        return false;
+    IndexEntry* target = IndexFind(username);
+    if(IndexIsOnline(target))
+        return false;
+    if(!target)
+    {
+        target = (IndexEntry*)malloc(sizeof(IndexEntry));
+        target->next = IndexList;
+        IndexList = target;
+    }
+    target->user_dest = username;
+    target->timestamp_login = time(NULL);
+    target->timestamp_logout = 0;
+    target->port = 0;
+    return true;
+}
+
+bool IndexLogout(UserName username)
+{
+    IndexEntry* target = IndexFind(username);
+    if(!IndexIsOnline(target))
+        return false;
+    target->timestamp_logout=time(NULL);
+    return true;
+}
+
+IndexEntry* IndexFind(UserName username)
+{
+    for(IndexEntry* i = IndexList; i; i=i->next)
+    {
+        if(strcmp(username.str,i->user_dest.str)==0)
+            return i;
+    }
+    return NULL;
+}
+
+bool IndexIsOnline(IndexEntry* user)
+{
+    return user && user->timestamp_logout==0;
 }

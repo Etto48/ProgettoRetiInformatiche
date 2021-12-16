@@ -95,7 +95,7 @@ bool AuthSave(const char* filename);
  * @param username username
  * @param password password
  * @param port listening port of the user
- * @return true if correctly authed and not already logged
+ * @return true if correctly authenticated and not already logged
  */
 bool IndexLogin(UserName username, Password password, uint16_t port);
 
@@ -106,3 +106,19 @@ bool IndexLogin(UserName username, Password password, uint16_t port);
  * @return true if everything ok and user was logged
  */
 bool IndexLogout(UserName username);
+
+/**
+ * @brief find info about a user
+ * 
+ * @param username username used as key
+ * @return IndexEntry* pointer to the user if found, NULL otherwise
+ */
+IndexEntry* IndexFind(UserName username);
+
+/**
+ * @brief check if a user is online
+ * 
+ * @param user user pointer to check, returned from IndexFind
+ * @return true if user is online, false otherwise
+ */
+bool IndexIsOnline(IndexEntry* user);
