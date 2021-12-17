@@ -12,12 +12,14 @@
 #define USERNAME_MAX_LENGTH 20
 #define PASSWORD_MAX_LENGTH 32
 
-typedef struct _UserName
+#define AUTH_FILE "./Auth.lst"
+
+typedef struct
 {
     char str[USERNAME_MAX_LENGTH+1];
 } UserName;
 
-typedef struct _Password
+typedef struct
 {
     char str[PASSWORD_MAX_LENGTH+1];
 } Password;
@@ -74,17 +76,17 @@ bool AuthCheck(UserName username, Password password);
  * @brief load auth information from a file
  * 
  * @param filename path of the file
- * @return true if loaded successful
+ * @return true if loaded successfully
  */
-bool AuthLoad(const char* filename);
+bool AuthLoad(const char* filename = AUTH_FILE);
 
 /**
  * @brief save auth information to a file
  * 
  * @param filename path of the file
- * @return true if everything ok
+ * @return true if saved successfully
  */
-bool AuthSave(const char* filename);
+bool AuthSave(const char* filename = AUTH_FILE);
 
 /*************
  *   INDEX   *

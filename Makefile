@@ -1,6 +1,13 @@
 CC 				:=	g++
-CARGS 			:=	-g -Wall -DDEBUG
-#CARGS			:=	-O3 -Wall
+
+MODE			:=	DEBUG
+CARGS			:=	-Wall -D$(MODE)
+
+ifeq ($(MODE),DEBUG)
+	CARGS		+=	-g -Wextra
+else ifeq ($(MODE),RELEASE)
+	CARGS		+=	-O3
+endif
 
 DEV_OBJ			:=	$(patsubst %.c, %.o, $(shell find dev.d -name "*.c"))
 SERV_OBJ		:=	$(patsubst %.c, %.o, $(shell find serv.d -name "*.c"))
@@ -36,10 +43,7 @@ global.d/%.o: global.d/%.c $(GLOBAL_HEADERS) $(THIS)
 	@echo Compiling $@
 	@$(CC) -c $< -o $@ $(CARGS)
 
-.PHONY: clean test
+.PHONY: clean
 clean:
 	@echo Removing object files and executables
 	@rm -f $(ALL_OBJ) $(SERVER) $(DEVICE)
-test: $(DEVICE) $(SERVER)
-	@echo Test session started
-	@./test.sh

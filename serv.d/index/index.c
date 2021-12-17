@@ -42,12 +42,13 @@ void AuthDestroy()
 bool AuthLoad(const char* filename)
 {
     AuthDestroy();
-    int fd = open(filename,O_RDONLY);
+    int fd = open(filename,O_RDONLY|O_CREAT,S_IRUSR|S_IWUSR);
     if(fd<0)
     {
         #ifdef DEBUG
             perror("Error opening authentication file");
         #endif
+        
         return false;
     }
     ssize_t reads = 0;
@@ -99,8 +100,10 @@ bool AuthSave(const char* filename)
     }
     for(AuthEntry* i = AuthList; i; i=i->next)
     {
-        write(fd,i->username.str,USERNAME_MAX_LENGTH);   
-        write(fd,i->password.str,PASSWORD_MAX_LENGTH);   
+        if(write(fd,i->username.str,USERNAME_MAX_LENGTH)<USERNAME_MAX_LENGTH)
+            return false;   
+        if(write(fd,i->password.str,PASSWORD_MAX_LENGTH)<PASSWORD_MAX_LENGTH)   
+            return false;
     }
     close(fd);
     return true;
@@ -122,7 +125,7 @@ bool IndexLogin(UserName username, Password password, uint16_t port)
     target->user_dest = username;
     target->timestamp_login = time(NULL);
     target->timestamp_logout = 0;
-    target->port = 0;
+    target->port = port;
     return true;
 }
 

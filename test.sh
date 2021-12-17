@@ -16,6 +16,19 @@ SERVER_TESTS=0
 DEVICE_SUCCESS=0
 DEVICE_TESTS=0
 
+ALARM_PID=0
+function set_alarm()
+{
+    remove_alarm
+    (sleep $1; kill -ALRM $$) &
+}
+function remove_alarm()
+{
+    if [[ $ALARM_PID != "0" ]]; then
+        kill $ALARM_PID > /dev/null
+    fi
+}
+
 function cecho()
 {
     COLOR_STR=""
@@ -100,11 +113,30 @@ mkfifo $SPIPE_OUT
 mkfifo $DPIPE_IN
 mkfifo $DPIPE_OUT
 
+DEVICE_PORT=4848
+
 #start programs and redirect stdin&stdout
-$SERVER < $SPIPE_IN > $SPIPE_OUT &
+#$SERVER < $SPIPE_IN > $SPIPE_OUT &
+$SERVER < $SPIPE_IN &
 SERVER_PID=$!
-$DEVICE < $DPIPE_IN > $DPIPE_OUT &
+#$DEVICE $DEVICE_PORT < $DPIPE_IN > $DPIPE_OUT &
+$DEVICE $DEVICE_PORT < $DPIPE_IN &
 DEVICE_PID=$!
+
+function close_test()
+{
+    kill $SERVER_PID 2> /dev/null 
+    kill $DEVICE_PID 2> /dev/null
+
+    #close the server pipe
+    rm -f $SPIPE_IN
+    rm -f $SPIPE_OUT
+    #close the device pipe
+    rm -f $DPIPE_IN
+    rm -f $DPIPE_OUT
+}
+
+trap "close_test" SIGALRM
 
 touch $SPIPE_IN
 touch $DPIPE_IN
@@ -113,31 +145,47 @@ sleep 1
 ############
 #   TEST   #
 ############
+set_alarm 5
 #check if processes are still running
-if [[ $(head -1 $SPIPE_OUT) = "Server started" ]]; then
+if head -1 $SPIPE_OUT | grep "Server started" > /dev/null; then
     test_result server success
 else
     test_result server failure
 fi
 
-if [[ $(head -1 $DPIPE_OUT) = "Device started" ]]; then
+if head -1 $DPIPE_OUT | grep "Device started" > /dev/null; then
     test_result device success
 else
     test_result device failure
 fi
 
+#try to register into the server
+if [[ -f /Auth.lst ]]; then
+    mv ./Auth.lst ./Auth.lst.bk
+fi
 
-##############
-#   REPORT   #
-##############
+set_alarm 5
+
+echo "list" > $SPIPE_IN
+if head -1 $DPIPE_OUT | grep "DBG: LIST" > /dev/null; then
+    test_result device success
+else
+    test_result device failure
+fi
+
+echo "signup test_usr test_passwd" > $DPIPE_IN
+
+if head -1 $DPIPE_OUT | grep "DBG: SIGNUP" > /dev/null; then
+    test_result device success
+else
+    test_result device failure
+fi
+
+if [[ -f /Auth.lst.bk ]]; then
+    mv ./Auth.lst.bk ./Auth.lst
+fi
+
+remove_alarm
 test_report
 
-kill $SERVER_PID 2> /dev/null 
-kill $DEVICE_PID 2> /dev/null
-
-#close the server pipe
-rm $SPIPE_IN
-rm $SPIPE_OUT
-#close the device pipe
-rm $DPIPE_IN
-rm $DPIPE_OUT
+close_test
