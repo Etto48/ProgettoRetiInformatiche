@@ -11,12 +11,16 @@
  *   shows a command list + instructions
  * 
  * - signup <username> <password>
+ *   request the creation of an account to the main server 
  * 
  * - in <server port> <username> <password>
+ *   request a login to the main server located on port <server port>
  *   
  * - hanging
+ *   request a list of users who sent you a message while you was offline
  * 
  * - show <username>
+ *   request a list of hanging messages from <username>
  * 
  * - chat <username>
  *   you can start a chat with <username> with this command
@@ -32,6 +36,7 @@
  *     share a file with the chat
  * 
  * - out
+ *   logs you out and closes the program
  * 
  ****************************/
 

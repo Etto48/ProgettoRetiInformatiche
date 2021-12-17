@@ -8,9 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
-
-#define USERNAME_MAX_LENGTH 20
-#define PASSWORD_MAX_LENGTH 32
+#include "../../global.d/globalDefine.h"
 
 #define AUTH_FILE "./Auth.lst"
 
@@ -78,7 +76,7 @@ bool AuthCheck(UserName username, Password password);
  * @param filename path of the file
  * @return true if loaded successfully
  */
-bool AuthLoad(const char* filename = AUTH_FILE);
+bool AuthLoad(const char* filename);
 
 /**
  * @brief save auth information to a file
@@ -86,7 +84,7 @@ bool AuthLoad(const char* filename = AUTH_FILE);
  * @param filename path of the file
  * @return true if saved successfully
  */
-bool AuthSave(const char* filename = AUTH_FILE);
+bool AuthSave(const char* filename);
 
 /*************
  *   INDEX   *

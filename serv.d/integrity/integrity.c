@@ -2,11 +2,11 @@
 
 void Startup()
 {
-    AuthLoad();
+    AuthLoad(AUTH_FILE);
 }
 
 void SaveAndExit()
 {
-    AuthSave();
+    AuthSave(AUTH_FILE);
     exit(0);
 }

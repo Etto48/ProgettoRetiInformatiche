@@ -26,7 +26,7 @@ Available commands:\n\
    show a list of connected users\n\
 \n\
  - esc\n\
-    stop the server and exit\n");
+   stop the server and exit\n");
             break;
         case COMMAND_LIST:
             DebugTag("LIST");
