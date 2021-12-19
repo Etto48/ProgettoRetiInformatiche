@@ -15,45 +15,60 @@
 typedef enum
 {
     /**
-     * @brief payload: <variable:variable>
-     * used by the server to respond to any client request
+     * @brief payload: <0|1:1B> 
+     *  0->Error
+     *  1->Ok
+     * used by the server to respond to any request that only needs a confirmation or an error
      */
     MESSAGE_RESPONSE = 0,
+
     /**
      * @brief payload: <username:20B><hashed password:32B>
      * used for the signup message
      */
     MESSAGE_SIGNUP = 1,
+
     /**
-     * @brief payload: <username:20B><hashed password:32B>
+     * @brief payload: <port:2B><username:20B><hashed password:32B>
      * used for the login message
      */
     MESSAGE_LOGIN = 2,
+
     /**
-     * @brief payload: 
+     * @brief payload: empty
      * used for the logout message
      */
     MESSAGE_LOGOUT = 3,
+
     /**
      * @brief payload: [username:20B]
      * used for the hanging and show message (response to the last one will be served with multiple MESSAGE_DATA messages)
      */
     MESSAGE_HANGING = 4,
+
     /**
      * @brief payload: <username:20B>
      * used to request info about ip/port of a user
      */
-    MESSAGE_USERINFO = 5,
+    MESSAGE_USERINFO_REQ = 5,
+
+    /**
+     * @brief payload: <IPv4:4B><port:2B>
+     * ip and port on which the other client is listening for connections
+     */
+    MESSAGE_USERINFO_RES = 6,
+
     /**
      * @brief payload: <username:20B><timestamp:8B>
      * used to send a notification of last message recived from <username>
      */
-    MESSAGE_SYNCREAD = 6,
+    MESSAGE_SYNCREAD = 7,
+
     /**
-     * @brief payload: <username:20B><timestamp:8B>['T'|'F']<message:variable>
+     * @brief payload: <username:20B><timestamp:8B><'T'|'F':1B><message:variable>
      * used to send a message to a client from <username> at time <timestamp>, use T if it's text or F if it's a file
      */
-    MESSAGE_DATA = 7
+    MESSAGE_DATA = 8
 } MessageType;
 
 /**
@@ -83,3 +98,5 @@ void NetworkSerializeMessage(MessageType type,const char* payload, uint8_t** dst
  * @param payload message payload, you have to deserialize this; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
  */
 void NetworkDeserializeMessage(const uint8_t* src_stream, MessageType** type, char** payload);
+
+bool SendMessageResponse();

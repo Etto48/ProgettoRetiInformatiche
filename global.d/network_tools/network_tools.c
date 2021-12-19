@@ -7,13 +7,13 @@ void NetworkSerializeMessage(MessageType type, const char *payload, uint8_t **ds
     switch (header.type)
     {
     case MESSAGE_RESPONSE:
-        header.payload_size = strlen(payload);
+        header.payload_size = 1;
         break;
     case MESSAGE_SIGNUP:
         header.payload_size = USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH;
         break;
     case MESSAGE_LOGIN:
-        header.payload_size = USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH;
+        header.payload_size = 2 + USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH;
         break;
     case MESSAGE_LOGOUT:
         header.payload_size = 0;
@@ -21,8 +21,11 @@ void NetworkSerializeMessage(MessageType type, const char *payload, uint8_t **ds
     case MESSAGE_HANGING:
         header.payload_size = strlen(payload) == 0 ? 0 : USERNAME_MAX_LENGTH;
         break;
-    case MESSAGE_USERINFO:
+    case MESSAGE_USERINFO_REQ:
         header.payload_size = USERNAME_MAX_LENGTH;
+        break;
+    case MESSAGE_USERINFO_RES:
+        header.payload_size = 4 + 2;
         break;
     case MESSAGE_SYNCREAD:
         header.payload_size = USERNAME_MAX_LENGTH + 8;
