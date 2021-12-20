@@ -42,7 +42,7 @@ void AuthDestroy()
 bool AuthLoad(const char* filename)
 {
     AuthDestroy();
-    int fd = open(filename,O_RDONLY|O_CREAT,S_IRUSR|S_IWUSR);
+    int fd = open(filename,O_RDONLY|O_CREAT,0600);
     if(fd<0)
     {
         #ifdef DEBUG
@@ -56,8 +56,8 @@ bool AuthLoad(const char* filename)
     while(true)
     {
         AuthEntry new_entry;
-        bzero(new_entry.username.str,USERNAME_MAX_LENGTH+1);
-        bzero(new_entry.password.str,PASSWORD_MAX_LENGTH+1);
+        memset(new_entry.username.str,0,USERNAME_MAX_LENGTH+1);
+        memset(new_entry.password.str,0,PASSWORD_MAX_LENGTH+1);
         reads = read(fd,new_entry.username.str, USERNAME_MAX_LENGTH);
         if(reads==0)//EOF
             break;
@@ -90,7 +90,7 @@ bool AuthLoad(const char* filename)
 
 bool AuthSave(const char* filename)
 {
-    int fd = open(filename,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR);
+    int fd = open(filename,O_WRONLY|O_CREAT,0600);
     if(fd<0)
     {
         #ifdef DEBUG

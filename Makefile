@@ -1,7 +1,7 @@
-CC 				:=	g++
+CC 				:=	gcc
 
 MODE			:=	DEBUG
-CARGS			:=	-Wall -D$(MODE)
+CARGS			:=	-Wall -D$(MODE) -std=c99
 
 ifeq ($(MODE),DEBUG)
 	CARGS		+=	-g -Wextra

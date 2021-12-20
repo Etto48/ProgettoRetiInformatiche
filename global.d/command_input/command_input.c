@@ -5,10 +5,10 @@ int CommandInputSplitCommand(char *plain_text, char* command, char args[][INPUT_
     printf(PROMPT);
     char *buf = plain_text;
 
-    bzero(buf,INPUT_LEN);
-    bzero(command,INPUT_LEN);
+    memset(buf,0,INPUT_LEN);
+    memset(command,0,INPUT_LEN);
     for(unsigned int i = 0; i<max_arg_num; i++)
-        bzero(args[i],INPUT_LEN);
+        memset(args[i],0,INPUT_LEN);
 
 
     if(!fgets(buf,INPUT_LEN,stdin))
