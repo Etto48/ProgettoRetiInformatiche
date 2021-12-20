@@ -190,7 +190,7 @@ bool NetworkSendMessageSyncread(int socket, UserName username, time_t timestamp)
  * @param text pointer from which we read a null terminated string to send
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageDataText(int socket, UserName, src_username, UserName dst_username, time_t timestamp, char* text);
+bool NetworkSendMessageDataText(int socket, UserName src_username, UserName dst_username, time_t timestamp, char* text);
 
 /**
  * @brief send MESSAGE_DATA containing a file
@@ -202,4 +202,4 @@ bool NetworkSendMessageDataText(int socket, UserName, src_username, UserName dst
  * @param filename path to the file to send
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageDataFile(int socket, UserName, src_username, UserName dst_username, time_t timestamp, char* filename);
+bool NetworkSendMessageDataFile(int socket, UserName src_username, UserName dst_username, time_t timestamp, char* filename);
