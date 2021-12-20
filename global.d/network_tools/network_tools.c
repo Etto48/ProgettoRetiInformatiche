@@ -43,8 +43,8 @@ void NetworkSerializeMessage(MessageType type, const char *payload, uint8_t **ds
 
     *dst_stream = (uint8_t *)malloc(total_size);
     *dst_stream[0] = header.type;
-    *(uint32_t *)&(*dst_stream[1]) = htonl(header.payload_size);
-    memcpy(*dst_stream + 5, payload, header.payload_size);
+    *(uint32_t *)(*dst_stream+1) = htonl(header.payload_size);
+    memcpy(*dst_stream + NETWORK_SERIALIZED_HEADER_SIZE, payload, header.payload_size);
 }
 
 void NetworkDeserializeMessage(const uint8_t *src_stream, MessageType **type, char **payload)
@@ -53,7 +53,7 @@ void NetworkDeserializeMessage(const uint8_t *src_stream, MessageType **type, ch
     header.type = (MessageType)src_stream[0];
     header.payload_size = ntohl(*(uint32_t *)&src_stream[1]);
     *payload = (char *)malloc(header.payload_size);
-    memcpy(*payload, &(src_stream[5]), header.payload_size);
+    memcpy(*payload, src_stream + NETWORK_SERIALIZED_HEADER_SIZE, header.payload_size);
     *type = (MessageType *)malloc(sizeof(MessageType));
     **type = header.type;
 }

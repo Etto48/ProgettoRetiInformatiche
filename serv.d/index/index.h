@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/stat.h>
 #include "../../global.d/globalDefine.h"
 
 #define AUTH_FILE "./Auth.lst"
@@ -30,6 +31,7 @@ typedef struct _AuthEntry
 typedef struct _IndexEntry 
 {
     UserName user_dest;
+    uint32_t ip;
     uint16_t port;
     time_t timestamp_login;
     time_t timestamp_logout;
@@ -84,10 +86,11 @@ bool AuthSave(const char* filename);
  * 
  * @param username username
  * @param password password
+ * @param ip ip where is located the user
  * @param port listening port of the user
  * @return true if correctly authenticated and not already logged
  */
-bool IndexLogin(UserName username, Password password, uint16_t port);
+bool IndexLogin(UserName username, Password password, uint32_t ip, uint16_t port);
 
 /**
  * @brief logout a user

@@ -8,6 +8,8 @@
 #include <malloc.h>
 #include "../globalDefine.h"
 
+#define NETWORK_SERIALIZED_HEADER_SIZE 5
+
 /**
  * @brief payload description is under the message type
  * 

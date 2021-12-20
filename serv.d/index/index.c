@@ -42,7 +42,7 @@ void AuthDestroy()
 bool AuthLoad(const char* filename)
 {
     AuthDestroy();
-    int fd = open(filename,O_RDONLY|O_CREAT,0600);
+    int fd = open(filename,O_RDONLY|O_CREAT,S_IWUSR|S_IRUSR);
     if(fd<0)
     {
         #ifdef DEBUG
@@ -90,7 +90,7 @@ bool AuthLoad(const char* filename)
 
 bool AuthSave(const char* filename)
 {
-    int fd = open(filename,O_WRONLY|O_CREAT,0600);
+    int fd = open(filename,O_WRONLY|O_CREAT,S_IWUSR|S_IRUSR);
     if(fd<0)
     {
         #ifdef DEBUG
@@ -109,7 +109,7 @@ bool AuthSave(const char* filename)
     return true;
 }
 
-bool IndexLogin(UserName username, Password password, uint16_t port)
+bool IndexLogin(UserName username, Password password, uint32_t ip, uint16_t port)
 {
     if(!AuthCheck(username,password))
         return false;
@@ -125,6 +125,7 @@ bool IndexLogin(UserName username, Password password, uint16_t port)
     target->user_dest = username;
     target->timestamp_login = time(NULL);
     target->timestamp_logout = 0;
+    target->ip = ip;
     target->port = port;
     return true;
 }
