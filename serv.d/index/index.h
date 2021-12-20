@@ -10,6 +10,7 @@
 #include <time.h>
 #include <sys/stat.h>
 #include "../../global.d/globalDefine.h"
+#include "../../global.d/debug/debug.h"
 
 #define AUTH_FILE "./Auth.lst"
 

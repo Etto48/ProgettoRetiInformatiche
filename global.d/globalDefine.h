@@ -1,5 +1,4 @@
 #pragma once
-#include <string.h>
 
 #define PROMPT "> "
 #define USERNAME_MAX_LENGTH 20

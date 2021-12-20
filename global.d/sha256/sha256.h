@@ -1,5 +1,7 @@
 #pragma once
 
+//Source: https://github.com/amosnier/sha-2
+
 #include <stdint.h>
 #include <string.h>
 

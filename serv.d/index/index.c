@@ -45,10 +45,7 @@ bool AuthLoad(const char* filename)
     int fd = open(filename,O_RDONLY|O_CREAT,S_IWUSR|S_IRUSR);
     if(fd<0)
     {
-        #ifdef DEBUG
-            perror("Error opening authentication file");
-        #endif
-        
+        dbgerror("Error opening authentication file");
         return false;
     }
     ssize_t reads = 0;
@@ -93,9 +90,7 @@ bool AuthSave(const char* filename)
     int fd = open(filename,O_WRONLY|O_CREAT,S_IWUSR|S_IRUSR);
     if(fd<0)
     {
-        #ifdef DEBUG
-            perror("Error opening authentication file");
-        #endif
+        dbgerror("Error opening authentication file");
         return false;
     }
     for(AuthEntry* i = AuthList; i; i=i->next)
