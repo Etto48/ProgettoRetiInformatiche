@@ -31,7 +31,8 @@ void NetworkSerializeMessage(MessageType type, const char *payload, uint8_t **ds
         header.payload_size = USERNAME_MAX_LENGTH + 8;
         break;
     case MESSAGE_DATA:
-        header.payload_size = USERNAME_MAX_LENGTH + 8 + sizeof(payload + USERNAME_MAX_LENGTH + 8);
+        header.payload_size = USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 
+            sizeof(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8);
         break;
     default:
         header.payload_size = 0;

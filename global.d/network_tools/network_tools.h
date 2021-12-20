@@ -49,24 +49,29 @@ typedef enum
     /**
      * @brief payload: <username:20B>
      * used to request info about ip/port of a user
+     * this message should only be sent from a devie to the server
      */
     MESSAGE_USERINFO_REQ = 5,
 
     /**
      * @brief payload: <IPv4:4B><port:2B>
      * ip and port on which the other device is listening for connections
+     * this message should only be sent from the server to a device
      */
     MESSAGE_USERINFO_RES = 6,
 
     /**
      * @brief payload: <username:20B><timestamp:8B>
      * used to send a notification of last message recived from <username>
+     * this message should be sent only from the server when <username> sends MESSAGE_HANGING with a username
      */
     MESSAGE_SYNCREAD = 7,
 
     /**
-     * @brief payload: <username:20B><timestamp:8B><'T'|'F':1B><message:variable>
-     * used to send a message to a device from <username> at time <timestamp>, use T if it's text or F if it's a file
+     * @brief payload: <src username:20B><dst username:20B><timestamp:8B><'T'|'F':1B><message:variable>
+     * used to send a message from <src username> to <dst username> at time <timestamp>, use T if it's text or F if it's a file
+     * if this message is sent from a device <src username> is ignored, if it is sent to a device <dst username> is ignored
+     * those are useful only if the server is used as relay
      */
     MESSAGE_DATA = 8
 } MessageType;
@@ -129,3 +134,72 @@ bool NetworkSendMessageSignup(int socket, UserName username, Password password);
  */
 bool NetworkSendMessageLogin(int socket, uint16_t port, UserName username, Password password);
 
+/**
+ * @brief send MESSAGE_LOGOUT
+ * 
+ * @param socket socket fd on which we send the message 
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageLogout(int socket);
+
+/**
+ * @brief send MESSAGE_HANGIN
+ * 
+ * @param socket socket fd on which we send the message
+ * @param username if set to NULL send MESSAGE_HANGING without a username
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageHanging(int socket, UserName* username);
+
+/**
+ * @brief send MESSAGE_USERINFO_REQ
+ * 
+ * @param socket socket fd on which we send the message
+ * @param username username
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageUserinfoReq(int socket, UserName username);
+
+/**
+ * @brief send MESSAGE_USERINFO_RES
+ * 
+ * @param socket socket fd on which we send the message
+ * @param ip ip of the device
+ * @param port port on which the device is listening
+ * @return true if the message was sent correctly 
+ */
+bool NetworkSendMessageUserinfoRes(int socket, uint32_t ip, uint16_t port);
+
+/**
+ * @brief send MESSAGE_SYNCREAD
+ * 
+ * @param socket socket fd on which we send the message
+ * @param username username of the message sender
+ * @param timestamp timestamp of the last message read
+ * @return true if the message was sent correctly 
+ */
+bool NetworkSendMessageSyncread(int socket, UserName username, time_t timestamp);
+
+/**
+ * @brief send MESSAGE_DATA containing text
+ * 
+ * @param socket socket fd on which we send the message
+ * @param src_username username of the message sender
+ * @param dst_username username of the message receiver
+ * @param timestamp timestamp of the message
+ * @param text pointer from which we read a null terminated string to send
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageDataText(int socket, UserName, src_username, UserName dst_username, time_t timestamp, char* text);
+
+/**
+ * @brief send MESSAGE_DATA containing a file
+ * 
+ * @param socket socket fd on which we send the message
+ * @param src_username username of the message sender
+ * @param dst_username username of the message receiver
+ * @param timestamp timestamp of the message
+ * @param filename path to the file to send
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageDataFile(int socket, UserName, src_username, UserName dst_username, time_t timestamp, char* filename);
