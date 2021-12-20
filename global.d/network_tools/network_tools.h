@@ -54,7 +54,7 @@ typedef enum
 
     /**
      * @brief payload: <IPv4:4B><port:2B>
-     * ip and port on which the other client is listening for connections
+     * ip and port on which the other device is listening for connections
      */
     MESSAGE_USERINFO_RES = 6,
 
@@ -66,7 +66,7 @@ typedef enum
 
     /**
      * @brief payload: <username:20B><timestamp:8B><'T'|'F':1B><message:variable>
-     * used to send a message to a client from <username> at time <timestamp>, use T if it's text or F if it's a file
+     * used to send a message to a device from <username> at time <timestamp>, use T if it's text or F if it's a file
      */
     MESSAGE_DATA = 8
 } MessageType;
@@ -84,19 +84,48 @@ typedef struct
 /**
  * @brief serialize a message in a host-independent format
  * 
- * @param type message type
- * @param payload message payload (refer to MessageType documentation), this should be already serialized
- * @param dst_stream destination stream on which we serialize the input; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
+ * @param[in] type message type
+ * @param[in] payload message payload (refer to MessageType documentation), this should be already serialized
+ * @param[out] dst_stream destination stream on which we serialize the input; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
  */
 void NetworkSerializeMessage(MessageType type,const char* payload, uint8_t** dst_stream);
 
 /**
  * @brief deserialize a message from a host-independent format
  * 
- * @param src_stream source stream from which we deserialize the input
- * @param type deserialized message type; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
- * @param payload message payload, you have to deserialize this; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
+ * @param[in] src_stream source stream from which we deserialize the input
+ * @param[out] type deserialized message type; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
+ * @param[out] payload message payload, you have to deserialize this; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
  */
 void NetworkDeserializeMessage(const uint8_t* src_stream, MessageType** type, char** payload);
 
-bool SendMessageResponse();
+/**
+ * @brief send MESSAGE_RESPONSE
+ * 
+ * @param socket socket fd on which we send the message
+ * @param ok is the status ok?
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageResponse(int socket,bool ok);
+
+/**
+ * @brief send MESSAGE_SIGNUP
+ * 
+ * @param socket socket fd on which we send the message
+ * @param username username
+ * @param password password (it must be hashed)
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageSignup(int socket, UserName username, Password password);
+
+/**
+ * @brief send MESSAGE_LOGIN
+ * 
+ * @param socket socket fd on which we send the message
+ * @param port port on which the device will be listening for other device
+ * @param username username
+ * @param password password (it must be hashed)
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageLogin(int socket, uint16_t port, UserName username, Password password);
+

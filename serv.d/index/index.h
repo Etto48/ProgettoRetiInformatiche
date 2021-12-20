@@ -12,16 +12,6 @@
 
 #define AUTH_FILE "./Auth.lst"
 
-typedef struct
-{
-    char str[USERNAME_MAX_LENGTH+1];
-} UserName;
-
-typedef struct
-{
-    char str[PASSWORD_MAX_LENGTH+1];
-} Password;
-
 /**
  * @brief entry for the list of registered users
  * 
