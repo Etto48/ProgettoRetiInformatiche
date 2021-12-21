@@ -105,7 +105,7 @@ bool IndexLogout(UserName username);
  * @brief find info about a user
  * 
  * @param username username used as key
- * @return IndexEntry* pointer to the user if found, NULL otherwise
+ * @return pointer to the user if found, NULL otherwise
  */
 IndexEntry* IndexFind(UserName username);
 

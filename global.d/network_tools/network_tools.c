@@ -64,15 +64,22 @@ size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t
 }
 size_t NetworkDeserializeMessage(const uint8_t *src_stream, MessageType **type, uint8_t **payload)
 {
-    MessageHeader header;
-    header.type = (MessageType)src_stream[0];
-    header.payload_size = ntohl(*(uint32_t *)&src_stream[1]);
+    MessageHeader header = NetworkDeserializeHeader(src_stream);
     *payload = (uint8_t *)malloc(header.payload_size);
     memcpy(*payload, src_stream + NETWORK_SERIALIZED_HEADER_SIZE, header.payload_size);
     *type = (MessageType *)malloc(sizeof(MessageType));
     **type = header.type;
     return header.payload_size;
 }
+MessageHeader NetworkDeserializeHeader(const uint8_t *src_stream)
+{
+    MessageHeader ret;
+    ret.type = (MessageType)src_stream[0];
+    ret.payload_size = ntohl(*(uint32_t *)(src_stream+1));
+    return ret;
+}
+
+
 
 bool NetworkSendMessageResponse(int sockfd, bool ok)
 {

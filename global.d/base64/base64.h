@@ -35,6 +35,6 @@ unsigned int B64Encode(const unsigned char* in, unsigned int in_len, unsigned ch
  * @param in buffer of base64 string to be decoded
  * @param in_len number of bytes to be decoded
  * @param out pointer to buffer with enough memory, user is responsible for memory allocation, receives "raw" binary
- * @return unsigned int 
+ * @return size of output including null byte
  */
 unsigned int B64Decode(const unsigned char* in, unsigned int in_len, unsigned char* out);

@@ -18,12 +18,12 @@
 
 /**
  * @brief payload description is under the message type
- * 
+ *
  */
 typedef enum
 {
     /**
-     * @brief payload: <0|1:1B> 
+     * @brief payload: <0|1:1B>
      *  0->Error
      *  1->Ok
      * used by the server to respond to any request that only needs a confirmation or an error
@@ -87,9 +87,10 @@ typedef enum
 
 /**
  * @brief this header is sent before any message on the network, when serialized it is 1+4 bytes long
- * 
+ * serialized header format: <type:1B><payload_size:4B>
+ *
  */
-typedef struct 
+typedef struct
 {
     MessageType type;
     uint32_t payload_size;
@@ -97,39 +98,165 @@ typedef struct
 
 /**
  * @brief serialize a message in a host-independent format
- * WARNINGS: 
+ * WARNINGS:
  *  in case of MESSAGE_HANGING: payload should be NULL or an empty string if you don't want to send a username
  *  in case of MESSAGE_DATA: payload should be null terminated, if it is a file, you must encode it in base64
- * 
+ *
  * @param[in] type message type
  * @param[in] payload message payload (refer to MessageType documentation), this should be already serialized
  * @param[out] dst_stream destination stream on which we serialize the input; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
  * @return total size of the message (header + payload)
  */
-size_t NetworkSerializeMessage(MessageType type,const uint8_t* payload, uint8_t** dst_stream);
+size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t **dst_stream);
 
 /**
- * @brief deserialize a message from a host-independent format
- * 
- * @param[in] src_stream source stream from which we deserialize the input
- * @param[out] type deserialized message type; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
- * @param[out] payload message payload, you have to deserialize this; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
- * @return size of the payload
+ * @brief we get the header in network format (serialized) from src_stream and deserialze it
+ *
+ * @param src_stream source stream from which we deserialize the input
+ * @return deserialized header
  */
-size_t NetworkDeserializeMessage(const uint8_t* src_stream, MessageType** type, uint8_t** payload);
+MessageHeader NetworkDeserializeHeader(const uint8_t *src_stream);
+
+/**
+ * @brief deserialize a MESSAGE_RESPONSE
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param ok response ok?
+ */
+void NetworkDeserializeMessageResponse(size_t payload_size, const uint8_t *payload, bool *ok);
+
+/**
+ * @brief deserialize a MESSAGE_SIGNUP
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param username sender username
+ * @param password sender password (hashed) 
+ */
+void NetworkDeserializeMessageSignup(size_t payload_size, const uint8_t *payload, UserName *username, Password *password);
+
+/**
+ * @brief deserialize a MESSAGE_LOGIN
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param username sender username
+ * @param password sender password (hashed)
+ */
+void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload, UserName *username, Password *password);
+
+/**
+ * @brief deserialize a MESSAGE_HANGING
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param username message source username to check for, if empty no username was provided
+ */
+void NetworkDeserializeMessageHanging(size_t payload_size, const uint8_t *payload, UserName *username);
+
+/**
+ * @brief deserialize a MESSAGE_USERINFO_REQ
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param username 
+ */
+void NetworkDeserializeMessageUserinfoReq(size_t payload_size, const uint8_t *payload, UserName *username);
+
+/**
+ * @brief deserialize a MESSAGE_USERINFO_RES
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param ip requested user ip (if user was not found this should be 0)
+ * @param port requested user port (if user not found this MUST be 0)
+ */
+void NetworkDeserializeMessageUserinfoRes(size_t payload_size, const uint8_t *payload, uint32_t *ip, uint16_t *port);
+
+/**
+ * @brief deserialize a MESSAGE_SYNCREAD
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param username message receiver username
+ * @param timestamp timestamp of the last message read from username
+ */
+void NetworkDeserializeMessageSyncread(size_t payload_size, const uint8_t *payload, UserName *username, time_t *timestamp);
+
+/**
+ * @brief check if a MESSAGE_DATA is containing a file or just text
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @return true if payload contains a file, false otherwise
+ */
+bool NetworkMessageDataContainsFile(size_t payload_size, const uint8_t *payload);
+
+/**
+ * @brief get text length (excluding null termination) contained in the payload of a MESSAGE_DATA (text)
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @return text length
+ */
+size_t NetworkMessageDataTextLength(size_t payload_size, const uint8_t *payload);
+
+/**
+ * @brief get filename length (excluding null termination) contained in the payload of a MESSAGE_DATA (file)
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @return file length
+ */
+size_t NetworkMessageDataFilenameLength(size_t payload_size, const uint8_t *payload);
+
+/**
+ * @brief get file size after decoding from base64 contained in the payload of a MESSAGE_DATA (file)
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @return file size
+ */
+size_t NetworkMessageDataFileSize(size_t payload_size, const uint8_t *payload);
+
+/**
+ * @brief deserialize a MESSAGE_DATA (text)
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param src_username sender username
+ * @param dst_username receiver username
+ * @param timestamp timestamp of the message creation
+ * @param text buffer where the text will be saved, use NetworkMessageDataTextLength to get the length to allocate for this buffer (remember +1 for null termination)
+ */
+void NetworkDeserializeMessageDataText(size_t payload_size, const uint8_t *payload, UserName *src_username, UserName *dst_username, time_t *timestamp, char *text);
+
+/**
+ * @brief deserialize a MESSAGE_DATA (file)
+ * 
+ * @param payload_size header field payload_size
+ * @param payload pointer to the payload
+ * @param src_username sender username
+ * @param dst_username receiver username
+ * @param timestamp timestamp of the message creation
+ * @param filename buffer where the file name will be saved, use NetworkMessageDataFilenameLength to get the correct length to allocate this buffer (remember +1 for null termination)
+ * @param data buffer where the file content will be saved, use NetworkMessageDataFileSize to get the correct length to allocate this buffer
+ */
+void NetworkDeserializeMessageDataFile(size_t payload_size, const uint8_t *payload, UserName *src_username, UserName *dst_username, time_t *timestamp, char *filename, uint8_t *data);
 
 /**
  * @brief send MESSAGE_RESPONSE
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param ok is the status ok?
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageResponse(int sockfd,bool ok);
+bool NetworkSendMessageResponse(int sockfd, bool ok);
 
 /**
  * @brief send MESSAGE_SIGNUP
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param username username
  * @param password password (it must be hashed)
@@ -139,7 +266,7 @@ bool NetworkSendMessageSignup(int sockfd, UserName username, Password password);
 
 /**
  * @brief send MESSAGE_LOGIN
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param port port on which the device will be listening for other device
  * @param username username
@@ -150,24 +277,24 @@ bool NetworkSendMessageLogin(int sockfd, uint16_t port, UserName username, Passw
 
 /**
  * @brief send MESSAGE_LOGOUT
- * 
- * @param sockfd socket fd on which we send the message 
+ *
+ * @param sockfd socket fd on which we send the message
  * @return true if the message was sent correctly
  */
 bool NetworkSendMessageLogout(int sockfd);
 
 /**
  * @brief send MESSAGE_HANGIN
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param username if set to NULL send MESSAGE_HANGING without a username
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageHanging(int sockfd, UserName* username);
+bool NetworkSendMessageHanging(int sockfd, UserName *username);
 
 /**
  * @brief send MESSAGE_USERINFO_REQ
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param username username
  * @return true if the message was sent correctly
@@ -176,27 +303,27 @@ bool NetworkSendMessageUserinfoReq(int sockfd, UserName username);
 
 /**
  * @brief send MESSAGE_USERINFO_RES
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param ip ip of the device (set to 0 if device is offline)
  * @param port port on which the device is listening (MUST BE 0 IF DEVICE IS OFFLINE)
- * @return true if the message was sent correctly 
+ * @return true if the message was sent correctly
  */
 bool NetworkSendMessageUserinfoRes(int sockfd, uint32_t ip, uint16_t port);
 
 /**
  * @brief send MESSAGE_SYNCREAD
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param username username of the message sender
  * @param timestamp timestamp of the last message read
- * @return true if the message was sent correctly 
+ * @return true if the message was sent correctly
  */
 bool NetworkSendMessageSyncread(int sockfd, UserName username, time_t timestamp);
 
 /**
  * @brief send MESSAGE_DATA containing text
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param src_username username of the message sender
  * @param dst_username username of the message receiver
@@ -204,11 +331,11 @@ bool NetworkSendMessageSyncread(int sockfd, UserName username, time_t timestamp)
  * @param text pointer from which we read a null terminated string to send
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageDataText(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, char* text);
+bool NetworkSendMessageDataText(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, char *text);
 
 /**
  * @brief send MESSAGE_DATA containing a file
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param src_username username of the message sender
  * @param dst_username username of the message receiver
@@ -216,4 +343,4 @@ bool NetworkSendMessageDataText(int sockfd, UserName src_username, UserName dst_
  * @param filename path to the file to send
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char* filename);
+bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename);
