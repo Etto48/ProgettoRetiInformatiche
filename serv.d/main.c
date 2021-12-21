@@ -33,7 +33,7 @@ Available commands:\n\
             break;
         case COMMAND_ESC:
             DebugTag("ESC");
-            SaveAndExit();
+            SaveAndExit(0);
             break;
         default:
             DebugTag("ERROR");

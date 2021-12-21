@@ -86,7 +86,7 @@ typedef enum
 } MessageType;
 
 /**
- * @brief this header is sent before any message on the network
+ * @brief this header is sent before any message on the network, when serialized it is 1+4 bytes long
  * 
  */
 typedef struct 

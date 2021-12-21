@@ -1,12 +1,18 @@
 #include "integrity.h"
 
+void sigterm_handler(int sig __attribute__((unused)))
+{
+    SaveAndExit(0);
+}
+
 void Startup()
 {
     AuthLoad(AUTH_FILE);
+    signal(SIGTERM,sigterm_handler);
 }
 
-void SaveAndExit()
+void SaveAndExit(int status)
 {
     AuthSave(AUTH_FILE);
-    exit(0);
+    exit(status);
 }

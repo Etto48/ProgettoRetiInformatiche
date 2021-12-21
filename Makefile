@@ -1,7 +1,9 @@
 CC 				:=	gcc
 
 MODE			:=	DEBUG
-CARGS			:=	-Wall -D$(MODE) -std=c99
+
+DEFINE_LIST		:=	$(MODE)
+CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c99
 
 ifeq ($(MODE),DEBUG)
 	CARGS		+=	-g -Wextra
