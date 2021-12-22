@@ -120,67 +120,67 @@ MessageHeader NetworkDeserializeHeader(const uint8_t *src_stream);
 /**
  * @brief deserialize a MESSAGE_RESPONSE
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param ok response ok?
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] ok response ok?
  */
 void NetworkDeserializeMessageResponse(size_t payload_size, const uint8_t *payload, bool *ok);
 
 /**
  * @brief deserialize a MESSAGE_SIGNUP
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param username sender username
- * @param password sender password (hashed) 
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] username sender username
+ * @param[out] password sender password (hashed) 
  */
 void NetworkDeserializeMessageSignup(size_t payload_size, const uint8_t *payload, UserName *username, Password *password);
 
 /**
  * @brief deserialize a MESSAGE_LOGIN
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param username sender username
- * @param password sender password (hashed)
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] username sender username
+ * @param[out] password sender password (hashed)
  */
 void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload, UserName *username, Password *password);
 
 /**
  * @brief deserialize a MESSAGE_HANGING
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param username message source username to check for, if empty no username was provided
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] username message source username to check for, if empty no username was provided
  */
 void NetworkDeserializeMessageHanging(size_t payload_size, const uint8_t *payload, UserName *username);
 
 /**
  * @brief deserialize a MESSAGE_USERINFO_REQ
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param username 
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] username 
  */
 void NetworkDeserializeMessageUserinfoReq(size_t payload_size, const uint8_t *payload, UserName *username);
 
 /**
  * @brief deserialize a MESSAGE_USERINFO_RES
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param ip requested user ip (if user was not found this should be 0)
- * @param port requested user port (if user not found this MUST be 0)
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] ip requested user ip (if user was not found this should be 0)
+ * @param[out] port requested user port (if user not found this MUST be 0)
  */
 void NetworkDeserializeMessageUserinfoRes(size_t payload_size, const uint8_t *payload, uint32_t *ip, uint16_t *port);
 
 /**
  * @brief deserialize a MESSAGE_SYNCREAD
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param username message receiver username
- * @param timestamp timestamp of the last message read from username
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] username message receiver username
+ * @param[out] timestamp timestamp of the last message read from username
  */
 void NetworkDeserializeMessageSyncread(size_t payload_size, const uint8_t *payload, UserName *username, time_t *timestamp);
 
@@ -223,25 +223,25 @@ size_t NetworkMessageDataFileSize(size_t payload_size, const uint8_t *payload);
 /**
  * @brief deserialize a MESSAGE_DATA (text)
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param src_username sender username
- * @param dst_username receiver username
- * @param timestamp timestamp of the message creation
- * @param text buffer where the text will be saved, use NetworkMessageDataTextLength to get the length to allocate for this buffer (remember +1 for null termination)
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] src_username sender username
+ * @param[out] dst_username receiver username
+ * @param[out] timestamp timestamp of the message creation
+ * @param[out] text buffer where the text will be saved, use NetworkMessageDataTextLength to get the length to allocate for this buffer (remember +1 for null termination)
  */
 void NetworkDeserializeMessageDataText(size_t payload_size, const uint8_t *payload, UserName *src_username, UserName *dst_username, time_t *timestamp, char *text);
 
 /**
  * @brief deserialize a MESSAGE_DATA (file)
  * 
- * @param payload_size header field payload_size
- * @param payload pointer to the payload
- * @param src_username sender username
- * @param dst_username receiver username
- * @param timestamp timestamp of the message creation
- * @param filename buffer where the file name will be saved, use NetworkMessageDataFilenameLength to get the correct length to allocate this buffer (remember +1 for null termination)
- * @param data buffer where the file content will be saved, use NetworkMessageDataFileSize to get the correct length to allocate this buffer
+ * @param[in] payload_size header field payload_size
+ * @param[in] payload pointer to the payload
+ * @param[out] src_username sender username
+ * @param[out] dst_username receiver username
+ * @param[out] timestamp timestamp of the message creation
+ * @param[out] filename buffer where the file name will be saved, use NetworkMessageDataFilenameLength to get the correct length to allocate this buffer (remember +1 for null termination)
+ * @param[out] data buffer where the file content will be saved, use NetworkMessageDataFileSize to get the correct length to allocate this buffer
  */
 void NetworkDeserializeMessageDataFile(size_t payload_size, const uint8_t *payload, UserName *src_username, UserName *dst_username, time_t *timestamp, char *filename, uint8_t *data);
 

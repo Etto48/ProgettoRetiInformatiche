@@ -62,7 +62,7 @@ void NetworkServerMainLoop(uint16_t port)
                 { // accept connection
                     struct sockaddr_in new_address;
                     socklen_t new_address_len = sizeof(new_address);
-                    int accepted_socket = accept(server_socket, &new_address, &new_address_len);
+                    int accepted_socket = accept(server_socket, (struct sockaddr *)&new_address, &new_address_len);
                     if (accepted_socket < 0)
                     {
                         dbgerror("Error accepting a new connection");
