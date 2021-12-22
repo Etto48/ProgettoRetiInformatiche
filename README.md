@@ -5,11 +5,10 @@ Ho scelto il protocollo TCP perché per un’applicazione di messaggistica è pr
 ## Livello applicazione
 Ogni pacchetto è composto da un header e da un payload
 
-|1B|4B|
-| :- | :- |
-|Tipo del messaggio|Lunghezza del payload|
-- Header: 
-
+- Header:
+    |1B|4B|
+    | :- | :- |
+    |Tipo del messaggio|Lunghezza del payload|
 
 - Payload: cambia struttura a seconda del tipo del messaggio, questa è documentata nel dettaglio in [global.d/network\_tools/network\_tools.h](global.d/network\_tools/network\_tools.h)
 ## Gestione delle richieste lato server
