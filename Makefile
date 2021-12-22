@@ -11,9 +11,12 @@ else ifeq ($(MODE),RELEASE)
 	CARGS		+=	-O3
 endif
 
-DEV_OBJ			:=	$(patsubst %.c, %.o, $(shell find dev.d -name "*.c"))
-SERV_OBJ		:=	$(patsubst %.c, %.o, $(shell find serv.d -name "*.c"))
-GLOBAL_OBJ		:=	$(patsubst %.c, %.o, $(shell find global.d -name "*.c"))
+DEV_CFILES		:= 	$(shell find dev.d -name "*.c")
+SERV_CFILES		:=	$(shell find serv.d -name "*.c")
+GLOBAL_CFILES	:=	$(shell find global.d -name "*.c")
+DEV_OBJ			:=	$(patsubst %.c, %.o, $(DEV_CFILES))
+SERV_OBJ		:=	$(patsubst %.c, %.o, $(SERV_CFILES))
+GLOBAL_OBJ		:=	$(patsubst %.c, %.o, $(GLOBAL_CFILES))
 DEV_HEADERS		:=	$(shell find dev.d -name "*.h")
 SERV_HEADERS	:=	$(shell find serv.d -name "*.h")
 GLOBAL_HEADERS	:=	$(shell find global.d -name "*.h")
@@ -45,7 +48,11 @@ global.d/%.o: global.d/%.c $(GLOBAL_HEADERS) $(THIS)
 	@echo Compiling $@
 	@$(CC) -c $< -o $@ $(CARGS)
 
-.PHONY: clean
+.PHONY: clean dry_run
 clean:
 	@echo Removing object files and executables
 	@rm -f $(ALL_OBJ) $(SERVER) $(DEVICE)
+
+dry_run: 
+	@$(CC) $(DEV_CFILES) $(GLOBAL_CFILES) -o /dev/null $(CARGS)
+	@$(CC) $(SERV_CFILES) $(GLOBAL_CFILES) -o /dev/null $(CARGS)

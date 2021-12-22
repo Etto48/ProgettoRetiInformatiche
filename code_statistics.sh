@@ -1,4 +1,6 @@
 #!/bin/bash
+echo -ne "Loading...\r"
+
 HEADERS=$(find ./ -name "*.h")
 CFILES=$(find ./ -name "*.c")
 FILES=$HEADERS\ $CFILES
@@ -20,6 +22,9 @@ COMMENTS_WORDS=$(cat $FILES | egrep '(^(\/\/|\s\*|\/\*).*|.*\*\/$)' | wc -w)
 COMMENTS_LETTERS=$(cat $FILES | egrep '(^(\/\/|\s\*|\/\*).*|.*\*\/$)' | wc -c)
 
 let COM_TO_COD=$COMMENTS_LETTERS*100/$CODE_LETTERS
+
+WARNINGS=$(make dry_run 2>&1 | grep "warning:" | wc -l)
+ERRORS=$(make dry_run 2>&1 | grep "error:" | wc -l)
 
 if [[ $COM_TO_COD -le "5" ]]; then
     COM_RATING="Horrible"
@@ -50,4 +55,7 @@ echo -e "| .c files              |\t$CFILES_COUNT\t                |"
 echo -e "+-----------------------+-------------------------------+"
 echo -e "| Comment to code ratio | Comment ratio rating          |"
 echo -e "|\t$COM_TO_COD%\t        |\t$COM_RATING\t        |"
+echo -e "+-----------------------+-------------------------------+"
+echo -e "| Warnings              | Errors                        |"
+echo -e "|\t$WARNINGS\t        |\t$ERRORS\t\t        |"
 echo -e "+-----------------------+-------------------------------+"
