@@ -16,6 +16,18 @@
 
 #define NETWORK_SERIALIZED_HEADER_SIZE 5
 
+#define MESSAGE_RESPONSE_SIZE sizeof(uint8_t)
+#define MESSAGE_SIGNUP_SIZE (USERNAME_MAX_LENGTH+PASSWORD_MAX_LENGTH)
+#define MESSAGE_LOGIN_SIZE (sizeof(uint16_t)+USERNAME_MAX_LENGTH+PASSWORD_MAX_LENGTH)
+#define MESSAGE_LOGOUT_SIZE 0
+#define MESSAGE_HANGING_MIN_SIZE 0
+#define MESSAGE_HANGING_MAX_SIZE USERNAME_MAX_LENGTH
+#define MESSAGE_USERINFO_REQ_SIZE USERNAME_MAX_LENGTH
+#define MESSAGE_USERINFO_RES_SIZE (sizeof(uint32_t)+sizeof(uint16_t))
+#define MESSAGE_SYNCREAD_SIZE (USERNAME_MAX_LENGTH+sizeof(uint64_t))
+#define MESSAGE_DATA_TEXT_MIN_SIZE (USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + sizeof(uint64_t) + sizeof(uint8_t))
+#define MESSAGE_DATA_FILE_MIN_SIZE (MESSAGE_DATA_TEXT_MIN_SIZE + sizeof(uint32_t))
+
 /**
  * @brief payload description is under the message type
  *
@@ -86,7 +98,7 @@ typedef enum
 } MessageType;
 
 /**
- * @brief this header is sent before any message on the network, when serialized it is 1+4 bytes long
+ * @brief this header is sent before any message on the network, when serialized it is NETWORK_SERIALIZED_HEADER_SIZE bytes long
  * serialized header format: <type:1B><payload_size:4B>
  *
  */
@@ -141,10 +153,11 @@ void NetworkDeserializeMessageSignup(size_t payload_size, const uint8_t *payload
  * 
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
+ * @param[out] port port on which the device listens to other devices
  * @param[out] username sender username
  * @param[out] password sender password (hashed)
  */
-void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload, UserName *username, Password *password);
+void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload, uint16_t* port, UserName *username, Password *password);
 
 /**
  * @brief deserialize a MESSAGE_HANGING
@@ -160,7 +173,7 @@ void NetworkDeserializeMessageHanging(size_t payload_size, const uint8_t *payloa
  * 
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
- * @param[out] username 
+ * @param[out] username requested user
  */
 void NetworkDeserializeMessageUserinfoReq(size_t payload_size, const uint8_t *payload, UserName *username);
 

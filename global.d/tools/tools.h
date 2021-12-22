@@ -18,3 +18,11 @@ size_t ToolsBasename(const char* path);
  * @return data in network format
  */
 uint64_t htonq(uint64_t quad);
+
+/**
+ * @brief network to host quadword
+ * 
+ * @param quad data in network format
+ * @return data in host format
+ */
+uint64_t ntohq(uint64_t quad);

@@ -110,9 +110,9 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
 {
     if (!NetworkConnectedDevices[sockfd].header_received && !NetworkConnectedDevices[sockfd].receive_buffer)
     { // we need to allocate a buffer big enough to contain the header
-        NetworkConnectedDevices[sockfd].receive_buffer = (uint8_t *)malloc(5);
+        NetworkConnectedDevices[sockfd].receive_buffer = (uint8_t *)malloc(NETWORK_SERIALIZED_HEADER_SIZE);
     }
-    size_t waiting_size = (NetworkConnectedDevices[sockfd].header_received ? NetworkConnectedDevices[sockfd].mh.payload_size : 5);
+    size_t waiting_size = (NetworkConnectedDevices[sockfd].header_received ? NetworkConnectedDevices[sockfd].mh.payload_size : NETWORK_SERIALIZED_HEADER_SIZE);
     // now we try to receive the exact amount of data we expect from the device
     int received_count = recv(
         sockfd,

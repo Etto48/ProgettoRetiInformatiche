@@ -2,9 +2,12 @@
 HEADERS=$(find ./ -name "*.h")
 CFILES=$(find ./ -name "*.c")
 FILES=$HEADERS\ $CFILES
+DIRS=$(find ./ \( ! -regex '.*/\..*' \) -type d)
 
 HEADERS_COUNT=$(echo $HEADERS | wc -w)
 CFILES_COUNT=$(echo $CFILES | wc -w)
+DIRS_COUNT=$(echo $DIRS | wc -w)
+let DIRS_COUNT=$DIRS_COUNT-1
 
 TEXT_LINES=$(cat $FILES | wc -l)
 TEXT_WORDS=$(cat $FILES | wc -w)
@@ -41,6 +44,7 @@ echo -e "| Comments |\t$COMMENTS_LINES\t|\t$COMMENTS_WORDS\t|\t$COMMENTS_LETTERS
 echo -e "+----------+------------+---------------+---------------+"
 echo -e "| File Type             | File count                    |"
 echo -e "+-----------------------+-------------------------------+"
+echo -e "| Directories           |\t$DIRS_COUNT\t                |"
 echo -e "| .h files              |\t$HEADERS_COUNT\t                |"
 echo -e "| .c files              |\t$CFILES_COUNT\t                |"
 echo -e "+-----------------------+-------------------------------+"

@@ -41,7 +41,7 @@ typedef struct
 
     /**
      * @brief we use this to store the data while we wait to receive it (first the header an then the payload),
-     * this is dynamically allocated (5B or mh.payload_size), it should be set to NULL if not allocated
+     * this is dynamically allocated (NETWORK_SERIALIZED_HEADER_SIZE or mh.payload_size bytes), it should be set to NULL if not allocated
      * 
      */
     uint8_t* receive_buffer;
