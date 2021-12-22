@@ -1,5 +1,6 @@
 #pragma once
 //Source: https://github.com/joedf/base64.c
+//See global.d/base64/LICENSE
 
 #include <stdio.h>
 
