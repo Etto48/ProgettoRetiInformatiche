@@ -1,0 +1,18 @@
+Todo:
+    ☐ @high Fill out NetworkHandle* functions @network @serv 
+        ☐ NetworkHandleHanging @est(5m)
+        ☐ NetworkHandleData @est(10m)
+    ☐ @high Implement message relay @serv
+        ✔ create RelayMessage struct @est(20m) @today @started(21-12-23 03:56) @done(21-12-23 04:05) @lasted(9m59s)
+        ☐ write something to allocate and free a RelayMessage @est(20m) @today
+        ☐ create a message history structure of some type @est(1h30m) @today
+        ☐ decide how to save the history to a file @est(45m) @today 
+        ☐ implement history saving and loading @est(2h)
+    ☐ @low Double check NetworkReceiveNewData @network @serv @est(5m)
+    ☐ @low Check security of AuthRegister and IndexLogin @security @serv @est(10m)
+    ☐ @critical Decide how to do group chat @network @design @est(1h)
+    ☐ @low Begin to write device network code @network @dev
+    ☐ @low Fill out command line code @cli @dev @serv @est(1h30m)
+
+Fixme:
+    

@@ -152,6 +152,7 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
             case MESSAGE_LOGOUT:
                 DebugTag("SERV_LOGOUT");
                 NetworkHandleLogout(sockfd);
+                NetworkDeleteConnection(sockfd,master);
                 break;
             case MESSAGE_HANGING:
                 DebugTag("SERV_HANGING");
@@ -175,19 +176,49 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
     }
 }
 
+bool isSocketLoggedIn(int sockfd)
+{
+    return NetworkConnectedDevices[sockfd].username.str[0];
+}
+
 void NetworkHandleSignup(int sockfd)
 {
-    
+    NetworkDeviceConnection* ncd = &NetworkConnectedDevices[sockfd];
+    UserName username;
+    Password password;
+    NetworkDeserializeMessageSignup(ncd->mh.payload_size,ncd->receive_buffer,&username,&password);
+    bool ok = AuthRegister(username,password);
+    NetworkSendMessageResponse(sockfd,ok);
 }
 
 void NetworkHandleLogin(int sockfd)
 {
-    
+    NetworkDeviceConnection* ncd = &NetworkConnectedDevices[sockfd];
+    uint16_t port;
+    UserName username;
+    Password password;
+    NetworkDeserializeMessageLogin(ncd->mh.payload_size,ncd->receive_buffer,&port,&username,&password);
+    bool ok = IndexLogin(username,password,ntohl(ncd->address.sin_addr.s_addr),port);
+    if(ok)
+        ncd->username=username;
+    NetworkSendMessageResponse(sockfd,ok);
 }
 
 void NetworkHandleLogout(int sockfd)
 {
-    
+    NetworkDeviceConnection* ncd = &NetworkConnectedDevices[sockfd];
+    bool ok;
+    if(isSocketLoggedIn(sockfd))
+    {
+        ok = IndexLogout(ncd->username);
+        if(ok)
+            memset(ncd->username.str,0,USERNAME_MAX_LENGTH+1);
+    }
+    else
+        ok = false;
+    NetworkSendMessageResponse(sockfd,ok);
+    shutdown(sockfd,SHUT_RDWR);
+    close(sockfd);
 }
 
 void NetworkHandleHanging(int sockfd)
@@ -197,7 +228,18 @@ void NetworkHandleHanging(int sockfd)
 
 void NetworkHandleUserinfoReq(int sockfd)
 {
-    
+    NetworkDeviceConnection* ncd = &NetworkConnectedDevices[sockfd];
+    if(isSocketLoggedIn(sockfd))
+    {
+        UserName username;
+        NetworkDeserializeMessageUserinfoReq(ncd->mh.payload_size,ncd->receive_buffer,&username);
+        IndexEntry* res = IndexFind(username);
+        uint32_t ip = res ? res->ip : 0;
+        uint16_t port = res ? res->port : 0;
+        NetworkSendMessageUserinfoRes(sockfd,ip,port);
+    }
+    else
+        NetworkSendMessageResponse(sockfd,false);
 }
 
 void NetworkHandleData(int sockfd)
@@ -207,6 +249,6 @@ void NetworkHandleData(int sockfd)
 
 void NetworkHandleError(int sockfd)
 {
-    
+    NetworkSendMessageResponse(sockfd,false);
 }
 
