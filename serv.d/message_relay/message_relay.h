@@ -12,7 +12,7 @@ typedef enum
  * @brief used to store a message
  * 
  */
-typedef struct 
+typedef struct _RelayMessage
 {
     /**
      * @brief sender user name
@@ -61,4 +61,45 @@ typedef struct
      * (DYNAMICALLY ALLOCATED, must be NULL if free)
      */
     uint8_t* data;
+    struct _RelayMessage* next;
 } RelayMessage;
+
+/**
+ * @brief if a device fails to send a message to a client it must send it to the server
+ * that message is stored here
+ * when a hanging request is received we check this list
+ * when the server is shut down we must save this to a file
+ * 
+ */
+extern RelayMessage* RelayHangingList;
+
+/**
+ * @brief add a new message to RelayHangingList
+ * 
+ * @param src sender username
+ * @param dst receiver username
+ * @param timestamp creation timestamp
+ * @param type message contains text or file
+ * @param filename if message contains a file this must contain the filename (null terminated), it must be NULL otherwise
+ * @param data_size must contain the size of the file or the strlen(data) if it is text
+ * @param data text or file content
+ */
+void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageType type, char* filename, size_t data_size, uint8_t* data);
+
+/**
+ * @brief finds the first message from src to dst
+ * 
+ * @param src sender username
+ * @param dst receiver username
+ * @return pointer to the entry in RelayHangingList
+ */
+RelayMessage* RelayHangingFindFirst(UserName src, UserName dst);
+
+/**
+ * @brief count how many messages there are from src to dst
+ * 
+ * @param src sender username
+ * @param dst receiver username
+ * @return message count
+ */
+size_t RelayHangingCount(UserName src, UserName dst);

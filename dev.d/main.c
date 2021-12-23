@@ -86,3 +86,8 @@ Available commands:\n\
         }
     }
 }
+/*
+ * when a chat is initiated, if the device can't connect to a selected client 
+ * it must connect to the server and send to it the messages 
+ * periodically it must request a hanging messages list from the server to update the message list
+ */

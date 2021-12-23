@@ -3,10 +3,13 @@ Todo:
         ☐ NetworkHandleHanging @est(5m)
         ☐ NetworkHandleData @est(10m)
     ☐ @high Implement message relay @serv
-        ✔ create RelayMessage struct @est(20m) @today @started(21-12-23 03:56) @done(21-12-23 04:05) @lasted(9m59s)
-        ☐ write something to allocate and free a RelayMessage @est(20m) @today
-        ☐ create a message history structure of some type @est(1h30m) @today
-        ☐ decide how to save the history to a file @est(45m) @today 
+        ✔ create RelayMessage struct @est(20m) @started(21-12-23 03:56) @done(21-12-23 04:05) @lasted(9m59s)
+        ☐ write something to allocate and free a RelayMessage
+            ☐ Fill out RelayHangingAdd @est(20m)
+            ☐ Fill out RelayHangingFindFirst @est(10m)
+            ☐ Fill out RelayHangingCount @est(10m)
+        ✔ create a message history structure of some type @est(1h30m) @started(21-12-23 11:41) @done(21-12-23 12:06) @lasted(25m8s)
+        ☐ decide how to save the history to a file @est(45m)
         ☐ implement history saving and loading @est(2h)
     ☐ @low Double check NetworkReceiveNewData @network @serv @est(5m)
     ☐ @low Check security of AuthRegister and IndexLogin @security @serv @est(10m)
