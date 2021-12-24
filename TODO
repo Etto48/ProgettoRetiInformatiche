@@ -5,7 +5,7 @@ Todo:
     ☐ @high Implement message relay @serv
         ✔ create RelayMessage struct @est(20m) @started(21-12-23 03:56) @done(21-12-23 04:05) @lasted(9m59s)
         ☐ write something to allocate and free a RelayMessage
-            ☐ Fill out RelayHangingAdd @est(20m)
+            ✔ Fill out RelayHangingAdd @est(20m) @started(21-12-24 06:17) @done(21-12-24 06:36) @lasted(19m5s)
             ☐ Fill out RelayHangingFindFirst @est(10m)
             ☐ Fill out RelayHangingCount @est(10m)
         ✔ create a message history structure of some type @est(1h30m) @started(21-12-23 11:41) @done(21-12-23 12:06) @lasted(25m8s)
