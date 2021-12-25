@@ -89,11 +89,12 @@ void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageT
 /**
  * @brief finds the first message from src to dst
  * 
- * @param src sender username
- * @param dst receiver username
+ * @param message_list a starting point from which we start searching
+ * @param src sender username, set it to all 0 to not use it
+ * @param dst receiver username, set it to all 0 to not use it
  * @return pointer to the entry in RelayHangingList
  */
-RelayMessage* RelayHangingFindFirst(UserName src, UserName dst);
+RelayMessage* RelayHangingFindFirst(RelayMessage* message_list, UserName src, UserName dst);
 
 /**
  * @brief count how many messages there are from src to dst
@@ -103,3 +104,19 @@ RelayMessage* RelayHangingFindFirst(UserName src, UserName dst);
  * @return message count
  */
 size_t RelayHangingCount(UserName src, UserName dst);
+
+/**
+ * @brief find the first occurence and remove it from RelayHangingList
+ * 
+ * @param src sender username, set it to all 0 to not use it
+ * @param dst receiver username, set it to all 0 to not use it
+ * @return pointer to the entry removed, you must free it with RelayHangingDestroyMessage
+ */
+RelayMessage* RelayHangingPopFirst(UserName src, UserName dst);
+
+/**
+ * @brief use this function to free a message popped with RelayHangingPopFirst
+ * 
+ * @param msg message to free
+ */
+void RelayHangingDestroyMessage(RelayMessage* msg);

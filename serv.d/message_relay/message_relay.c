@@ -28,10 +28,59 @@ void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageT
     RelayHangingList = new_message;
 }
 
-RelayMessage *RelayHangingFindFirst(UserName src, UserName dst)
+RelayMessage *RelayHangingFindFirst(RelayMessage* message_list, UserName src, UserName dst)
 {
+    for(RelayMessage* i = RelayHangingList; i; i=i->next)
+    {
+        if ((src.str[0]=='\0' || strcmp(i->src.str, src.str) == 0) && (dst.str[0]=='\0' || strcmp(i->dst.str, dst.str) == 0))
+            return i;
+    }
+    return NULL;
 }
 
 size_t RelayHangingCount(UserName src, UserName dst)
 {
+    size_t count = 0;
+    for(RelayMessage* i = RelayHangingList; i; i=i->next)
+    {
+        if ((src.str[0]=='\0' || strcmp(i->src.str, src.str) == 0) && (dst.str[0]=='\0' || strcmp(i->dst.str, dst.str) == 0))
+            count ++;
+    }
+    return count;
+}
+
+RelayMessage* RelayHangingPopFirst(UserName src, UserName dst)
+{
+    RelayMessage* last = NULL;
+    RelayMessage* i = NULL;
+    for(i = RelayHangingList; i; i=i->next)
+    {
+        if ((src.str[0]=='\0' || strcmp(i->src.str, src.str) == 0) && (dst.str[0]=='\0' || strcmp(i->dst.str, dst.str) == 0))
+            break;
+        last = i;
+    }
+    if (i)
+    {
+        if (last == NULL) // head
+        {
+            RelayHangingList = i->next;
+        }
+        else
+        {
+            last->next = i->next;
+        }
+        return i;
+    }
+    else return NULL;
+}
+
+void RelayHangingDestroyMessage(RelayMessage* msg)
+{
+    if(msg)
+    {
+        free(msg->data);
+        if(msg->filename)
+            free(msg->filename);
+        free(msg);
+    }
 }
