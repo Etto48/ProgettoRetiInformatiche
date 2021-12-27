@@ -328,7 +328,12 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
     }
     uint8_t *file_buffer = (uint8_t *)malloc(st.st_size);
     read(fd, file_buffer, st.st_size);
-    size_t file_base64_size = B64EncSize(st.st_size) + 1;
+    size_t basename_offset = ToolsBasename(filename);
+    
+    bool ret = NetworkSendMessageDataFileBuffer(sockfd,src_username,dst_username,timestamp,filename+basename_offset,st.st_size,file_buffer);
+    free(file_buffer);
+    return ret;
+    /*size_t file_base64_size = B64EncSize(st.st_size) + 1;
     uint8_t *file_base64_buffer = (uint8_t *)malloc(file_base64_size);
     B64Encode(file_buffer, st.st_size, file_base64_buffer);
     free(file_buffer);
@@ -343,6 +348,25 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
     *(uint32_t *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1) = htonl(basename_length);
     memcpy(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4, filename + basename_offset, basename_length);
     memcpy(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4 + basename_length, file_base64_buffer, file_base64_size);
+    free(file_base64_buffer);*/
+
+}
+
+bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename, size_t file_size, const uint8_t* data)
+{
+    size_t file_base64_size = B64EncSize(file_size) + 1;
+    uint8_t *file_base64_buffer = (uint8_t *)malloc(file_base64_size);
+    B64Encode(data, file_size, file_base64_buffer);
+
+    uint32_t basename_length = strlen(filename); 
+    uint8_t *payload = (uint8_t *)malloc(USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4 + basename_length + file_base64_size);
+    memcpy(payload, src_username.str, USERNAME_MAX_LENGTH);
+    memcpy(payload + USERNAME_MAX_LENGTH, dst_username.str, USERNAME_MAX_LENGTH);
+    *(uint64_t *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH) = htonq(timestamp);
+    *(char *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8) = 'F';
+    *(uint32_t *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1) = htonl(basename_length);
+    memcpy(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4, filename, basename_length);
+    memcpy(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4 + basename_length, file_base64_buffer, file_base64_size);
     free(file_base64_buffer);
 
     NETWORK_SEND_MESSAGE_EPILOGUE
@@ -350,4 +374,3 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
         free(payload);
     )
 }
-

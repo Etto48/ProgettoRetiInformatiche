@@ -90,29 +90,29 @@ void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageT
  * @brief finds the first message from src to dst
  * 
  * @param message_list a starting point from which we start searching
- * @param src sender username, set it to all 0 to not use it
- * @param dst receiver username, set it to all 0 to not use it
+ * @param src sender username, set it to NULL to not use it
+ * @param dst receiver username, set it to NULL to not use it
  * @return pointer to the entry in RelayHangingList
  */
-RelayMessage* RelayHangingFindFirst(RelayMessage* message_list, UserName src, UserName dst);
+RelayMessage* RelayHangingFindFirst(RelayMessage* message_list, UserName *src, UserName *dst);
 
 /**
  * @brief count how many messages there are from src to dst
  * 
- * @param src sender username
- * @param dst receiver username
+ * @param src sender username, set it to NULL to not use it
+ * @param dst receiver username, set it to NULL to not use it
  * @return message count
  */
-size_t RelayHangingCount(UserName src, UserName dst);
+size_t RelayHangingCount(UserName *src, UserName *dst);
 
 /**
  * @brief find the first occurence and remove it from RelayHangingList
- * 
- * @param src sender username, set it to all 0 to not use it
- * @param dst receiver username, set it to all 0 to not use it
- * @return pointer to the entry removed, you must free it with RelayHangingDestroyMessage
+ * WARINING: you must free the return with RelayHangingDestroyMessage
+ * @param src sender username, set it to NULL to not use it
+ * @param dst receiver username, set it to NULL to not use it
+ * @return pointer to the entry removed, YOU MUST FREE IT with RelayHangingDestroyMessage
  */
-RelayMessage* RelayHangingPopFirst(UserName src, UserName dst);
+RelayMessage* RelayHangingPopFirst(UserName *src, UserName *dst);
 
 /**
  * @brief use this function to free a message popped with RelayHangingPopFirst
@@ -120,3 +120,4 @@ RelayMessage* RelayHangingPopFirst(UserName src, UserName dst);
  * @param msg message to free
  */
 void RelayHangingDestroyMessage(RelayMessage* msg);
+

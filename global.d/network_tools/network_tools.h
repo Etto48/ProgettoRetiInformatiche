@@ -45,31 +45,38 @@ typedef enum
     /**
      * @brief payload: <username:20B><hashed password:32B>
      * used for the signup message
+     * expect a MESSAGE_RESPONSE ok if signed up correctly
      */
     MESSAGE_SIGNUP = 1,
 
     /**
      * @brief payload: <port:2B><username:20B><hashed password:32B>
      * used for the login message
+     * expect a MESSAGE_RESPONSE ok if logged in correctly
      */
     MESSAGE_LOGIN = 2,
 
     /**
      * @brief payload: empty
      * used for the logout message
+     * expect a MESSAGE_RESPONSE ok if logged out correctly
      */
     MESSAGE_LOGOUT = 3,
 
     /**
      * @brief payload: [username:20B]
      * used for the hanging and show message (response to the last one will be served with multiple MESSAGE_DATA messages)
+     * 
+     * if no username was specified expect a sequence of MESSAGE_HANGING with username followed by a MESSAGE_RESPONSE ok
+     * if a username was provided expect a sequence of MESSAGE_DATA followed by a MESSAGE_RESPONSE ok
      */
     MESSAGE_HANGING = 4,
 
     /**
      * @brief payload: <username:20B>
      * used to request info about ip/port of a user
-     * this message should only be sent from a devie to the server
+     * this message should only be sent from a device to the server
+     * expect a MESSAGE_USERINFO_RES
      */
     MESSAGE_USERINFO_REQ = 5,
 
@@ -93,8 +100,11 @@ typedef enum
      * used to send a message from <src username> to <dst username> at time <timestamp>, use T if it's text or F if it's a file
      * if this message is sent from a device <src username> is ignored, if it is sent to a device <dst username> is ignored
      * those are useful only if the server is used as relay
+     * expect a MESSAGE_RESPONSE ok
      */
     MESSAGE_DATA = 8
+
+    //devices must never respond to the server
 } MessageType;
 
 /**
@@ -357,3 +367,17 @@ bool NetworkSendMessageDataText(int sockfd, UserName src_username, UserName dst_
  * @return true if the message was sent correctly
  */
 bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename);
+
+/**
+ * @brief send MESSAGE_DATA containing a file that was already read from the disk
+ * 
+ * @param sockfd socket fd on which we send the message
+ * @param src_username username of the message sender
+ * @param dst_username username of the message receiver
+ * @param timestamp timestamp of the message
+ * @param filename string containing the file name
+ * @param file_size size of the data buffer
+ * @param data buffer containing the file
+ * @return true if the message was sent correctly
+ */
+bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename, size_t file_size, const uint8_t* data);

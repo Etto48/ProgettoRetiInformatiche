@@ -1,7 +1,7 @@
 Todo:
-    ☐ @high Fill out NetworkHandle* functions @network @serv 
-        ☐ NetworkHandleHanging @est(5m)
-        ☐ NetworkHandleData @est(10m)
+    ✔ @high Fill out NetworkHandle* functions @network @serv @done(21-12-27 15:58)
+        ✔ NetworkHandleHanging @est(5m) @started(21-12-27 15:19) @done(21-12-27 15:58) @lasted(39m32s)
+        ✔ NetworkHandleData @est(10m) @started(21-12-27 13:59) @done(21-12-27 15:19) @lasted(1h20m40s)
     ☐ @high Implement message relay @serv
         ✔ create RelayMessage struct @est(20m) @started(21-12-23 03:56) @done(21-12-23 04:05) @lasted(9m59s)
         ✔ write something to allocate and free a RelayMessage @done(21-12-25 05:56)

@@ -172,6 +172,8 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
             }
             free(NetworkConnectedDevices[sockfd].receive_buffer);
             NetworkConnectedDevices[sockfd].receive_buffer = NULL;
+            NetworkConnectedDevices[sockfd].header_received = false;
+            NetworkConnectedDevices[sockfd].received_bytes = 0;
         }
     }
 }
@@ -223,7 +225,38 @@ void NetworkHandleLogout(int sockfd)
 
 void NetworkHandleHanging(int sockfd)
 {
-    
+    NetworkDeviceConnection* ncd = &NetworkConnectedDevices[sockfd];
+    if(isSocketLoggedIn(sockfd))
+    {
+        UserName from;
+        NetworkDeserializeMessageHanging(ncd->mh.payload_size,ncd->receive_buffer,&from);
+        if(from.str[0]=='\0')
+        { // only users
+            RelayMessage* list = RelayHangingList;
+            for(RelayMessage* i = RelayHangingFindFirst(list,NULL,&ncd->username); i; list = i->next)
+            {
+                NetworkSendMessageHanging(sockfd,&i->src);
+            }
+        }
+        else
+        { // only messages from user
+            for(RelayMessage* i = RelayHangingPopFirst(&from,&ncd->username); i; RelayHangingDestroyMessage(i))
+            {
+                switch(i->type)
+                {
+                    case RELAY_MESSAGE_TEXT:
+                        NetworkSendMessageDataText(sockfd,from,ncd->username,i->timestamp,(char*)i->data);
+                        break;
+                    case RELAY_MESSAGE_FILE:
+                        NetworkSendMessageDataFileBuffer(sockfd,from,ncd->username,i->timestamp,i->filename,i->data_size,i->data);
+                        break;
+                }
+            }
+        }
+        NetworkSendMessageResponse(sockfd,true);
+    }
+    else
+        NetworkSendMessageResponse(sockfd,false);
 }
 
 void NetworkHandleUserinfoReq(int sockfd)
@@ -244,7 +277,40 @@ void NetworkHandleUserinfoReq(int sockfd)
 
 void NetworkHandleData(int sockfd)
 {
-    
+    NetworkDeviceConnection* ncd = &NetworkConnectedDevices[sockfd];
+    if(isSocketLoggedIn(sockfd))
+    {
+        if(NetworkMessageDataContainsFile(ncd->mh.payload_size,ncd->receive_buffer))
+        { // file 
+            size_t filename_len = NetworkMessageDataFilenameLength(ncd->mh.payload_size,ncd->receive_buffer);
+            size_t file_size = NetworkMessageDataFileSize(ncd->mh.payload_size,ncd->receive_buffer);
+            char* filename = (char *)malloc(filename_len+1);
+            uint8_t* file_data = (uint8_t *)malloc(file_size);
+            UserName src;
+            UserName dst;
+            time_t timestamp;
+            NetworkDeserializeMessageDataFile(ncd->mh.payload_size,ncd->receive_buffer,&src,&dst,&timestamp,filename,file_data);
+            //we must use ncd->username instead of src to avoid security issues
+            RelayHangingAdd(ncd->username,dst,timestamp,RELAY_MESSAGE_FILE,filename,file_size,file_data);
+            free(filename);
+            free(file_data);
+        }
+        else
+        { // text
+            size_t text_len = NetworkMessageDataTextLength(ncd->mh.payload_size,ncd->receive_buffer);
+            char* text = (char*)malloc(text_len+1);
+            UserName src;
+            UserName dst;
+            time_t timestamp;
+            NetworkDeserializeMessageDataText(ncd->mh.payload_size,ncd->receive_buffer,&src,&dst,&timestamp,text);
+            //we must use ncd->username instead of src to avoid security issues
+            RelayHangingAdd(ncd->username,dst,timestamp,RELAY_MESSAGE_TEXT,NULL,text_len,(uint8_t*)text);
+            free(text);
+        }
+        NetworkSendMessageResponse(sockfd,true);
+    }
+    else
+        NetworkSendMessageResponse(sockfd,false);
 }
 
 void NetworkHandleError(int sockfd)

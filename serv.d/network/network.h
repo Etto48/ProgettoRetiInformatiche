@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/select.h>
 #include "../integrity/integrity.h"
+#include "../message_relay/message_relay.h"
 #include "../../global.d/debug/debug.h"
 #include "../../global.d/network_tools/network_tools.h"
 

@@ -14,8 +14,8 @@ void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageT
     {
     case RELAY_MESSAGE_TEXT:
         new_message->filename = NULL;
-        new_message->data = (uint8_t*)malloc(strlen(data)+1);
-        strcpy(new_message->data,data);
+        new_message->data = (uint8_t*)malloc(strlen((char*)data)+1);
+        strcpy((char*)new_message->data,(char*)data);
         break;
     case RELAY_MESSAGE_FILE:
         new_message->filename = (char *)malloc(strlen(filename)+1);
@@ -28,34 +28,34 @@ void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageT
     RelayHangingList = new_message;
 }
 
-RelayMessage *RelayHangingFindFirst(RelayMessage* message_list, UserName src, UserName dst)
+RelayMessage *RelayHangingFindFirst(RelayMessage* message_list, UserName *src, UserName *dst)
 {
-    for(RelayMessage* i = RelayHangingList; i; i=i->next)
+    for(RelayMessage* i = message_list; i; i=i->next)
     {
-        if ((src.str[0]=='\0' || strcmp(i->src.str, src.str) == 0) && (dst.str[0]=='\0' || strcmp(i->dst.str, dst.str) == 0))
+        if ((!src || strcmp(i->src.str, src->str) == 0) && (!dst || strcmp(i->dst.str, dst->str) == 0))
             return i;
     }
     return NULL;
 }
 
-size_t RelayHangingCount(UserName src, UserName dst)
+size_t RelayHangingCount(UserName *src, UserName *dst)
 {
     size_t count = 0;
     for(RelayMessage* i = RelayHangingList; i; i=i->next)
     {
-        if ((src.str[0]=='\0' || strcmp(i->src.str, src.str) == 0) && (dst.str[0]=='\0' || strcmp(i->dst.str, dst.str) == 0))
+        if ((!src || strcmp(i->src.str, src->str) == 0) && (!dst || strcmp(i->dst.str, dst->str) == 0))
             count ++;
     }
     return count;
 }
 
-RelayMessage* RelayHangingPopFirst(UserName src, UserName dst)
+RelayMessage* RelayHangingPopFirst(UserName *src, UserName *dst)
 {
     RelayMessage* last = NULL;
     RelayMessage* i = NULL;
     for(i = RelayHangingList; i; i=i->next)
     {
-        if ((src.str[0]=='\0' || strcmp(i->src.str, src.str) == 0) && (dst.str[0]=='\0' || strcmp(i->dst.str, dst.str) == 0))
+        if ((!src || strcmp(i->src.str, src->str) == 0) && (!dst || strcmp(i->dst.str, dst->str) == 0))
             break;
         last = i;
     }
