@@ -107,6 +107,8 @@ typedef enum
     //devices must never respond to the server
 } MessageType;
 
+#define MAX_MESSAGE_TYPE 8
+
 /**
  * @brief this header is sent before any message on the network, when serialized it is NETWORK_SERIALIZED_HEADER_SIZE bytes long
  * serialized header format: <type:1B><payload_size:4B>

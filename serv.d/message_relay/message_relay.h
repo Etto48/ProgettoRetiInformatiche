@@ -2,6 +2,8 @@
 #include <time.h>
 #include "../index/index.h"
 
+#define RELAY_FILE "./Relay.lst"
+
 typedef enum 
 {
     RELAY_MESSAGE_TEXT = 'T',
@@ -121,3 +123,16 @@ RelayMessage* RelayHangingPopFirst(UserName *src, UserName *dst);
  */
 void RelayHangingDestroyMessage(RelayMessage* msg);
 
+/**
+ * @brief load RelayHangingList from file
+ * 
+ * @param filename file path
+ */
+void RelayLoad(const char* filename);
+
+/**
+ * @brief save RelayHangingList to file
+ * 
+ * @param filename file path
+ */
+void RelaySave(const char* filename);

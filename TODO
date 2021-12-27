@@ -17,6 +17,7 @@ Todo:
     ☐ @critical Decide how to do group chat @network @design @est(1h)
     ☐ @low Begin to write device network code @network @dev
     ☐ @low Fill out command line code @cli @dev @serv @est(1h30m)
+    ☐ @requirement Make possible for the device to send the disconnection time @dev @network @design 
 
 Fixme:
-    
+    ✔ Check NetworkReceiveNewData when there is a wrong header @done(21-12-27 23:39)

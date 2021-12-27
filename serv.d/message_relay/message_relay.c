@@ -84,3 +84,13 @@ void RelayHangingDestroyMessage(RelayMessage* msg)
         free(msg);
     }
 }
+
+void RelayLoad(const char* filename)
+{
+
+}
+
+void RelaySave(const char* filename)
+{
+    
+}

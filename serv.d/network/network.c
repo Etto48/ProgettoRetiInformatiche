@@ -36,24 +36,21 @@ void NetworkServerMainLoop(uint16_t port)
     }
 
     fd_set master_set, slave_set;
-    int max_fdi = server_socket + 1;
+    int max_fdi = NETWORK_MAX_CONNECTIONS + 1 + 1;
+    FD_ZERO(&master_set);
     FD_SET(server_socket, &master_set);
-    struct timeval select_timer;
-    memset(&select_timer, 0, sizeof(struct timeval));
+    FD_SET(STDIN_FILENO, &master_set);
 
     while (true)
     {
-        int ready_fd_count = 0;
-        while (ready_fd_count == 0)
+        slave_set = master_set;
+        int ready_fd_count = select(max_fdi, &slave_set, NULL, NULL, NULL);
+        if (ready_fd_count < 0)
         {
-            slave_set = master_set;
-            ready_fd_count = select(max_fdi, &slave_set, NULL, NULL, &select_timer);
-            if (ready_fd_count < 0)
-            {
-                dbgerror("Error selecting available FDs");
-                SaveAndExit(-1);
-            }
+            dbgerror("Error selecting available FDs");
+            SaveAndExit(-1);
         }
+        
         for (int target_fd = 0; target_fd < max_fdi; target_fd++)
         {
             if (FD_ISSET(target_fd, &slave_set))
@@ -70,8 +67,13 @@ void NetworkServerMainLoop(uint16_t port)
                     }
                     NetworkNewConnection(accepted_socket, new_address, &master_set);
                 }
+                else if(target_fd == STDIN_FILENO)
+                { // cli input ready
+                    CLIHandleInput();
+                }
                 else
                 { // handle connection
+                    NetworkReceiveNewData(target_fd,&master_set);
                 }
             }
         }
@@ -86,6 +88,10 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr, fd_set *master)
     memset(NetworkConnectedDevices[sockfd].username.str, 0, USERNAME_MAX_LENGTH + 1);
     NetworkConnectedDevices[sockfd].header_received = false;
     NetworkConnectedDevices[sockfd].received_bytes = 0;
+    
+    #ifdef DEBUG
+    printf("FD %d connected\n",sockfd);
+    #endif
 }
 
 void NetworkDeleteConnection(int sockfd, fd_set *master)
@@ -104,6 +110,12 @@ void NetworkDeleteConnection(int sockfd, fd_set *master)
         NetworkConnectedDevices[sockfd].receive_buffer = NULL;
     }
     NetworkConnectedDevices[sockfd].received_bytes = 0;
+    shutdown(sockfd,SHUT_RDWR);
+    close(sockfd);
+
+    #ifdef DEBUG
+    printf("FD %d disconnected\n",sockfd);
+    #endif
 }
 
 void NetworkReceiveNewData(int sockfd, fd_set *master)
@@ -122,6 +134,10 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
     if (received_count <= 0) // client disconnected or error
     {
         NetworkDeleteConnection(sockfd, master);
+        if(received_count<0) 
+        {
+            dbgerror("Error during recv");
+        }
         return;
     }
     else // here we update how much data we received
@@ -134,10 +150,17 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
             NetworkConnectedDevices[sockfd].mh =
                 NetworkDeserializeHeader(NetworkConnectedDevices[sockfd].receive_buffer);
             free(NetworkConnectedDevices[sockfd].receive_buffer);
+
+            if (NetworkConnectedDevices[sockfd].mh.type > MAX_MESSAGE_TYPE) // if an invalid header was provided ignore size
+                NetworkConnectedDevices[sockfd].mh.payload_size = 0;
+
             NetworkConnectedDevices[sockfd].receive_buffer = (uint8_t *)malloc(NetworkConnectedDevices[sockfd].mh.payload_size);
+            NetworkConnectedDevices[sockfd].received_bytes = 0;
             NetworkConnectedDevices[sockfd].header_received = true;
+            
         }
-        else
+        //check if payload was 0 bytes
+        if(NetworkConnectedDevices[sockfd].header_received && NetworkConnectedDevices[sockfd].received_bytes == NetworkConnectedDevices[sockfd].mh.payload_size)
         { // payload completely received
             switch (NetworkConnectedDevices[sockfd].mh.type)
             {

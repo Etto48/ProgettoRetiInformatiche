@@ -2,7 +2,6 @@
 
 int CommandInputSplitCommand(char *plain_text, char* command, char args[][INPUT_LEN], unsigned int max_arg_num)
 {
-    printf(PROMPT);
     char *buf = plain_text;
 
     memset(buf,0,INPUT_LEN);

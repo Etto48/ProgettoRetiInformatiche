@@ -7,6 +7,7 @@
 #include "../message_relay/message_relay.h"
 #include "../../global.d/debug/debug.h"
 #include "../../global.d/network_tools/network_tools.h"
+#include "../cli/cli.h"
 
 #define NETWORK_MAX_CONNECTIONS 1023
 

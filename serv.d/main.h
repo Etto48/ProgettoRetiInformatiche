@@ -7,5 +7,6 @@
 #include "command_parser/command_parser.h"
 #include "../global.d/debug/debug.h"
 #include "integrity/integrity.h"
+#include "network/network.h"
 
 #define DEFAULT_SERVER_PORT 4242
