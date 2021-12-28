@@ -1,0 +1,79 @@
+#include "cli.h"
+
+CommandMode CLIMode = MODE_LOGIN;
+
+void CLIHandleInput()
+{
+    DeviceCommandInfo dci = CommandParserGetCommand(CLIMode);
+        switch (dci.command)
+        {
+        case COMMAND_HELP:
+            DebugTag("HELP");
+            printf("\
+Available commands:\n\
+ - help\n\
+   (This command is available before and after the login) shows a command list + instructions\n\
+\n\
+ - signup <server port> <username> <password>\n\
+   request the creation of an account to the main server located on port <server port>\n\
+\n\
+ - in <server port> <username> <password>\n\
+   request a login to the main server located on port <server port>\n\
+\n\
+ - hanging\n\
+   request a list of users who sent you a message while you was offline (This command is only available after the login)\n\
+\n\
+ - show <username>\n\
+   request a list of hanging messages from <username> (This command is only available after the login)\n\
+\n\
+ - chat <username>\n\
+   you can start a chat with <username> with this command\n\
+   once in a chat you can use the following commands\n\
+   prefixing them with a \"\\\" (This command is only available after the login)\n\
+   > q\n\
+     close the chat\n\
+   > u\n\
+     list online users available for chat\n\
+   > a <username>\n\
+     add a user to the chat\n\
+   > f <filename>\n\
+     share a file with the chat\n\
+\n\
+ - out\n\
+   logs you out and closes the program (This command is only available after the login)\n");
+            break;
+        case COMMAND_SIGNUP:
+            DebugTag("SIGNUP");
+            break;
+        case COMMAND_IN:
+            DebugTag("IN");
+            CLIMode = MODE_STANDARD;
+            break;
+        case COMMAND_HANGING:
+            DebugTag("HANGING");
+            break;
+        case COMMAND_SHOW:
+            DebugTag("SHOW");
+            break;
+        case COMMAND_CHAT:
+            DebugTag("CHAT");
+            break;
+        case COMMAND_OUT:
+            DebugTag("OUT");
+            break;
+        case COMMAND_CHAT_QUIT:
+            DebugTag("CHAT->QUIT");
+            break;
+        case COMMAND_CHAT_USERS:
+            DebugTag("CHAT->USERS");
+            break;
+        case COMMAND_CHAT_ADD:
+            DebugTag("CHAT->ADD");
+            break;
+        case COMMAND_CHAT_FILE:
+            DebugTag("CHAT->FILE");
+            break;
+        default:
+            DebugTag("ERROR");
+        }
+}

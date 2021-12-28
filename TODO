@@ -16,8 +16,11 @@ Todo:
     ☐ @low Check security of AuthRegister and IndexLogin @security @serv @est(10m)
     ☐ @critical Decide how to do group chat @network @design @est(1h)
     ☐ @low Begin to write device network code @network @dev
+        ✔ Write NetworkDeviceMainLoop @started(21-12-28 12:45) @done(21-12-28 18:07) @lasted(5h22m15s)
+        ✔ Write some functions to handle network messages @done(21-12-28 18:07)
+        ☐ Write NetworkHandleNewMessage for the device @dev @network
     ☐ @low Fill out command line code @cli @dev @serv @est(1h30m)
-    ☐ @requirement Make possible for the device to send the disconnection time @dev @network @design 
+    ☐ @critical @requirement Make possible for the device to send the disconnection time @dev @network @design 
 
 Fixme:
     ✔ Check NetworkReceiveNewData when there is a wrong header @done(21-12-27 23:39)

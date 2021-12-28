@@ -10,5 +10,5 @@ int main(int argc, char **argv)
     Startup();
     uint16_t server_port = argc == 2 ? atoi(argv[1]) : DEFAULT_SERVER_PORT;
     printf("Server started on port %u\n",server_port);
-    NetworkServerMainLoop(server_port);
+    NetworkMainLoop(server_port);
 }

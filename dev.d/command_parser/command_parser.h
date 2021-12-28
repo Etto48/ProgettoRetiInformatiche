@@ -10,8 +10,8 @@
  * - help
  *   shows a command list + instructions
  * 
- * - signup <username> <password>
- *   request the creation of an account to the main server 
+ * - signup <server port> <username> <password>
+ *   request the creation of an account to the main server located on port <server port>
  * 
  * - in <server port> <username> <password>
  *   request a login to the main server located on port <server port>

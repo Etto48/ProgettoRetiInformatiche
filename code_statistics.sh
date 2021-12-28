@@ -5,10 +5,12 @@ HEADERS=$(find ./ -name "*.h")
 CFILES=$(find ./ -name "*.c")
 FILES=$HEADERS\ $CFILES
 DIRS=$(find ./ \( ! -regex '.*/\..*' \) -type d)
+TOTAL_FILES=$(find ./ \( ! -regex '.*/\..*' \) -type f)
 
 HEADERS_COUNT=$(echo $HEADERS | wc -w)
 CFILES_COUNT=$(echo $CFILES | wc -w)
 DIRS_COUNT=$(echo $DIRS | wc -w)
+FILES_COUNT=$(echo $TOTAL_FILES | wc -w)
 let DIRS_COUNT=$DIRS_COUNT-1
 
 TEXT_LINES=$(cat $FILES | wc -l)
@@ -52,6 +54,7 @@ echo -e "+-----------------------+-------------------------------+"
 echo -e "| Directories           |\t$DIRS_COUNT\t                |"
 echo -e "| .h files              |\t$HEADERS_COUNT\t                |"
 echo -e "| .c files              |\t$CFILES_COUNT\t                |"
+echo -e "| Total                 |\t$FILES_COUNT\t                |"
 echo -e "+-----------------------+-------------------------------+"
 echo -e "| Comment to code ratio | Comment ratio rating          |"
 echo -e "|\t$COM_TO_COD%\t        |\t$COM_RATING\t        |"

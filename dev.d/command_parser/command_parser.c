@@ -31,7 +31,7 @@ DeviceCommandInfo CommandParserGetCommand(CommandMode mode)
         }
         else if (strcmp("signup", command) == 0)
         {
-            if (argc == 2)
+            if (argc == 3)
             {
                 ret.command = COMMAND_SIGNUP;
             }
