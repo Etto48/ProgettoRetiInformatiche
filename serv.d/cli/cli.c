@@ -20,6 +20,7 @@ Available commands:\n\
             break;
         case COMMAND_LIST:
             DebugTag("LIST");
+            CLIPrintConnectedUsers();
             break;
         case COMMAND_ESC:
             DebugTag("ESC");
@@ -28,4 +29,16 @@ Available commands:\n\
         default:
             DebugTag("ERROR");
         }
+}
+
+void CLIPrintConnectedUsers()
+{
+    printf("Username\tport\n");
+    for(IndexEntry* i = IndexList; i; i = i->next)
+    {
+        if(i->timestamp_logout==0)
+        {
+            printf("%s\t%d\n",i->user_dest.str,i->port);
+        }
+    }
 }

@@ -67,3 +67,8 @@ void NetworkHandleData(int sockfd);
  */
 void NetworkHandleError(int sockfd);
 
+/**
+ * @brief called by NetworkMainLoop when we have no requests
+ * 
+ */
+void NetworkFreeTime();

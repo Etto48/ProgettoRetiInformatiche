@@ -21,6 +21,8 @@ Todo:
         ☐ Write NetworkHandleNewMessage for the device @dev @network
     ☐ @low Fill out command line code @cli @dev @serv @est(1h30m)
     ☐ @critical @requirement Make possible for the device to send the disconnection time @dev @network @design 
+    ☐ @low Write some functions to save and restore chat history device-side @dev 
+    ☐ Fill out every CLI* function @dev @cli
 
 Fixme:
     ✔ Check NetworkReceiveNewData when there is a wrong header @done(21-12-27 23:39)

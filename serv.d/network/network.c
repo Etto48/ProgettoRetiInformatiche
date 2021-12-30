@@ -1,8 +1,6 @@
 #include "network.h"
 
-NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS + 1];
-
-void NetworkHandleNewMessage(int sockfd, fd_set* master)
+void NetworkHandleNewMessage(int sockfd, fd_set *master)
 {
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
@@ -37,11 +35,6 @@ void NetworkHandleNewMessage(int sockfd, fd_set* master)
     }
 }
 
-bool isSocketLoggedIn(int sockfd)
-{
-    return NetworkConnectedDevices[sockfd].username.str[0];
-}
-
 void NetworkHandleSignup(int sockfd)
 {
     NetworkDeviceConnection *ncd = &NetworkConnectedDevices[sockfd];
@@ -69,7 +62,7 @@ void NetworkHandleLogout(int sockfd)
 {
     NetworkDeviceConnection *ncd = &NetworkConnectedDevices[sockfd];
     bool ok;
-    if (isSocketLoggedIn(sockfd))
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
         ok = IndexLogout(ncd->username);
         if (ok)
@@ -85,7 +78,7 @@ void NetworkHandleLogout(int sockfd)
 void NetworkHandleHanging(int sockfd)
 {
     NetworkDeviceConnection *ncd = &NetworkConnectedDevices[sockfd];
-    if (isSocketLoggedIn(sockfd))
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
         UserName from;
         NetworkDeserializeMessageHanging(ncd->mh.payload_size, ncd->receive_buffer, &from);
@@ -121,7 +114,7 @@ void NetworkHandleHanging(int sockfd)
 void NetworkHandleUserinfoReq(int sockfd)
 {
     NetworkDeviceConnection *ncd = &NetworkConnectedDevices[sockfd];
-    if (isSocketLoggedIn(sockfd))
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
         UserName username;
         NetworkDeserializeMessageUserinfoReq(ncd->mh.payload_size, ncd->receive_buffer, &username);
@@ -137,7 +130,7 @@ void NetworkHandleUserinfoReq(int sockfd)
 void NetworkHandleData(int sockfd)
 {
     NetworkDeviceConnection *ncd = &NetworkConnectedDevices[sockfd];
-    if (isSocketLoggedIn(sockfd))
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
         if (NetworkMessageDataContainsFile(ncd->mh.payload_size, ncd->receive_buffer))
         { // file
@@ -175,4 +168,9 @@ void NetworkHandleData(int sockfd)
 void NetworkHandleError(int sockfd)
 {
     NetworkSendMessageResponse(sockfd, false);
+}
+
+void NetworkFreeTime()
+{
+    
 }

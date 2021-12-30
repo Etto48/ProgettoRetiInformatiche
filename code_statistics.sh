@@ -5,7 +5,7 @@ HEADERS=$(find ./ -name "*.h")
 CFILES=$(find ./ -name "*.c")
 FILES=$HEADERS\ $CFILES
 DIRS=$(find ./ \( ! -regex '.*/\..*' \) -type d)
-TOTAL_FILES=$(find ./ \( ! -regex '.*/\..*' \) -type f)
+TOTAL_FILES=$(find ./ \( ! -regex '.*/\..*' \) -not -name "*.o" -type f)
 
 HEADERS_COUNT=$(echo $HEADERS | wc -w)
 CFILES_COUNT=$(echo $CFILES | wc -w)

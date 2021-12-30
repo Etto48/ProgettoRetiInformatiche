@@ -7,7 +7,7 @@
 #include "../../debug/debug.h"
 #include "../network_tools.h"
 
-#define NETWORK_MAX_CONNECTIONS 1023
+#define NETWORK_MAX_CONNECTIONS 1024
 
 typedef struct
 {
@@ -48,10 +48,10 @@ typedef struct
 } NetworkDeviceConnection;
 
 /**
- * @brief the index is the socket file descriptor
+ * @brief the index is the socket file descriptor, both the server and the device need this array so it's defined here
  * 
  */
-extern NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS+1];
+extern NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS];
 
 /**
  * @brief main loop of the server, here we listen for new connections and we handle open connections
@@ -86,6 +86,14 @@ void NetworkDeleteConnection(int sockfd, fd_set* master);
 void NetworkReceiveNewData(int sockfd, fd_set* master);
 
 /**
+ * @brief check if a socket in NetworkConnectedDevices is logged in
+ * 
+ * @param sockfd index in NetworkConnectedDevices
+ * @return true if logged in, false otherwise
+ */
+bool NetworkIsSocketLoggedIn(int sockfd);
+
+/**
  * @brief defined inside network.h
  * 
  */
@@ -102,3 +110,9 @@ extern void CLIHandleInput();
  * 
  */
 extern void SaveAndExit(int status);
+
+/**
+ * @brief defined inside network.h, is called when the program is not busy
+ * 
+ */
+extern void NetworkFreeTime();

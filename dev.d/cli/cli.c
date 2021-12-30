@@ -44,36 +44,88 @@ Available commands:\n\
             break;
         case COMMAND_SIGNUP:
             DebugTag("SIGNUP");
+            CLISignup(dci);
             break;
         case COMMAND_IN:
             DebugTag("IN");
+            CLILogin(dci);
             CLIMode = MODE_STANDARD;
             break;
         case COMMAND_HANGING:
             DebugTag("HANGING");
+            CLIHanging(dci);
             break;
         case COMMAND_SHOW:
             DebugTag("SHOW");
+            CLIShow(dci);
             break;
         case COMMAND_CHAT:
             DebugTag("CHAT");
+            CLIChat(dci);
+            CLIMode = MODE_CHAT;
             break;
         case COMMAND_OUT:
             DebugTag("OUT");
+            CLILogout(dci);
             break;
         case COMMAND_CHAT_QUIT:
             DebugTag("CHAT->QUIT");
+            CLIChatQuit(dci);
             break;
         case COMMAND_CHAT_USERS:
             DebugTag("CHAT->USERS");
+            CLIChatUsers(dci);
             break;
         case COMMAND_CHAT_ADD:
             DebugTag("CHAT->ADD");
+            CLIChatAdd(dci);
             break;
         case COMMAND_CHAT_FILE:
             DebugTag("CHAT->FILE");
+            CLIChatFile(dci);
             break;
         default:
             DebugTag("ERROR");
         }
+}
+
+void CLISignup(DeviceCommandInfo dci)
+{
+    
+}
+void CLILogin(DeviceCommandInfo dci)
+{
+
+}
+void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
+{
+
+}
+void CLIShow(DeviceCommandInfo dci)
+{
+
+}
+void CLIChat(DeviceCommandInfo dci)
+{
+
+}
+void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
+{
+
+}
+void CLIChatQuit(__attribute__((unused)) DeviceCommandInfo dci)
+{
+
+}
+void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
+{
+
+}
+void CLIChatAdd(DeviceCommandInfo dci)
+{
+
+}
+void CLIChatFile(DeviceCommandInfo dci)
+{
+
 }
