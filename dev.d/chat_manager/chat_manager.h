@@ -4,17 +4,25 @@
 /**
  * @brief add a new message
  * 
- * @param mh message header (sould be only MESSAGE_DATA)
+ * @param payload_size number of bytes of the payload 
  * @param payload pointer to the payload containing the message data
  */
-void ChatReceiveMessage(MessageHeader mh, uint8_t* payload);
+void ChatReceiveMessage(size_t payload_size, uint8_t* payload);
 
 /**
- * @brief load from file the chat from src
+ * @brief for each message to dst user, set those before timestamp as received
  * 
- * @param src 
+ * @param dst receiver user
+ * @param timestamp timestamp of the last received message
  */
-void ChatLoad(UserName src);
+void ChatHandleSyncread(UserName dst, time_t timestamp);
+
+/**
+ * @brief load from file the chat with user
+ * 
+ * @param user which chat we need to load from file
+ */
+void ChatLoad(UserName user);
 
 /**
  * @note we should save the chat to a different user in a different file

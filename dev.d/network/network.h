@@ -71,6 +71,14 @@ void NetworkFreeTime();
 bool NetworkReceiveOneFromServer();
 
 /**
+ * @brief receive every message from the server until MESSAGE_RESPONSE ok, if MESSAGE_RESPONSE error 
+ * is detected or there was some error during trasmission, the received messages are deleted
+ * 
+ * @return true if everything ok and received until MESSAGE_RESPONSE ok
+ */
+bool NetworkReceiveResponseFromServer();
+
+/**
  * @brief we use this to delete the oldest packet received from the server, we need to call this to free a message in the message list
  * 
  * @return true if the list was not empty

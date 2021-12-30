@@ -112,6 +112,43 @@ bool NetworkReceiveOneFromServer()
     return true;
 }
 
+bool NetworkReceiveResponseFromServer()
+{
+    bool error = false;
+    size_t count = 0;
+    while(true)
+    {
+        if(!NetworkReceiveOneFromServer())
+        {
+            error = true;
+            break;
+        }
+        if(NetworkServerInfo.message_list_head->header.type == MESSAGE_RESPONSE)
+        {
+            bool ok = false;
+            NetworkDeserializeMessageResponse(
+                NetworkServerInfo.message_list_head->header.payload_size,
+                NetworkServerInfo.message_list_head->payload,
+                &ok);
+            error = !ok;
+            break;//we have received everything
+        }
+        else
+        {
+            NetworkHandleServerNotifications();
+        }
+        count++;
+    }
+    if(error)
+    { // if we have some error receiving from the server mid-transmission, we delete the trasmission
+        for(size_t i = 0; i<count;i++)
+        {
+            NetworkDeleteOneFromServer();
+        }
+    }
+    return !error;
+}
+
 bool NetworkDeleteOneFromServer()
 {
     if(NetworkServerInfo.message_list_head)
