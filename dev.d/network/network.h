@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <sys/select.h>
+#include "../cli/cli.h"
 #include "../../global.d/network_tools/network_tools.h"
 #include "../../global.d/network_tools/network_common/network_common.h"
 
@@ -56,6 +57,12 @@ void NetworkHandleError(int sockfd);
 bool NetworkStartServerConnection(uint16_t port);
 
 /**
+ * @brief we call this when we detect an error in the connection with the server, so we prepare for a future reconnection
+ * 
+ */
+void NetworkServerDisconnected();
+
+/**
  * @brief called by NetworkMainLoop when we have no requests
  * 
  */
@@ -98,3 +105,12 @@ void NetworkHandleServerNotifications();
  * @param syncread_message pointer to the notification, remember to free it (with NetworkDeleteOneFromServer) after the call to this function
  */
 void NetworkHandleSyncread(ServerMessage* syncread_message);
+
+/**
+ * @brief try to log in to the server if you are connected, used in cli.c and in network.c when we reconnect to the server after losing connection
+ * 
+ * @param username username used for login
+ * @param password password (hashed) used for login
+ * @return true if the login was successful
+ */
+bool NetworkAutoLogin(UserName username, Password password);

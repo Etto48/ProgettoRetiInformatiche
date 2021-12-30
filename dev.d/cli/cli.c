@@ -1,5 +1,8 @@
 #include "cli.h"
 
+UserName CLIActiveUsername = {.str = {0}};
+Password CLIActivePassword = {.str = {0}};
+
 CommandMode CLIMode = MODE_LOGIN;
 
 void CLIHandleInput()
@@ -17,7 +20,7 @@ Available commands:\n\
  - signup <server port> <username> <password>\n\
    request the creation of an account to the main server located on port <server port>\n\
 \n\
- - in <server port> <username> <password>\n\
+ - [log]in <server port> <username> <password>\n\
    request a login to the main server located on port <server port>\n\
 \n\
  - hanging\n\
@@ -39,8 +42,11 @@ Available commands:\n\
    > f <filename>\n\
      share a file with the chat\n\
 \n\
- - out\n\
-   logs you out and closes the program (This command is only available after the login)\n");
+ - [log]out\n\
+   logs you out and closes the program (This command is only available after the login)\n\
+\n\
+ - esc|exit\n\
+   saves everything and closes the program\n");
             break;
         case COMMAND_SIGNUP:
             DebugTag("SIGNUP");
@@ -49,7 +55,6 @@ Available commands:\n\
         case COMMAND_IN:
             DebugTag("IN");
             CLILogin(dci);
-            CLIMode = MODE_STANDARD;
             break;
         case COMMAND_HANGING:
             DebugTag("HANGING");
@@ -62,11 +67,14 @@ Available commands:\n\
         case COMMAND_CHAT:
             DebugTag("CHAT");
             CLIChat(dci);
-            CLIMode = MODE_CHAT;
             break;
         case COMMAND_OUT:
             DebugTag("OUT");
             CLILogout(dci);
+            break;
+        case COMMAND_ESC:
+            DebugTag("ESC");
+            CLIEsc(dci);
             break;
         case COMMAND_CHAT_QUIT:
             DebugTag("CHAT->QUIT");
@@ -91,41 +99,112 @@ Available commands:\n\
 
 void CLISignup(DeviceCommandInfo dci)
 {
-    
+    if(!NetworkStartServerConnection((uint16_t)atoi(dci.args[0])))
+    {
+        printf("An error occurred trying to connect to the server\n");
+        return;
+    }
+    UserName username;
+    Password password;
+    memset(username.str,0,USERNAME_MAX_LENGTH+1);
+    strncpy(username.str,dci.args[1],USERNAME_MAX_LENGTH);
+    /* we hash the password for a little bit of security, please run this program on a secure network and use a strong password,
+     * the hash can be replayed, the service is not really secure without SSL
+     */
+    memset(password.str,0,PASSWORD_MAX_LENGTH+1);
+    calc_sha_256((uint8_t*)password.str,dci.args[2],strlen(dci.args[2]));
+    NetworkSendMessageSignup(NetworkServerInfo.sockfd,username,password);
+    if(NetworkReceiveResponseFromServer())
+    {
+        NetworkDeleteOneFromServer(); // we expect just one MESSAGE_RESPONSE ok
+        printf("Successfully signed up\n");
+    }
+    else
+    {
+        printf("An error occurred during the signup process\n");
+    }
+
 }
 void CLILogin(DeviceCommandInfo dci)
 {
-
+    if(!NetworkStartServerConnection((uint16_t)atoi(dci.args[0])))
+    {
+        printf("An error occurred trying to connect to the server\n");
+        return;
+    }
+    UserName username;
+    Password password;
+    memset(username.str,0,USERNAME_MAX_LENGTH+1);
+    strncpy(username.str,dci.args[1],USERNAME_MAX_LENGTH);
+    /* we hash the password for a little bit of security, please run this program on a secure network and use a strong password,
+     * the hash can be replayed, the service is not really secure without SSL
+     */
+    memset(password.str,0,PASSWORD_MAX_LENGTH+1);
+    calc_sha_256((uint8_t*)password.str,dci.args[2],strlen(dci.args[2]));
+    
+    if(NetworkAutoLogin(username,password))
+    {
+        printf("Successfully logged in\n");
+        CLIMode = MODE_STANDARD; // we are logged in
+        CLIActiveUsername = username;
+        CLIActivePassword = password;
+    }
+    else
+        printf("An error occurred during the login procedure\n");
 }
 void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 {
-
+    //TODO: fill me
 }
 void CLIShow(DeviceCommandInfo dci)
 {
-
+  //TODO: fill me
 }
 void CLIChat(DeviceCommandInfo dci)
 {
-
+    //TODO: fill me
+    //TODO: set CLIMode = MODE_CHAT; if success
 }
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
-
+    if(NetworkServerInfo.connected)
+    {
+        NetworkSendMessageLogout(NetworkServerInfo.sockfd);
+        if(NetworkReceiveResponseFromServer())
+        {
+            NetworkDeleteOneFromServer();
+            printf("Successfully logged out\n");
+            memset(CLIActiveUsername.str,0,USERNAME_MAX_LENGTH+1);
+            memset(CLIActivePassword.str,0,PASSWORD_MAX_LENGTH+1);
+            CLIMode = MODE_LOGIN;
+        }
+        else
+        {
+            printf("An error occurred during the logout procedure\n");
+        }
+    }
+    else
+    {
+        printf("An error occurred trying to connect to the server\n");
+    }
+}
+void CLIEsc(__attribute__((unused)) DeviceCommandInfo dci)
+{
+    SaveAndExit(0);
 }
 void CLIChatQuit(__attribute__((unused)) DeviceCommandInfo dci)
 {
-
+    //TODO: fill me
 }
 void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
 {
-
+    //TODO: fill me
 }
 void CLIChatAdd(DeviceCommandInfo dci)
 {
-
+    //TODO: fill me
 }
 void CLIChatFile(DeviceCommandInfo dci)
 {
-
+    //TODO: fill me
 }

@@ -21,138 +21,104 @@ DeviceCommandInfo CommandParserGetCommand(CommandMode mode)
         if (strcmp("help", command) == 0)
         {
             if (argc == 0)
-            {
                 ret.command = COMMAND_HELP;
-            }
             else
-            {
                 printf("Usage: help\n");
-            }
+        }
+        else if (strcmp("esc", command) == 0 || strcmp("exit", command) == 0)
+        {
+            if (argc == 0)
+                ret.command = COMMAND_ESC;
+            else
+                printf("Usage: esc|exit\n");
         }
         else if (strcmp("signup", command) == 0)
         {
             if (argc == 3)
-            {
                 ret.command = COMMAND_SIGNUP;
-            }
             else
-            {
                 printf("Usage: signup <username> <password>\n");
-            }
         }
-        else if (strcmp("in", command) == 0)
+        else if (strcmp("in", command) == 0 || strcmp("login",command) == 0)
         {
             if (argc == 3)
-            {
                 ret.command = COMMAND_IN;
-            }
             else
-            {
-                printf("Usage: in <server port> <username> <password>\n");
-            }
+                printf("Usage: [log]in <server port> <username> <password>\n");
         }
         break;
     case MODE_STANDARD:
         if (strcmp("help", command) == 0)
         {
             if (argc == 0)
-            {
                 ret.command = COMMAND_HELP;
-            }
             else
-            {
                 printf("Usage: help\n");
-            }
+        }
+        else if (strcmp("esc", command) == 0 || strcmp("exit", command) == 0)
+        {
+            if (argc == 0)
+                ret.command = COMMAND_ESC;
+            else
+                printf("Usage: esc|exit\n");
         }
         else if (strcmp("hanging", command) == 0)
         {
             if (argc == 0)
-            {
                 ret.command = COMMAND_HANGING;
-            }
             else
-            {
                 printf("Usage: hanging\n");
-            }
         }
         else if (strcmp("show", command) == 0)
         {
             if (argc == 1)
-            {
                 ret.command = COMMAND_SHOW;
-            }
             else
-            {
                 printf("Usage: show <username>\n");
-            }
         }
         else if (strcmp("chat", command) == 0)
         {
             if (argc == 1)
-            {
                 ret.command = COMMAND_CHAT;
-            }
             else
-            {
                 printf("Usage: chat <username>\n");
-            }
         }
-        else if (strcmp("out", command) == 0)
+        else if (strcmp("out", command) == 0 || strcmp("logout", command) == 0)
         {
             if (argc == 0)
-            {
                 ret.command = COMMAND_OUT;
-            }
             else
-            {
-                printf("Usage: out\n");
-            }
+                printf("Usage: [log]out\n");
         }
         break;
     case MODE_CHAT:
         if (strcmp("\\q", command) == 0)
         {
             if (argc == 0)
-            {
                 ret.command = COMMAND_CHAT_QUIT;
-            }
             else
-            {
                 printf("Usage: \\q\n");
-            }
         }
         else if (strcmp("\\u", command) == 0)
         {
             if (argc == 0)
-            {
                 ret.command = COMMAND_CHAT_USERS;
-            }
             else
-            {
                 printf("Usage: \\u\n");
-            }
         }
         else if (strcmp("\\a", command) == 0)
         {
             if (argc == 1)
-            {
                 ret.command = COMMAND_CHAT_ADD;
-            }
             else
-            {
                 printf("Usage: \\a <username>\n");
-            }
         }
         else if (strcmp("\\f", command) == 0)
         {
             if (argc == 1)
-            {
                 ret.command = COMMAND_CHAT_FILE;
-            }
             else
-            {
                 printf("Usage: \\f filename\n");
-            }
         }
         break;
     }

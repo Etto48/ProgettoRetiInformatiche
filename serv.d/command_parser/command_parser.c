@@ -21,12 +21,12 @@ ServerCommand CommandParserGetCommand()
         else
             printf("Usage: list\n");
     }
-    else if(strcmp("esc",command)==0)
+    else if(strcmp("esc",command)==0||strcmp("exit",command)==0)
     {
         if(argc==0)
             return COMMAND_ESC;
         else
-            printf("Usage: esc\n");
+            printf("Usage: esc|exit\n");
     }
     else 
     {

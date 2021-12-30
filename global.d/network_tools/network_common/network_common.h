@@ -54,6 +54,12 @@ typedef struct
 extern NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS];
 
 /**
+ * @brief is set equal to <port> when we call NetworkMainLoop, this must not be modified
+ * 
+ */
+extern uint16_t NetworkListeningPort;
+
+/**
  * @brief main loop of the server, here we listen for new connections and we handle open connections
  * 
  * @param port port on which we listen for connections

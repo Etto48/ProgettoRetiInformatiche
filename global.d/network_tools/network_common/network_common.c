@@ -3,6 +3,8 @@
 
 NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS];
 
+uint16_t NetworkListeningPort = 0;
+
 void NetworkMainLoop(uint16_t port)
 {
     memset(&NetworkConnectedDevices, 0, sizeof(NetworkDeviceConnection) * (NETWORK_MAX_CONNECTIONS));
@@ -44,6 +46,8 @@ void NetworkMainLoop(uint16_t port)
     struct timeval zero_timer;
     memset(&zero_timer, 0, sizeof(struct timeval));
     int ready_fd_count;
+
+    NetworkListeningPort = port;
 
     while (true)
     {

@@ -1,8 +1,8 @@
 #include "network_tools.h"
 
-#define NETWORK_SEND_MESSAGE_EPILOGUE(before_exit)                                \
+#define NETWORK_SEND_MESSAGE_EPILOGUE(msg_type,before_exit)                                \
     uint8_t *serialized = NULL;                                                   \
-    size_t len = NetworkSerializeMessage(MESSAGE_RESPONSE, payload, &serialized); \
+    size_t len = NetworkSerializeMessage((msg_type), payload, &serialized); \
     ssize_t ret = send(sockfd, serialized, len, 0);                               \
     free(serialized);                                                             \
     before_exit if (ret < 0 || (size_t)ret < len)                                 \
@@ -238,7 +238,7 @@ bool NetworkSendMessageResponse(int sockfd, bool ok)
 {
     uint8_t payload[1] = {ok};
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_RESPONSE,)
 }
 bool NetworkSendMessageSignup(int sockfd, UserName username, Password password)
 {
@@ -246,7 +246,7 @@ bool NetworkSendMessageSignup(int sockfd, UserName username, Password password)
     memcpy(payload, username.str, USERNAME_MAX_LENGTH);
     memcpy(payload + USERNAME_MAX_LENGTH, password.str, PASSWORD_MAX_LENGTH);
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_SIGNUP,)
 }
 bool NetworkSendMessageLogin(int sockfd, uint16_t port, UserName username, Password password)
 {
@@ -255,13 +255,13 @@ bool NetworkSendMessageLogin(int sockfd, uint16_t port, UserName username, Passw
     memcpy(payload + 2, username.str, USERNAME_MAX_LENGTH);
     memcpy(payload + 2 + USERNAME_MAX_LENGTH, password.str, PASSWORD_MAX_LENGTH);
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_LOGIN,)
 }
 bool NetworkSendMessageLogout(int sockfd)
 {
     uint8_t payload[0];
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_LOGOUT,)
 }
 bool NetworkSendMessageHanging(int sockfd, UserName *username)
 {
@@ -271,14 +271,14 @@ bool NetworkSendMessageHanging(int sockfd, UserName *username)
     else
         memset(payload, 0, USERNAME_MAX_LENGTH);
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_HANGING,)
 }
 bool NetworkSendMessageUserinfoReq(int sockfd, UserName username)
 {
     uint8_t payload[USERNAME_MAX_LENGTH];
     memcpy(payload, username.str, USERNAME_MAX_LENGTH);
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_USERINFO_REQ,)
 }
 bool NetworkSendMessageUserinfoRes(int sockfd, uint32_t ip, uint16_t port)
 {
@@ -286,7 +286,7 @@ bool NetworkSendMessageUserinfoRes(int sockfd, uint32_t ip, uint16_t port)
     *(uint32_t *)(payload) = htonl(ip);
     *(uint16_t *)(payload + 4) = htons(port);
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_USERINFO_RES,)
 }
 bool NetworkSendMessageSyncread(int sockfd, UserName username, time_t timestamp)
 {
@@ -294,7 +294,7 @@ bool NetworkSendMessageSyncread(int sockfd, UserName username, time_t timestamp)
     memcpy(payload, username.str, USERNAME_MAX_LENGTH);
     *(uint64_t *)(payload + USERNAME_MAX_LENGTH) = htonq((uint64_t)timestamp);
 
-    NETWORK_SEND_MESSAGE_EPILOGUE()
+    NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_SYNCREAD,)
 }
 bool NetworkSendMessageDataText(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, char *text)
 {
@@ -307,7 +307,7 @@ bool NetworkSendMessageDataText(int sockfd, UserName src_username, UserName dst_
     strcpy((char *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1), text);
 
     NETWORK_SEND_MESSAGE_EPILOGUE
-    (
+    (MESSAGE_DATA,
         free(payload);
     )
 }
@@ -370,7 +370,7 @@ bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserNam
     free(file_base64_buffer);
 
     NETWORK_SEND_MESSAGE_EPILOGUE
-    (
+    (MESSAGE_DATA,
         free(payload);
     )
 }

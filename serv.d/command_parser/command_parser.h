@@ -16,7 +16,7 @@
  * - list
  *   show a list of connected users
  * 
- * - esc
+ * - esc|exit
  *   close the server
  * 
  ****************************/

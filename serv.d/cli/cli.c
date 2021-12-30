@@ -15,7 +15,7 @@ Available commands:\n\
  - list\n\
    show a list of connected users\n\
 \n\
- - esc\n\
+ - esc|exit\n\
    stop the server and exit\n");
             break;
         case COMMAND_LIST:
@@ -33,12 +33,12 @@ Available commands:\n\
 
 void CLIPrintConnectedUsers()
 {
-    printf("Username\tport\n");
+    printf("Username - port\n");
     for(IndexEntry* i = IndexList; i; i = i->next)
     {
         if(i->timestamp_logout==0)
         {
-            printf("%s\t%d\n",i->user_dest.str,i->port);
+            printf("%s - %d\n",i->user_dest.str,i->port);
         }
     }
 }

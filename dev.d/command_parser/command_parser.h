@@ -53,6 +53,7 @@ typedef enum
     COMMAND_CHAT_ADD,
     COMMAND_CHAT_FILE,
     COMMAND_OUT,
+    COMMAND_ESC,
     COMMAND_ERROR
 } DeviceCommand;
 

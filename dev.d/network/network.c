@@ -1,6 +1,17 @@
 #include "network.h"
 
-ServerConnectionInfo NetworkServerInfo = {false,-1,{0,0,0},NULL,NULL};
+ServerConnectionInfo NetworkServerInfo = {
+    .connected = false,
+    .sockfd = -1,
+    .address = {
+        .sin_family = AF_INET,
+        .sin_addr = {0},
+        .sin_port = 0,
+        .sin_zero = {}
+    },
+    .message_list_head = NULL,
+    .message_list_tail = NULL
+};
 
 void NetworkHandleNewMessage(int sockfd,__attribute__((unused)) fd_set* master)
 {
@@ -18,7 +29,7 @@ void NetworkHandleNewMessage(int sockfd,__attribute__((unused)) fd_set* master)
 
 void NetworkHandleData(int sockfd)
 {
-    
+    //TODO: fill me
 }
 
 void NetworkHandleError(int sockfd)
@@ -30,7 +41,8 @@ bool NetworkStartServerConnection(uint16_t port)
 {
     if(!NetworkServerInfo.connected)
     {
-        NetworkServerInfo.sockfd = socket(AF_INET,SOCK_STREAM,0);
+        if(NetworkServerInfo.sockfd < 0)
+            NetworkServerInfo.sockfd = socket(AF_INET,SOCK_STREAM,0);
         if(NetworkServerInfo.sockfd<0)
         {
             dbgerror("Error creating a socket");
@@ -41,12 +53,32 @@ bool NetworkStartServerConnection(uint16_t port)
         NetworkServerInfo.address.sin_port = htons(port);
         if(connect(NetworkServerInfo.sockfd,(struct sockaddr*)&NetworkServerInfo.address,sizeof(NetworkServerInfo.address))<0)
         {
-            dbgerror("Error connecting to the server");
+            //we disable the error to keep the stdout cleaner
+            //dbgerror("Error connecting to the server");
             return false;
         }
         NetworkServerInfo.connected = true;
+
+        //Autologin if we was already logged in
+        if(CLIActiveUsername.str[0])
+        {
+            if(NetworkAutoLogin(CLIActiveUsername,CLIActivePassword))
+                DebugLog("Successfully reconnected to the server");
+        }
     }
     return true;
+}
+
+void NetworkServerDisconnected()
+{
+    if(NetworkServerInfo.sockfd >= 0)
+    {
+        shutdown(NetworkServerInfo.sockfd,SHUT_RDWR);
+        close(NetworkServerInfo.sockfd);
+        NetworkServerInfo.sockfd = -1;
+        NetworkServerInfo.connected = false;
+        DebugLog("Connection to the server was interrupted");
+    }
 }
 
 void NetworkFreeTime()
@@ -82,7 +114,7 @@ bool NetworkReceiveOneFromServer()
     ssize_t received_size = recv(NetworkServerInfo.sockfd,message_header,NETWORK_SERIALIZED_HEADER_SIZE,MSG_WAITALL);
     if(received_size<=0)
     {
-        NetworkServerInfo.connected=false;
+        NetworkServerDisconnected();
         return false;
     }
     new_message.header = NetworkDeserializeHeader(message_header);
@@ -92,7 +124,7 @@ bool NetworkReceiveOneFromServer()
         received_size = recv(NetworkServerInfo.sockfd,new_message.payload,new_message.header.payload_size,MSG_WAITALL);
         if(received_size<=0)
         {
-            NetworkServerInfo.connected=false;
+            NetworkServerDisconnected();
             free(new_message.payload);
             return false;
         }
@@ -185,4 +217,24 @@ void NetworkHandleServerNotifications()
                 break;
         }
     }
+}
+
+void NetworkHandleSyncread(ServerMessage* syncread_message)
+{
+    //TODO: fill me
+}
+
+bool NetworkAutoLogin(UserName username, Password password)
+{
+    if(NetworkSendMessageLogin(NetworkServerInfo.sockfd,NetworkListeningPort,username,password))
+    {
+        if(NetworkReceiveResponseFromServer())
+        {
+            NetworkDeleteOneFromServer(); // we expect just one MESSAGE_RESPONSE ok
+            return true;
+        }
+        else return false;
+    }
+    else return false;
+
 }

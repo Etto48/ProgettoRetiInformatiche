@@ -18,11 +18,12 @@ Todo:
     ☐ @low Begin to write device network code @network @dev
         ✔ Write NetworkDeviceMainLoop @started(21-12-28 12:45) @done(21-12-28 18:07) @lasted(5h22m15s)
         ✔ Write some functions to handle network messages @done(21-12-28 18:07)
-        ☐ Write NetworkHandleNewMessage for the device @dev @network
-    ☐ @low Fill out command line code @cli @dev @serv @est(1h30m)
+        ✔ Write NetworkHandleNewMessage for the device @dev @network @done(21-12-30 14:52)
+    ☐ @low Fill out command line code @cli @dev @serv
+        ☐ Fill out every CLI* function for the device @dev @cli
+        ✔ Fill every CLI* function fo the server @serv @cli @done(21-12-30 16:51)
     ☐ @critical @requirement Make possible for the device to send the disconnection time @dev @network @design 
     ☐ @low Write some functions to save and restore chat history device-side @dev 
-    ☐ Fill out every CLI* function @dev @cli
 
 Fixme:
     ✔ Check NetworkReceiveNewData when there is a wrong header @done(21-12-27 23:39)
