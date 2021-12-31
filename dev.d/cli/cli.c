@@ -104,17 +104,9 @@ void CLISignup(DeviceCommandInfo dci)
         printf("An error occurred trying to connect to the server\n");
         return;
     }
-    UserName username;
-    Password password;
-    memset(username.str,0,USERNAME_MAX_LENGTH+1);
-    strncpy(username.str,dci.args[1],USERNAME_MAX_LENGTH);
-    /* we hash the password for a little bit of security, please run this program on a secure network and use a strong password,
-     * the hash can be replayed, the service is not really secure without SSL
-     */
-    memset(password.str,0,PASSWORD_MAX_LENGTH+1);
-    calc_sha_256((uint8_t*)password.str,dci.args[2],strlen(dci.args[2]));
-    NetworkSendMessageSignup(NetworkServerInfo.sockfd,username,password);
-    if(NetworkReceiveResponseFromServer())
+    UserName username = CreateUserName(dci.args[1]);
+    Password password = CreatePassword(dci.args[2]);
+    if(NetworkSendMessageSignup(NetworkServerInfo.sockfd,username,password) && NetworkReceiveResponseFromServer())
     {
         NetworkDeleteOneFromServer(); // we expect just one MESSAGE_RESPONSE ok
         printf("Successfully signed up\n");
@@ -132,16 +124,9 @@ void CLILogin(DeviceCommandInfo dci)
         printf("An error occurred trying to connect to the server\n");
         return;
     }
-    UserName username;
-    Password password;
-    memset(username.str,0,USERNAME_MAX_LENGTH+1);
-    strncpy(username.str,dci.args[1],USERNAME_MAX_LENGTH);
-    /* we hash the password for a little bit of security, please run this program on a secure network and use a strong password,
-     * the hash can be replayed, the service is not really secure without SSL
-     */
-    memset(password.str,0,PASSWORD_MAX_LENGTH+1);
-    calc_sha_256((uint8_t*)password.str,dci.args[2],strlen(dci.args[2]));
     
+    UserName username = CreateUserName(dci.args[1]);
+    Password password = CreatePassword(dci.args[2]);
     if(NetworkAutoLogin(username,password))
     {
         printf("Successfully logged in\n");
@@ -154,11 +139,49 @@ void CLILogin(DeviceCommandInfo dci)
 }
 void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    //TODO: fill me
+    if(NetworkServerInfo.connected)
+    {
+        if(NetworkSendMessageHanging(NetworkServerInfo.sockfd,NULL) && NetworkReceiveResponseFromServer())
+        {
+            bool done = false;
+            while(NetworkServerInfo.message_list_head && !done)
+            {
+                switch (NetworkServerInfo.message_list_head->header.type)
+                {
+                case MESSAGE_RESPONSE:
+                    done = true;
+                    printf("Successfully received hanging list\n");
+                    break;
+                case MESSAGE_HANGING:
+                    {
+                        UserName username;
+                        NetworkDeserializeMessageHanging(
+                            NetworkServerInfo.message_list_head->header.payload_size,
+                            NetworkServerInfo.message_list_head->payload,
+                            &username);
+                        printf("- %s\n",username.str);
+                    }
+                    break;
+                default:
+                    printf("Message not expected\n");
+                    break;
+                }
+                NetworkDeleteOneFromServer();
+            }
+        }
+        else
+        {
+            printf("An error occurred while receiving hanging users\n");
+        }
+    }
+    else
+    {
+        printf("An error occurred trying to connect to the server\n");
+    }
 }
 void CLIShow(DeviceCommandInfo dci)
 {
-  //TODO: fill me
+    //TODO: fill me
 }
 void CLIChat(DeviceCommandInfo dci)
 {
@@ -169,8 +192,7 @@ void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
     if(NetworkServerInfo.connected)
     {
-        NetworkSendMessageLogout(NetworkServerInfo.sockfd);
-        if(NetworkReceiveResponseFromServer())
+        if(NetworkSendMessageLogout(NetworkServerInfo.sockfd) && NetworkReceiveResponseFromServer())
         {
             NetworkDeleteOneFromServer();
             printf("Successfully logged out\n");

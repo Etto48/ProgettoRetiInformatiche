@@ -2,6 +2,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+#include "../sha256/sha256.h"
+#include "../globalDefine.h"
 
 /**
  * @brief finds the starting index of the basename of the file
@@ -26,3 +29,19 @@ uint64_t htonq(uint64_t quad);
  * @return data in host format
  */
 uint64_t ntohq(uint64_t quad);
+
+/**
+ * @brief Create a UserName struct
+ * 
+ * @param username string, max 20 chars
+ * @return created struct
+ */
+UserName CreateUserName(const char* username);
+
+/**
+ * @brief Create a Password struct
+ * 
+ * @param password not hashed password
+ * @return created struct
+ */
+Password CreatePassword(const char* password);

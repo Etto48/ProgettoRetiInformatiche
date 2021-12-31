@@ -84,8 +84,7 @@ void NetworkHandleHanging(int sockfd)
         NetworkDeserializeMessageHanging(ncd->mh.payload_size, ncd->receive_buffer, &from);
         if (from.str[0] == '\0')
         { // only users
-            RelayMessage *list = RelayHangingList;
-            for (RelayMessage *i = RelayHangingFindFirst(list, NULL, &ncd->username); i; list = i->next)
+            for (RelayMessage *i = RelayHangingFindFirst(RelayHangingList, NULL, &ncd->username); i; i = RelayHangingFindFirst(i->next, NULL, &ncd->username))
             {
                 NetworkSendMessageHanging(sockfd, &i->src);
             }

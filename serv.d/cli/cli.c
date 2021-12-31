@@ -19,8 +19,10 @@ Available commands:\n\
    stop the server and exit\n");
             break;
         case COMMAND_LIST:
+        {
             DebugTag("LIST");
             CLIPrintConnectedUsers();
+        }
             break;
         case COMMAND_ESC:
             DebugTag("ESC");

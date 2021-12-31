@@ -12,8 +12,8 @@ bool AuthRegister(UserName username, Password password)
     }
     AuthEntry* new_entry = (AuthEntry*)malloc(sizeof(AuthEntry));
     new_entry->next=AuthList;
-    strcpy(new_entry->username.str,username.str);
-    strcpy(new_entry->password.str,password.str);
+    new_entry->username = CreateUserName(username.str);
+    memcpy(new_entry->password.str,password.str,PASSWORD_MAX_LENGTH+1);
     AuthList = new_entry;
     return true;
 }
@@ -22,7 +22,7 @@ bool AuthCheck(UserName username, Password password)
 {
     for(AuthEntry* i = AuthList; i; i=i->next)
     {
-        if(strcmp(username.str,i->username.str)==0 && strcmp(password.str,i->password.str)==0)
+        if(strcmp(username.str,i->username.str)==0 && memcmp(password.str,i->password.str,PASSWORD_MAX_LENGTH)==0)
             return true;
     }
     return false;

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/stat.h>
+#include "../../global.d/tools/tools.h"
 #include "../../global.d/globalDefine.h"
 #include "../../global.d/debug/debug.h"
 

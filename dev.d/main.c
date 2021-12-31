@@ -7,8 +7,8 @@ int main(int argc, char **argv)
         printf("Usage: ./dev <listening port>\n");
         return -1;
     }
-    Startup();
     uint16_t device_port = atoi(argv[1]);
+    Startup();
     printf("Device started on port %u\n",device_port);
     NetworkMainLoop(device_port);
 }

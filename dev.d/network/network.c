@@ -133,14 +133,18 @@ bool NetworkReceiveOneFromServer()
     {
         new_message.payload = NULL;
     }
-    new_message.next = NetworkServerInfo.message_list_head;
+    new_message.next = NULL;
     ServerMessage* true_new_message = (ServerMessage*)malloc(sizeof(ServerMessage));
     *true_new_message = new_message;
-    if(NetworkServerInfo.message_list_tail==NULL)
+    if(NetworkServerInfo.message_list_head==NULL)
     { // the list is empty so we set both the head and the tail
-        NetworkServerInfo.message_list_tail = true_new_message;
+        NetworkServerInfo.message_list_head = true_new_message;
     }
-    NetworkServerInfo.message_list_head = true_new_message;
+    if(NetworkServerInfo.message_list_tail)
+    {
+        NetworkServerInfo.message_list_tail->next = true_new_message;
+    }
+    NetworkServerInfo.message_list_tail = true_new_message;
     return true;
 }
 
@@ -155,12 +159,12 @@ bool NetworkReceiveResponseFromServer()
             error = true;
             break;
         }
-        if(NetworkServerInfo.message_list_head->header.type == MESSAGE_RESPONSE)
+        if(NetworkServerInfo.message_list_tail->header.type == MESSAGE_RESPONSE)
         {
             bool ok = false;
             NetworkDeserializeMessageResponse(
-                NetworkServerInfo.message_list_head->header.payload_size,
-                NetworkServerInfo.message_list_head->payload,
+                NetworkServerInfo.message_list_tail->header.payload_size,
+                NetworkServerInfo.message_list_tail->payload,
                 &ok);
             error = !ok;
             break;//we have received everything
@@ -175,10 +179,37 @@ bool NetworkReceiveResponseFromServer()
     { // if we have some error receiving from the server mid-transmission, we delete the trasmission
         for(size_t i = 0; i<count;i++)
         {
-            NetworkDeleteOneFromServer();
+            NetworkDeleteOneFromServerTail();
         }
     }
     return !error;
+}
+
+void NetworkDeleteOneFromServerTail()
+{
+    if(NetworkServerInfo.message_list_tail)
+    {
+        ServerMessage* target = NetworkServerInfo.message_list_tail;
+        ServerMessage* last = NULL;
+        for(ServerMessage* i = NetworkServerInfo.message_list_head; i; i=i->next)
+        {
+            if(i==target)
+                break;
+            last = i;
+        }
+        if(last)
+        {//middle
+            NetworkServerInfo.message_list_tail = last;
+            last->next = NULL;
+        }
+        else
+        {//head
+            NetworkServerInfo.message_list_tail = NetworkServerInfo.message_list_head = NULL;
+        }
+        if(target->payload)
+            free(target->payload);
+        free(target);
+    }
 }
 
 bool NetworkDeleteOneFromServer()

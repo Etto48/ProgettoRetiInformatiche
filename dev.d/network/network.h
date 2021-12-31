@@ -93,6 +93,12 @@ bool NetworkReceiveResponseFromServer();
 bool NetworkDeleteOneFromServer();
 
 /**
+ * @brief use this to delete newest packet received, used internally
+ * 
+ */
+void NetworkDeleteOneFromServerTail();
+
+/**
  * @brief we check the list of messages from the server and if it is not empty we handle the first message (only if it is 
  * MESSAGE_SYNCREAD)
  * 

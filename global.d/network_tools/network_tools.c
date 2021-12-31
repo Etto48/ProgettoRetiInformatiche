@@ -1,8 +1,8 @@
 #include "network_tools.h"
 
-#define NETWORK_SEND_MESSAGE_EPILOGUE(msg_type,before_exit)                                \
+#define NETWORK_SEND_MESSAGE_EPILOGUE(msg_type,before_exit)                       \
     uint8_t *serialized = NULL;                                                   \
-    size_t len = NetworkSerializeMessage((msg_type), payload, &serialized); \
+    size_t len = NetworkSerializeMessage((msg_type), payload, &serialized);       \
     ssize_t ret = send(sockfd, serialized, len, 0);                               \
     free(serialized);                                                             \
     before_exit if (ret < 0 || (size_t)ret < len)                                 \
@@ -54,13 +54,13 @@ size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t
         break;
     }
 
-    size_t total_size = sizeof(uint8_t) + sizeof(uint32_t) + header.payload_size;
+    size_t total_size = NETWORK_SERIALIZED_HEADER_SIZE + header.payload_size;
 
     *dst_stream = (uint8_t *)malloc(total_size);
     *dst_stream[0] = header.type;
     *(uint32_t *)(*dst_stream + 1) = htonl(header.payload_size);
     memcpy(*dst_stream + NETWORK_SERIALIZED_HEADER_SIZE, payload, header.payload_size);
-    return NETWORK_SERIALIZED_HEADER_SIZE + header.payload_size;
+    return total_size;
 }
 size_t NetworkDeserializeMessage(const uint8_t *src_stream, MessageType **type, uint8_t **payload)
 {
@@ -117,7 +117,7 @@ void NetworkDeserializeMessageHanging(size_t payload_size, const uint8_t *payloa
 {
     if(payload_size == MESSAGE_HANGING_MIN_SIZE)
     {
-        username->str[USERNAME_MAX_LENGTH] = '\0';
+        memset(username->str,0,USERNAME_MAX_LENGTH+1);
     }
     else if(payload_size == MESSAGE_HANGING_MAX_SIZE && payload && username)
     {
