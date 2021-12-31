@@ -13,7 +13,7 @@ Todo:
         ☐ decide how to save the history to a file @est(45m)
         ☐ implement history saving and loading @est(2h)
     ☐ @low Double check NetworkReceiveNewData @network @serv @est(5m)
-    ☐ @low Check security of AuthRegister and IndexLogin @security @serv @est(10m)
+    ✔ @low Check security of AuthRegister and IndexLogin @security @serv @est(10m) @done(21-12-31 14:11)
     ☐ @critical Decide how to do group chat @network @design @est(1h)
     ☐ @low Begin to write device network code @network @dev
         ✔ Write NetworkDeviceMainLoop @started(21-12-28 12:45) @done(21-12-28 18:07) @lasted(5h22m15s)
