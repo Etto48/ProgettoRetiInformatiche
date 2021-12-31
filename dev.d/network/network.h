@@ -4,8 +4,10 @@
 #include <stdint.h>
 #include <sys/select.h>
 #include "../cli/cli.h"
+#include "../chat_manager/chat_manager.h"
 #include "../../global.d/network_tools/network_tools.h"
 #include "../../global.d/network_tools/network_common/network_common.h"
+
 
 #define SERVER_ADDRESS "0.0.0.0"
 

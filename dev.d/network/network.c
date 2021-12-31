@@ -253,6 +253,10 @@ void NetworkHandleServerNotifications()
 void NetworkHandleSyncread(ServerMessage* syncread_message)
 {
     //TODO: fill me
+    UserName username;
+    time_t timestamp;
+    NetworkDeserializeMessageSyncread(syncread_message->header.payload_size,syncread_message->payload,&username,&timestamp);
+    ChatHandleSyncread(username,timestamp);
 }
 
 bool NetworkAutoLogin(UserName username, Password password)

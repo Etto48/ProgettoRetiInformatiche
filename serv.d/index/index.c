@@ -5,6 +5,41 @@ IndexEntry* IndexList = NULL;
 
 bool AuthRegister(UserName username, Password password)
 {
+    //username check
+    //username must not be empty
+    if(username.str[0]=='\0')
+        return false;
+    //from the first \0 the other characters must be \0
+    //must not contain '/', '\', ' '
+    bool first_zero_found = false;
+    for(size_t i = 0; i<=USERNAME_MAX_LENGTH; i++)
+    {
+        if(first_zero_found)
+        {
+            if(username.str[i]!='\0')
+                return false;
+        }
+        else
+        {  
+            switch (username.str[i])
+            {
+            case '\0':
+                first_zero_found = true;
+                break;
+            case '\\':
+            case '/':
+            case ' ':
+                return false;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    //we must find at least one '\0'
+    if(!first_zero_found)
+        return false;
+
     for(AuthEntry* i = AuthList; i; i=i->next)
     {
         if(strcmp(username.str,i->username.str)==0)
