@@ -35,6 +35,12 @@ typedef struct _ChatMessage
     ChatMessageDirection direction;
 
     /**
+     * @brief true if the message was read by the other end
+     * 
+     */
+    bool read;
+
+    /**
      * @brief specify if content is just text or is a path on your system directing to the file
      * 
      */
@@ -91,10 +97,24 @@ typedef struct _Chat
 } Chat;
 
 /**
+ * @brief when you are chatting with someone their info are stored in this struct
+ * 
+ */
+typedef struct _ChatTarget
+{
+    UserName dst;
+    uint32_t ip;
+    uint16_t port;
+    struct _ChatTarget* next;
+} ChatTarget;
+
+/**
  * @brief list of all the loaded chats, if a chat with a certain user is not there we must first look for it in the files (call chat load)
  * 
  */
 extern Chat* ChatList;
+
+extern ChatTarget* ChatTargetList;
 
 /**
  * @brief add a new message
@@ -119,6 +139,12 @@ void ChatHandleSyncread(UserName dst, time_t timestamp);
  * @return true if the chat with user was found
  */
 bool ChatLoad(UserName user);
+
+/**
+ * @brief get a line from stdin and write it to the ative chat
+ * 
+ */
+void ChatWrite();
 
 /**
  * @note we should save the chat to a different user in a different file

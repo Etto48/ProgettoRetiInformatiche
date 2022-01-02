@@ -7,7 +7,11 @@ CommandMode CLIMode = MODE_LOGIN;
 
 void CLIHandleInput()
 {
-    DeviceCommandInfo dci = CommandParserGetCommand(CLIMode);
+    char first_char = getchar();
+    if(CLIMode!=MODE_CHAT || first_char == '\\')
+    {
+        ungetc(first_char,stdin);
+        DeviceCommandInfo dci = CommandParserGetCommand(CLIMode);
         switch (dci.command)
         {
         case COMMAND_HELP:
@@ -95,6 +99,11 @@ Available commands:\n\
         default:
             DebugTag("ERROR");
         }
+    }
+    else
+    {
+        ChatWrite();
+    }
 }
 
 void CLISignup(DeviceCommandInfo dci)
