@@ -26,6 +26,7 @@ void NetworkHandleNewMessage(int sockfd)
     case MESSAGE_LOGIN:
         DebugTag("DEV LOGIN");
         NetworkHandleLogin(sockfd);
+        break;
     default:
         DebugTag("DEV ERROR");
         NetworkHandleError(sockfd);
