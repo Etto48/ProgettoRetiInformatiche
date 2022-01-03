@@ -3,6 +3,7 @@
 #include "../index/index.h"
 
 #define RELAY_FILE "./Relay.lst"
+#define RELAY_SYNCREAD_FILE "./Syncread.lst"
 
 typedef enum 
 {
@@ -67,6 +68,18 @@ typedef struct _RelayMessage
 } RelayMessage;
 
 /**
+ * @brief when we can't send a syncread message we store it here and send it at login
+ * 
+ */
+typedef struct _RelaySyncreadNotice
+{
+    time_t timestamp;
+    UserName src;
+    UserName dst;
+    struct _RelaySyncreadNotice* next;
+} RelaySyncreadNotice;
+
+/**
  * @brief if a device fails to send a message to a client it must send it to the server
  * that message is stored here
  * when a hanging request is received we check this list
@@ -74,6 +87,12 @@ typedef struct _RelayMessage
  * 
  */
 extern RelayMessage* RelayHangingList;
+
+/**
+ * @brief this is a list of buffered syncread messages
+ * 
+ */
+extern RelaySyncreadNotice* RelaySyncreadList;
 
 /**
  * @brief add a new message to RelayHangingList
@@ -136,3 +155,43 @@ void RelayLoad(const char* filename);
  * @param filename file path
  */
 void RelaySave(const char* filename);
+
+/**
+ * @brief when a relay message is read we update the corresponding RelaySyncreadList entry with this function
+ * 
+ * @param src message sender
+ * @param dst message receiver
+ * @param timestamp last received message timestamp
+ */
+void RelaySyncreadEdit(UserName src, UserName dst, time_t timestamp);
+
+/**
+ * @brief find an entry in RelaySyncreadList
+ * 
+ * @param src message sender
+ * @param dst message receiver
+ * @return pointer to the resoult if found, NULL otherwise
+ */
+RelaySyncreadNotice* RelaySyncreadFind(UserName* src, UserName* dst);
+
+/**
+ * @brief delete an entry in RelaySyncreadList after it is delivered
+ * 
+ * @param src message sender
+ * @param dst message receiver
+ */
+void RelaySyncreadDelete(UserName* src, UserName* dst);
+
+/**
+ * @brief load RelaySyncreadList from file
+ * 
+ * @param filename path to file
+ */
+void RelaySyncreadLoad(const char* filename);
+
+/**
+ * @brief save RelaySyncreadList to file
+ * 
+ * @param filename path to file
+ */
+void RelaySyncreadSave(const char* filename);

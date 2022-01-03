@@ -1,6 +1,7 @@
 #include "message_relay.h"
 
 RelayMessage* RelayHangingList = NULL;
+RelaySyncreadNotice* RelaySyncreadList = NULL;
 
 void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageType type, char *filename, size_t data_size, uint8_t *data)
 {
@@ -91,6 +92,16 @@ void RelayLoad(const char* filename)
 }
 
 void RelaySave(const char* filename)
+{
+    //TODO: fill me
+}
+
+void RelaySyncreadLoad(const char* filename)
+{
+    //TODO: fill me
+}
+
+void RelaySyncreadSave(const char* filename)
 {
     //TODO: fill me
 }

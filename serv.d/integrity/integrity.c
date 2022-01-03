@@ -9,6 +9,7 @@ void Startup()
 {
     AuthLoad(AUTH_FILE);
     RelayLoad(RELAY_FILE);
+    RelaySyncreadLoad(RELAY_SYNCREAD_FILE);
     signal(SIGTERM,sigterm_handler);
 }
 
@@ -16,5 +17,6 @@ void SaveAndExit(int status)
 {
     AuthSave(AUTH_FILE);
     RelaySave(RELAY_FILE);
+    RelaySyncreadSave(RELAY_SYNCREAD_FILE);
     exit(status);
 }

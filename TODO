@@ -12,10 +12,11 @@ Todo:
         ✔ create a message history structure of some type @est(1h30m) @started(21-12-23 11:41) @done(21-12-23 12:06) @lasted(25m8s)
         ☐ decide how to save the history to a file @est(45m)
         ☐ implement history saving and loading @est(2h)
+        ☐ implement message syncread buffering
     ☐ @low Double check NetworkReceiveNewData @network @serv @est(5m)
     ✔ @low Check security of AuthRegister and IndexLogin @security @serv @est(10m) @done(21-12-31 14:11)
-    ☐ @critical Decide how to do group chat @network @design @est(1h)
-    ☐ @low Begin to write device network code @network @dev
+    ✔ @critical Decide how to do group chat @network @design @est(1h) @done(22-01-03 21:39)
+    ✔ @low Begin to write device network code @network @dev @done(22-01-03 21:41)
         ✔ Write NetworkDeviceMainLoop @started(21-12-28 12:45) @done(21-12-28 18:07) @lasted(5h22m15s)
         ✔ Write some functions to handle network messages @done(21-12-28 18:07)
         ✔ Write NetworkHandleNewMessage for the device @dev @network @done(21-12-30 14:52)
