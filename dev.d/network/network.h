@@ -44,6 +44,13 @@ void NetworkHandleNewMessage(int sockfd, fd_set* master);
 void NetworkHandleData(int sockfd);
 
 /**
+ * @brief handles the request to add a user in a group chat
+ * 
+ * @param sockfd socket file descriptor on which the MESSAGE_USERINFO_REQ arrived
+ */
+void NetworkHandleUserinfoReq(int sockfd);
+
+/**
  * @brief notify the device of an error in the request
  * 
  * @param sockfd socket file descriptor on which the error occurred
@@ -83,9 +90,10 @@ bool NetworkReceiveOneFromServer();
  * @brief receive every message from the server until MESSAGE_RESPONSE ok, if MESSAGE_RESPONSE error 
  * is detected or there was some error during trasmission, the received messages are deleted
  * 
+ * @param expected_type type of the message to wait to end reception, if set to MESSAGE_RESPONSE we use the thefault behaveyour
  * @return true if everything ok and received until MESSAGE_RESPONSE ok
  */
-bool NetworkReceiveResponseFromServer();
+bool NetworkReceiveResponseFromServer(MessageType expected_type);
 
 /**
  * @brief we use this to delete the oldest packet received from the server, we need to call this to free a message in the message list

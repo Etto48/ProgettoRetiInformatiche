@@ -102,9 +102,28 @@ typedef struct _Chat
  */
 typedef struct _ChatTarget
 {
+    /**
+     * @brief target username
+     * 
+     */
     UserName dst;
+
+    /**
+     * @brief target ip
+     * 
+     */
     uint32_t ip;
+
+    /**
+     * @brief target port
+     * 
+     */
     uint16_t port;
+
+    /**
+     * @brief next item in the list
+     * 
+     */
     struct _ChatTarget* next;
 } ChatTarget;
 
@@ -114,6 +133,10 @@ typedef struct _ChatTarget
  */
 extern Chat* ChatList;
 
+/**
+ * @brief list of all the users with who you are chatting
+ * 
+ */
 extern ChatTarget* ChatTargetList;
 
 /**
@@ -145,6 +168,28 @@ bool ChatLoad(UserName user);
  * 
  */
 void ChatWrite();
+
+/**
+ * @brief ask to the server how to reach a specified username and add it's info the the chat list
+ * 
+ * @param username target username
+ * @return true if user added correctly,
+ */
+bool ChatAdd(UserName username);
+
+/**
+ * @brief close the chat
+ * 
+ */
+void ChatQuit();
+
+/**
+ * @brief print a message formatting it correctly
+ * 
+ * @param msg message to print
+ * @param dst other end username
+ */
+void ChatPrintMessage(ChatMessage msg, UserName dst);
 
 /**
  * @note we should save the chat to a different user in a different file

@@ -8,9 +8,9 @@ CommandMode CLIMode = MODE_LOGIN;
 void CLIHandleInput()
 {
     char first_char = getchar();
-    if(CLIMode!=MODE_CHAT || first_char == '\\')
+    if (CLIMode != MODE_CHAT || first_char == '\\')
     {
-        ungetc(first_char,stdin);
+        ungetc(first_char, stdin);
         DeviceCommandInfo dci = CommandParserGetCommand(CLIMode);
         switch (dci.command)
         {
@@ -108,14 +108,14 @@ Available commands:\n\
 
 void CLISignup(DeviceCommandInfo dci)
 {
-    if(!NetworkStartServerConnection((uint16_t)atoi(dci.args[0])))
+    if (!NetworkStartServerConnection((uint16_t)atoi(dci.args[0])))
     {
         printf("An error occurred trying to connect to the server\n");
         return;
     }
     UserName username = CreateUserName(dci.args[1]);
     Password password = CreatePassword(dci.args[2]);
-    if(NetworkSendMessageSignup(NetworkServerInfo.sockfd,username,password) && NetworkReceiveResponseFromServer())
+    if (NetworkSendMessageSignup(NetworkServerInfo.sockfd, username, password) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
     {
         NetworkDeleteOneFromServer(); // we expect just one MESSAGE_RESPONSE ok
         printf("Successfully signed up\n");
@@ -124,19 +124,18 @@ void CLISignup(DeviceCommandInfo dci)
     {
         printf("An error occurred during the signup process\n");
     }
-
 }
 void CLILogin(DeviceCommandInfo dci)
 {
-    if(!NetworkStartServerConnection((uint16_t)atoi(dci.args[0])))
+    if (!NetworkStartServerConnection((uint16_t)atoi(dci.args[0])))
     {
         printf("An error occurred trying to connect to the server\n");
         return;
     }
-    
+
     UserName username = CreateUserName(dci.args[1]);
     Password password = CreatePassword(dci.args[2]);
-    if(NetworkAutoLogin(username,password))
+    if (NetworkAutoLogin(username, password))
     {
         printf("Successfully logged in\n");
         CLIMode = MODE_STANDARD; // we are logged in
@@ -148,12 +147,12 @@ void CLILogin(DeviceCommandInfo dci)
 }
 void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    if(NetworkServerInfo.connected)
+    if (NetworkServerInfo.connected)
     {
-        if(NetworkSendMessageHanging(NetworkServerInfo.sockfd,NULL) && NetworkReceiveResponseFromServer())
+        if (NetworkSendMessageHanging(NetworkServerInfo.sockfd, NULL) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
         {
             bool done = false;
-            while(NetworkServerInfo.message_list_head && !done)
+            while (NetworkServerInfo.message_list_head && !done)
             {
                 switch (NetworkServerInfo.message_list_head->header.type)
                 {
@@ -162,15 +161,15 @@ void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
                     printf("Successfully received hanging list\n");
                     break;
                 case MESSAGE_HANGING:
-                    {
-                        UserName username;
-                        NetworkDeserializeMessageHanging(
-                            NetworkServerInfo.message_list_head->header.payload_size,
-                            NetworkServerInfo.message_list_head->payload,
-                            &username);
-                        printf("- %s\n",username.str);
-                    }
-                    break;
+                {
+                    UserName username;
+                    NetworkDeserializeMessageHanging(
+                        NetworkServerInfo.message_list_head->header.payload_size,
+                        NetworkServerInfo.message_list_head->payload,
+                        &username);
+                    printf("- %s\n", username.str);
+                }
+                break;
                 default:
                     printf("Message not expected\n");
                     break;
@@ -190,23 +189,23 @@ void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIShow(DeviceCommandInfo dci)
 {
-    //TODO: fill me
+    // TODO: fill me
 }
 void CLIChat(DeviceCommandInfo dci)
 {
-    //TODO: fill me
-    //TODO: set CLIMode = MODE_CHAT; if success
+    // TODO: fill me
+    // TODO: set CLIMode = MODE_CHAT; if success
 }
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    if(NetworkServerInfo.connected)
+    if (NetworkServerInfo.connected)
     {
-        if(NetworkSendMessageLogout(NetworkServerInfo.sockfd) && NetworkReceiveResponseFromServer())
+        if (NetworkSendMessageLogout(NetworkServerInfo.sockfd) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
         {
             NetworkDeleteOneFromServer();
             printf("Successfully logged out\n");
-            memset(CLIActiveUsername.str,0,USERNAME_MAX_LENGTH+1);
-            memset(CLIActivePassword.str,0,PASSWORD_MAX_LENGTH+1);
+            memset(CLIActiveUsername.str, 0, USERNAME_MAX_LENGTH + 1);
+            memset(CLIActivePassword.str, 0, PASSWORD_MAX_LENGTH + 1);
             CLIMode = MODE_LOGIN;
         }
         else
@@ -225,17 +224,17 @@ void CLIEsc(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIChatQuit(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    //TODO: fill me
+    // TODO: fill me
 }
 void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    //TODO: fill me
+    // TODO: fill me
 }
 void CLIChatAdd(DeviceCommandInfo dci)
 {
-    //TODO: fill me
+    // TODO: fill me
 }
 void CLIChatFile(DeviceCommandInfo dci)
 {
-    //TODO: fill me
+    // TODO: fill me
 }
