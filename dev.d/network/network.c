@@ -19,10 +19,6 @@ void NetworkHandleNewMessage(int sockfd)
         DebugTag("DEV DATA");
         NetworkHandleData(sockfd);
         break;
-    case MESSAGE_USERINFO_REQ: // chat user added
-        DebugTag("DEV USERINFO REQ");
-        NetworkHandleUserinfoReq(sockfd);
-        break;
     case MESSAGE_LOGIN:
         DebugTag("DEV LOGIN");
         NetworkHandleLogin(sockfd);
@@ -34,11 +30,6 @@ void NetworkHandleNewMessage(int sockfd)
 }
 
 void NetworkHandleData(int sockfd)
-{
-    // TODO: fill me
-}
-
-void NetworkHandleUserinfoReq(int sockfd)
 {
     // TODO: fill me
 }

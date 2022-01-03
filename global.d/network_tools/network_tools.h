@@ -66,8 +66,6 @@ typedef enum
     /**
      * @brief payload: [username:20B]
      * used for the hanging and show command (response to the last one will be served with multiple MESSAGE_DATA messages)
-     * MESSAGE_HANGING without payload can be used by a device to request the list of users in a group chat, 
-     * the response will be served with a list of MESSAGE_USERINFO_REQ followed by a MESSAGE_RESPONSE ok
      * 
      * if no username was specified expect a sequence of MESSAGE_HANGING with username followed by a MESSAGE_RESPONSE ok
      * if a username was provided expect a sequence of MESSAGE_DATA followed by a MESSAGE_RESPONSE ok
@@ -76,9 +74,9 @@ typedef enum
 
     /**
      * @brief payload: <username:20B>
-     * used to request info about ip/port of a user OR to signal that a new user was added to a group chat
-     * this message should be sent from a device to the server or from a device to a device
-     * expect a MESSAGE_USERINFO_RES if used for a request to the server, nothing if sent to a device
+     * used to request info about ip/port of a user
+     * this message should be sent from a device to the server
+     * expect a MESSAGE_USERINFO_RES
      */
     MESSAGE_USERINFO_REQ = 5,
 
