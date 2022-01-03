@@ -11,7 +11,7 @@ ServerConnectionInfo NetworkServerInfo = {
     .message_list_head = NULL,
     .message_list_tail = NULL};
 
-void NetworkHandleNewMessage(int sockfd, __attribute__((unused)) fd_set *master)
+void NetworkHandleNewMessage(int sockfd)
 {
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
@@ -23,6 +23,9 @@ void NetworkHandleNewMessage(int sockfd, __attribute__((unused)) fd_set *master)
         DebugTag("DEV USERINFO REQ");
         NetworkHandleUserinfoReq(sockfd);
         break;
+    case MESSAGE_LOGIN:
+        DebugTag("DEV LOGIN");
+        NetworkHandleLogin(sockfd);
     default:
         DebugTag("DEV ERROR");
         NetworkHandleError(sockfd);
@@ -37,6 +40,19 @@ void NetworkHandleData(int sockfd)
 void NetworkHandleUserinfoReq(int sockfd)
 {
     // TODO: fill me
+}
+
+void NetworkHandleLogin(int sockfd)
+{
+    NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
+    if(ncd->username.str[0]=='\0')
+    {
+        UserName username;
+        uint16_t dummy_port;    
+        Password dummy_password;
+        NetworkDeserializeMessageLogin(ncd->mh.payload_size, ncd->receive_buffer, &dummy_port, &username, &dummy_password);
+        ncd->username = username;
+    }
 }
 
 void NetworkHandleError(int sockfd)

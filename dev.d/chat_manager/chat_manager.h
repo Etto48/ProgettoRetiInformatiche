@@ -1,6 +1,10 @@
 #pragma once
 #include <time.h>
+#include <stdio.h>
+#include "../network/network.h"
 #include "../../global.d/network_tools/network_tools.h"
+
+#define CHAT_MAX_MESSAGE_LEN (1024*4)
 
 /**
  * @brief specify if a message contains text or a file
@@ -109,16 +113,11 @@ typedef struct _ChatTarget
     UserName dst;
 
     /**
-     * @brief target ip
+     * @brief set to -1 if the user is not connected and server is needed as relay,
+     * if the user is connected you can use this as index in NetworkConnectedDevices
      * 
      */
-    uint32_t ip;
-
-    /**
-     * @brief target port
-     * 
-     */
-    uint16_t port;
+    int sockfd;
 
     /**
      * @brief next item in the list
@@ -128,7 +127,8 @@ typedef struct _ChatTarget
 } ChatTarget;
 
 /**
- * @brief list of all the loaded chats, if a chat with a certain user is not there we must first look for it in the files (call chat load)
+ * @brief list of all the loaded chats, if a chat with a certain user is not there we must first look 
+ * for it in the files (call chat load)
  * 
  */
 extern Chat* ChatList;
@@ -138,6 +138,16 @@ extern Chat* ChatList;
  * 
  */
 extern ChatTarget* ChatTargetList;
+
+/**
+ * @brief check if already connected, if not try to connect
+ * 
+ * @param username username to check in the connected list
+ * @param ip device ip
+ * @param port device port
+ * @return -1 if an error occurred, socket fd if found or connected
+ */
+int ChatConnectTo(UserName username, uint32_t ip, uint16_t port);
 
 /**
  * @brief add a new message
@@ -178,7 +188,7 @@ void ChatWrite();
 bool ChatAdd(UserName username);
 
 /**
- * @brief close the chat
+ * @brief close the chat and deallocate the target list
  * 
  */
 void ChatQuit();

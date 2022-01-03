@@ -1,6 +1,6 @@
 #include "network.h"
 
-void NetworkHandleNewMessage(int sockfd, fd_set *master)
+void NetworkHandleNewMessage(int sockfd)
 {
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
@@ -15,7 +15,7 @@ void NetworkHandleNewMessage(int sockfd, fd_set *master)
     case MESSAGE_LOGOUT:
         DebugTag("SERV LOGOUT");
         NetworkHandleLogout(sockfd);
-        NetworkDeleteConnection(sockfd, master);
+        NetworkDeleteConnection(sockfd);
         break;
     case MESSAGE_HANGING:
         DebugTag("SERV HANGING");

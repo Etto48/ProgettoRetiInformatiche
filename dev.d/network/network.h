@@ -32,9 +32,8 @@ extern ServerConnectionInfo NetworkServerInfo;
  * @brief handles a generic message sending it to the appropriate handler
  * 
  * @param sockfd socket file descriptor on which the message was received
- * @param master master file descriptor set to delete old connections
  */
-void NetworkHandleNewMessage(int sockfd, fd_set* master);
+void NetworkHandleNewMessage(int sockfd);
 
 /**
  * @brief handles the arrival of a message
@@ -49,6 +48,13 @@ void NetworkHandleData(int sockfd);
  * @param sockfd socket file descriptor on which the MESSAGE_USERINFO_REQ arrived
  */
 void NetworkHandleUserinfoReq(int sockfd);
+
+/**
+ * @brief handles the info about the other end username
+ * 
+ * @param sockfd socket file descriptor on which the MESSAGE_LOGIN arrived
+ */
+void NetworkHandleLogin(int sockfd);
 
 /**
  * @brief notify the device of an error in the request

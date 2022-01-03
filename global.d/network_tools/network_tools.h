@@ -51,7 +51,7 @@ typedef enum
 
     /**
      * @brief payload: <port:2B><username:20B><hashed password:32B>
-     * used for the login message
+     * used for the login message or for authenticating to another device (only username is read)
      * expect a MESSAGE_RESPONSE ok if logged in correctly
      */
     MESSAGE_LOGIN = 2,
@@ -65,7 +65,9 @@ typedef enum
 
     /**
      * @brief payload: [username:20B]
-     * used for the hanging and show message (response to the last one will be served with multiple MESSAGE_DATA messages)
+     * used for the hanging and show command (response to the last one will be served with multiple MESSAGE_DATA messages)
+     * MESSAGE_HANGING without payload can be used by a device to request the list of users in a group chat, 
+     * the response will be served with a list of MESSAGE_USERINFO_REQ followed by a MESSAGE_RESPONSE ok
      * 
      * if no username was specified expect a sequence of MESSAGE_HANGING with username followed by a MESSAGE_RESPONSE ok
      * if a username was provided expect a sequence of MESSAGE_DATA followed by a MESSAGE_RESPONSE ok

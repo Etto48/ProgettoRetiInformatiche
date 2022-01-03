@@ -4,6 +4,7 @@
 NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS];
 
 uint16_t NetworkListeningPort = 0;
+fd_set NetworkMasterFdSet;
 
 void NetworkMainLoop(uint16_t port)
 {
@@ -39,10 +40,10 @@ void NetworkMainLoop(uint16_t port)
         exit(-1);
     }
 
-    fd_set master_set, slave_set;
-    FD_ZERO(&master_set);
-    FD_SET(server_socket, &master_set);
-    FD_SET(STDIN_FILENO, &master_set);
+    fd_set slave_set;
+    FD_ZERO(&NetworkMasterFdSet);
+    FD_SET(server_socket, &NetworkMasterFdSet);
+    FD_SET(STDIN_FILENO, &NetworkMasterFdSet);
     struct timeval zero_timer;
     memset(&zero_timer, 0, sizeof(struct timeval));
     int ready_fd_count;
@@ -53,7 +54,7 @@ void NetworkMainLoop(uint16_t port)
     {
         do
         {
-            slave_set = master_set;
+            slave_set = NetworkMasterFdSet;
             ready_fd_count = select(MAX_FDI, &slave_set, NULL, NULL, &zero_timer);
             if (ready_fd_count < 0)
             {
@@ -80,7 +81,7 @@ void NetworkMainLoop(uint16_t port)
                         dbgerror("Error accepting a new connection");
                         SaveAndExit(-1);
                     }
-                    NetworkNewConnection(accepted_socket, new_address, &master_set);
+                    NetworkNewConnection(accepted_socket, new_address);
                 }
                 else if (target_fd == STDIN_FILENO)
                 { // cli input ready
@@ -88,16 +89,16 @@ void NetworkMainLoop(uint16_t port)
                 }
                 else
                 { // handle connection
-                    NetworkReceiveNewData(target_fd, &master_set);
+                    NetworkReceiveNewData(target_fd);
                 }
             }
         }
     }
 }
 
-void NetworkNewConnection(int sockfd, struct sockaddr_in addr, fd_set *master)
+void NetworkNewConnection(int sockfd, struct sockaddr_in addr)
 {
-    FD_SET(sockfd, master);
+    FD_SET(sockfd, &NetworkMasterFdSet);
     NetworkConnectedDevices[sockfd].sockfd = sockfd;
     NetworkConnectedDevices[sockfd].address = addr;
     memset(NetworkConnectedDevices[sockfd].username.str, 0, USERNAME_MAX_LENGTH + 1);
@@ -109,9 +110,9 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr, fd_set *master)
 #endif
 }
 
-void NetworkDeleteConnection(int sockfd, fd_set *master)
+void NetworkDeleteConnection(int sockfd)
 {
-    FD_CLR(sockfd, master);
+    FD_CLR(sockfd, &NetworkMasterFdSet);
     NetworkConnectedDevices[sockfd].sockfd = 0;
     memset(&NetworkConnectedDevices[sockfd].address, 0, sizeof(struct sockaddr_in));
     memset(NetworkConnectedDevices[sockfd].username.str, 0, USERNAME_MAX_LENGTH + 1);
@@ -133,7 +134,7 @@ void NetworkDeleteConnection(int sockfd, fd_set *master)
 #endif
 }
 
-void NetworkReceiveNewData(int sockfd, fd_set *master)
+void NetworkReceiveNewData(int sockfd)
 {
     if (!NetworkConnectedDevices[sockfd].header_received && !NetworkConnectedDevices[sockfd].receive_buffer)
     { // we need to allocate a buffer big enough to contain the header
@@ -148,7 +149,7 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
         0);
     if (received_count <= 0) // client disconnected or error
     {
-        NetworkDeleteConnection(sockfd, master);
+        NetworkDeleteConnection(sockfd);
         if (received_count < 0)
         {
             dbgerror("Error during recv");
@@ -176,7 +177,7 @@ void NetworkReceiveNewData(int sockfd, fd_set *master)
         // check if payload was 0 bytes
         if (NetworkConnectedDevices[sockfd].header_received && NetworkConnectedDevices[sockfd].received_bytes == NetworkConnectedDevices[sockfd].mh.payload_size)
         { // payload completely received
-            NetworkHandleNewMessage(sockfd, master);
+            NetworkHandleNewMessage(sockfd);
             free(NetworkConnectedDevices[sockfd].receive_buffer);
             NetworkConnectedDevices[sockfd].receive_buffer = NULL;
             NetworkConnectedDevices[sockfd].header_received = false;

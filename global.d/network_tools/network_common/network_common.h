@@ -59,6 +59,8 @@ extern NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS];
  */
 extern uint16_t NetworkListeningPort;
 
+extern fd_set NetworkMasterFdSet;
+
 /**
  * @brief main loop of the server, here we listen for new connections and we handle open connections
  * 
@@ -71,25 +73,22 @@ void NetworkMainLoop(uint16_t port);
  * 
  * @param sockfd socket file descriptor
  * @param addr address
- * @param master we need to set the fd in the fd_set to use it in select
  */
-void NetworkNewConnection(int sockfd, struct sockaddr_in addr, fd_set* master);
+void NetworkNewConnection(int sockfd, struct sockaddr_in addr);
 
 /**
  * @brief destroy an entry of NetworkConnectedDevices
  * 
  * @param sockfd socket file descriptor
- * @param master we need to clear the fd in fd_set
  */
-void NetworkDeleteConnection(int sockfd, fd_set* master);
+void NetworkDeleteConnection(int sockfd);
 
 /**
  * @brief we use this to receive new data and handle the request
  * 
  * @param sockfd socket file descriptor from which we receive data
- * @param master used if the connection is closed
  */
-void NetworkReceiveNewData(int sockfd, fd_set* master);
+void NetworkReceiveNewData(int sockfd);
 
 /**
  * @brief check if a socket in NetworkConnectedDevices is logged in
@@ -103,7 +102,7 @@ bool NetworkIsSocketLoggedIn(int sockfd);
  * @brief defined inside network.h
  * 
  */
-extern void NetworkHandleNewMessage(int sockfd, fd_set* master);
+extern void NetworkHandleNewMessage(int sockfd);
 
 /**
  * @brief defined inside cli.h

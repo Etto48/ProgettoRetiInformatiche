@@ -14,9 +14,8 @@
  * @brief handles a generic message sending it to the appropriate handler
  * 
  * @param sockfd socket file descriptor on which the message was received
- * @param master master file descriptor set to delete old connections
  */
-void NetworkHandleNewMessage(int sockfd, fd_set* master);
+void NetworkHandleNewMessage(int sockfd);
 
 /**
  * @brief handles a signup request
