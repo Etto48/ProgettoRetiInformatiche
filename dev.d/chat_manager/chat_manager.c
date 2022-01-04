@@ -122,8 +122,6 @@ bool ChatLoad(UserName user)
 
 void ChatSave()
 {
-    //TODO: remove me
-    return;
     if(mkdir(CHAT_DIR,S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)<0)
     {
         if(errno!=EEXIST)

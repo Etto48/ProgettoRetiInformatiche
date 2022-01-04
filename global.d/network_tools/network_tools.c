@@ -294,9 +294,9 @@ bool NetworkSendMessageUserinfoReq(int sockfd, UserName username)
 }
 bool NetworkSendMessageUserinfoRes(int sockfd, uint32_t ip, uint16_t port)
 {
-    uint8_t payload[4 + 2];
+    uint8_t payload[MESSAGE_USERINFO_RES_SIZE];
     *(uint32_t *)(payload) = htonl(ip);
-    *(uint16_t *)(payload + 4) = htons(port);
+    *(uint16_t *)(payload + sizeof(uint32_t)) = htons(port);
 
     NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_USERINFO_RES,)
 }

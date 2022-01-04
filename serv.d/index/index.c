@@ -169,11 +169,19 @@ bool IndexLogout(UserName username)
     return true;
 }
 
+IndexEntry* IndexGetOnline(UserName username)
+{
+    IndexEntry* ret = IndexFind(username);
+    if(ret && ret->timestamp_logout==0)
+        return ret;
+    else return NULL;
+}
+
 IndexEntry* IndexFind(UserName username)
 {
     for(IndexEntry* i = IndexList; i; i=i->next)
     {
-        if(strcmp(username.str,i->user_dest.str)==0)
+        if(strncmp(username.str,i->user_dest.str,USERNAME_MAX_LENGTH)==0)
             return i;
     }
     return NULL;

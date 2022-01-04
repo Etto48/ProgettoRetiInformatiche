@@ -100,7 +100,6 @@ typedef enum
      * used to send a message from <src username> to <dst username> at time <timestamp>, use T if it's text or F if it's a file
      * if this message is sent from a device <src username> is ignored, if it is sent to a device <dst username> is ignored
      * those are useful only if the server is used as relay
-     * expect a MESSAGE_RESPONSE ok
      */
     MESSAGE_DATA = 8
 

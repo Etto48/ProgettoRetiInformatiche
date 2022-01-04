@@ -106,7 +106,7 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr)
     NetworkConnectedDevices[sockfd].received_bytes = 0;
 
 #ifdef DEBUG
-    printf("FD %d connected\n", sockfd);
+    printf("DBG: FD %d connected\n", sockfd);
 #endif
 }
 
@@ -131,7 +131,7 @@ void NetworkDeleteConnection(int sockfd)
     close(sockfd);
 
 #ifdef DEBUG
-    printf("FD %d disconnected\n", sockfd);
+    printf("DBG: FD %d disconnected\n", sockfd);
 #endif
 }
 

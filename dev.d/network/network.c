@@ -319,5 +319,11 @@ bool NetworkAutoLogin(UserName username, Password password)
 
 void NetworkDeletedConnectionHook(int sockfd)
 {
-
+    NetworkDeviceConnection* ncd = NetworkConnectedDevices + sockfd;
+    ChatTarget* target;
+    if(ncd->username.str[0]!='\0' && (target = ChatTargetFind(ncd->username)))
+    {
+        target->sockfd = -1;
+        printf("%s disconnected, switching to relay mode\n",ncd->username.str);
+    }
 }

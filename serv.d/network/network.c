@@ -86,6 +86,41 @@ void NetworkHandleLogout(int sockfd)
     close(sockfd);
 }
 
+typedef struct _UserNameList
+{
+    UserName user;
+    struct _UserNameList* next;
+} UserNameList;
+
+UserNameList* UserNameListFind(UserNameList* list, UserName user)
+{
+    for(UserNameList* j = list; j; j=j->next)
+    {
+        if(strncmp(j->user.str,user.str,USERNAME_MAX_LENGTH) == 0)
+        {
+            return j;
+        }
+    }
+    return NULL;
+}
+void UserNameListAdd(UserNameList** list, UserName user)
+{
+    UserNameList* target = (UserNameList*)malloc(sizeof(UserNameList));
+    target->user = user;
+    target->next = *list;
+    *list = target;
+}
+void UserNameListDelete(UserNameList** list)
+{
+    UserNameList* next = NULL;
+    for(UserNameList* i = *list; i;i=next)
+    {
+        next = i->next;
+        free(i);
+    }
+    *list = NULL;
+}
+
 void NetworkHandleHanging(int sockfd)
 {
     NetworkDeviceConnection *ncd = &NetworkConnectedDevices[sockfd];
@@ -95,10 +130,16 @@ void NetworkHandleHanging(int sockfd)
         NetworkDeserializeMessageHanging(ncd->mh.payload_size, ncd->receive_buffer, &from);
         if (from.str[0] == '\0')
         { // only users
+            UserNameList* list = NULL;
             for (RelayMessage *i = RelayHangingFindFirst(RelayHangingList, NULL, &ncd->username); i; i = RelayHangingFindFirst(i->next, NULL, &ncd->username))
             {
-                NetworkSendMessageHanging(sockfd, &i->src);
+                if(!UserNameListFind(list,i->src))
+                {
+                    UserNameListAdd(&list,i->src);
+                    NetworkSendMessageHanging(sockfd, &i->src);
+                }
             }
+            UserNameListDelete(&list);
         }
         else
         { // only messages from user
@@ -134,7 +175,7 @@ void NetworkHandleUserinfoReq(int sockfd)
     {
         UserName username;
         NetworkDeserializeMessageUserinfoReq(ncd->mh.payload_size, ncd->receive_buffer, &username);
-        IndexEntry *res = IndexFind(username);
+        IndexEntry *res = IndexGetOnline(username);
         uint32_t ip = res ? res->ip : 0;
         uint16_t port = res ? res->port : 0;
         NetworkSendMessageUserinfoRes(sockfd, ip, port);
@@ -175,10 +216,10 @@ void NetworkHandleData(int sockfd)
             RelayHangingAdd(ncd->username, dst, timestamp, RELAY_MESSAGE_TEXT, NULL, text_len, (uint8_t *)text);
             free(text);
         }
-        NetworkSendMessageResponse(sockfd, true);
+        //NetworkSendMessageResponse(sockfd, true);
     }
-    else
-        NetworkSendMessageResponse(sockfd, false);
+    //else
+        //NetworkSendMessageResponse(sockfd, false);
 }
 
 void NetworkHandleError(int sockfd)

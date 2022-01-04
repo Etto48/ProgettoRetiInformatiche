@@ -247,6 +247,7 @@ void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
             memset(CLIActiveUsername.str, 0, USERNAME_MAX_LENGTH + 1);
             memset(CLIActivePassword.str, 0, PASSWORD_MAX_LENGTH + 1);
             CLIMode = MODE_LOGIN;
+            NetworkServerInfo.address.sin_port = 0; // prevent auto reconnect
         }
         else
         {

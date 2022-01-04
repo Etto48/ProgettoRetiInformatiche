@@ -103,6 +103,14 @@ bool IndexLogin(UserName username, Password password, uint32_t ip, uint16_t port
 bool IndexLogout(UserName username);
 
 /**
+ * @brief like index find but returns NULL if the user is offline
+ * 
+ * @param username username used as key
+ * @return pointer to the user if found online, NULL otherwise
+ */
+IndexEntry* IndexGetOnline(UserName username);
+
+/**
  * @brief find info about a user
  * 
  * @param username username used as key
