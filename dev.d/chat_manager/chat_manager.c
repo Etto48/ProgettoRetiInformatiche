@@ -25,7 +25,7 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
     // search in the chat
     for (size_t i = 3; i < NETWORK_MAX_CONNECTIONS; i++)
     {
-        if (NetworkConnectedDevices[i].sockfd && strncmp(username.str, NetworkConnectedDevices[i].username.str, USERNAME_MAX_LENGTH))
+        if (NetworkConnectedDevices[i].sockfd && strncmp(username.str, NetworkConnectedDevices[i].username.str, USERNAME_MAX_LENGTH) == 0)
             return i;
     }
     // failed to find it, now we must try to connect
@@ -42,12 +42,13 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
         .sin_zero = {0}};
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
     {
-        dbgerror("Error connecting to device");
+        //dbgerror("Error connecting to device");
+        printf("Device is offline, connecting in relay mode\n");
         return -1;
     }
     NetworkNewConnection(sockfd, addr);
     NetworkConnectedDevices[sockfd].username = username;
-    NetworkSendMessageLogin(sockfd, 0, username, CreatePassword("")); // send your username
+    NetworkSendMessageLogin(sockfd, 0, CLIActiveUsername, CreatePassword("")); // send your username
     return sockfd;
 }
 
@@ -83,7 +84,7 @@ bool ChatLoad(UserName user)
 {
     if(ChatFind(user))
         return true;
-    int chat_fd = open(ChatGetFilename(user),O_RDONLY);
+    int chat_fd = open(ChatGetFilename(user),O_RDWR|O_CREAT,S_IRUSR|S_IWUSR);
     if(chat_fd<0)
     {
         dbgerror("Error reading chat file");
@@ -96,8 +97,8 @@ bool ChatLoad(UserName user)
         uint8_t direction;
         uint8_t read_b;
         uint32_t content_len;
-        if(read(chat_fd,&timestamp,sizeof(uint64_t))<=0)
-            break;
+        if(read(chat_fd,&timestamp,sizeof(uint64_t))==0)
+            break;//EOF
         timestamp = ntohq(timestamp);
         read(chat_fd,&type,sizeof(uint8_t));
         read(chat_fd,&direction,sizeof(uint8_t));
@@ -121,7 +122,9 @@ bool ChatLoad(UserName user)
 
 void ChatSave()
 {
-    if(mkdir(CHAT_DIR,S_IRUSR|S_IWUSR)<0)
+    //TODO: remove me
+    return;
+    if(mkdir(CHAT_DIR,S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)<0)
     {
         if(errno!=EEXIST)
         {
@@ -157,7 +160,9 @@ void ChatWrite()
 {
     char text[CHAT_MAX_MESSAGE_LEN];
     memset(text, 0, CHAT_MAX_MESSAGE_LEN);
-    fgets(text, CHAT_MAX_MESSAGE_LEN, STDIN_FILENO);
+    fgets(text, CHAT_MAX_MESSAGE_LEN, stdin);
+    printf("\e[1A\r");
+    *strrchr(text,'\n')='\0';
     time_t timestamp = time(NULL);
     for (ChatTarget *i = ChatTargetList; i; i = i->next)
     {
@@ -166,6 +171,7 @@ void ChatWrite()
         // we must add the message to the list and write it to file
         ChatLoad(i->dst);
         ChatAddMessage(i->dst,CHAT_MESSAGE_SENT,i->sockfd>=0,CHAT_MESSAGE_TEXT,timestamp,text);
+        ChatPrintMessage(*(ChatFind(i->dst)->tail),i->dst);
     }
 }
 
@@ -272,4 +278,96 @@ void ChatFree()
         free(i);
     }
     ChatList = NULL;
+}
+
+char* ChatNewFilePath(char* filename)
+{
+    filename += ToolsBasename(filename);
+    size_t filename_no_ext_len = 0;
+    for(char* c=filename;*c!='\0' && *c!='.';c++)
+        filename_no_ext_len++;
+
+    char* filename_no_ext = (char* )malloc(filename_no_ext_len+1);
+    memset(filename_no_ext,0,filename_no_ext_len+1);
+    strncpy(filename_no_ext,filename,filename_no_ext_len);
+    bool success = false;
+    size_t try = 0;
+    while(!success)
+    {
+        if(try==0)
+            snprintf(filename_tmp_buffer,FILENAME_MAX,"%s/%s",CHAT_FILE_DIR,filename);
+        else
+            snprintf(filename_tmp_buffer,FILENAME_MAX,"%s/%s_%lu%s",CHAT_FILE_DIR,filename_no_ext,try,filename+filename_no_ext_len);
+        
+        struct stat s;
+        if(stat(filename_tmp_buffer,&s)<0)
+        { // file desn't exists
+            success = true;
+        }
+        try++;
+    }
+    free(filename_no_ext);
+    return filename_tmp_buffer;
+}
+
+void ChatSaveMessageFile(uint32_t payload_size, const uint8_t* payload)
+{
+    if(mkdir(CHAT_FILE_DIR,S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)<0)
+    {
+        if(errno!=EEXIST)
+        {
+            dbgerror("Error creating file directory");
+            return;
+        }
+    }
+    size_t filename_len = NetworkMessageDataFilenameLength(payload_size,payload);
+    size_t file_len = NetworkMessageDataFileSize(payload_size,payload);
+
+    UserName src;
+    UserName dst;
+    time_t timestamp;
+    char* filename = (char*)malloc(sizeof(char)*(filename_len+1));
+    uint8_t* file = (uint8_t*)malloc(file_len);
+
+    NetworkDeserializeMessageDataFile(payload_size,payload,&src,&dst,&timestamp,filename,file);
+
+    char* file_path = ChatNewFilePath(filename);
+    ChatAddMessage(src,CHAT_MESSAGE_RECEIVED,true,CHAT_MESSAGE_FILE,timestamp,file_path);
+    int file_fd = open(file_path,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR);
+    if(file_fd<0)
+    {
+        dbgerror("Error creating file");
+    }
+    else
+    {
+        write(file_fd,file,file_len);
+        close(file_fd);
+    }
+
+    free(filename);
+    free(file);
+}
+
+void ChatSaveMessageText(uint32_t payload_size, const uint8_t* payload)
+{
+    size_t text_len = NetworkMessageDataTextLength(payload_size,payload);
+    char* text = (char*)malloc(text_len+1);
+
+    UserName src;
+    UserName dst;
+    time_t timestamp;
+    NetworkDeserializeMessageDataText(payload_size,payload,&src,&dst,&timestamp,text);
+    ChatAddMessage(src,CHAT_MESSAGE_RECEIVED,true,CHAT_MESSAGE_TEXT,timestamp,text);
+
+    free(text);
+}
+
+ChatTarget* ChatTargetFind(UserName user)
+{
+    for(ChatTarget* i = ChatTargetList; i; i=i->next)
+    {
+        if(strncmp(i->dst.str,user.str,USERNAME_MAX_LENGTH)==0)
+            return i;
+    }
+    return NULL;
 }

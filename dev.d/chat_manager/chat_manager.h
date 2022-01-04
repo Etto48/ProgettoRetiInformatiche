@@ -8,6 +8,7 @@
 #define CHAT_MAX_MESSAGE_LEN (1024*4)
 
 #define CHAT_DIR "./Chat"
+#define CHAT_FILE_DIR "./File"
 
 /**
  * @brief specify if a message contains text or a file
@@ -251,6 +252,38 @@ Chat* ChatAddChat(UserName dst);
  * 
  */
 void ChatFree();
+
+/**
+ * @brief calculate the file name for a new file
+ * 
+ * @param filename received filename
+ * @return pointer to an interal buffer containing the complete path
+ */
+char* ChatNewFilePath(char* filename);
+
+/**
+ * @brief deserialize and save a file in the appropriate folder, then add the message to the message list
+ * 
+ * @param payload_size MESSAGE_DATA payload size
+ * @param payload MESSAGE_DATA payload
+ */
+void ChatSaveMessageFile(uint32_t payload_size, const uint8_t* payload);
+
+/**
+ * @brief deserialize and save message text, then add the message to the message list
+ * 
+ * @param payload_size MESSAGE_DATA payload size
+ * @param payload MESSAGE_DATA payload
+ */
+void ChatSaveMessageText(uint32_t payload_size, const uint8_t* payload);
+
+/**
+ * @brief check if user is in the ChatTargetList
+ * 
+ * @param user username
+ * @return a pointer to the entry in the list if the user is present, NULL otherwise
+ */
+ChatTarget* ChatTargetFind(UserName user);
 
 /**
  * @note we should save the chat to a different user in a different file

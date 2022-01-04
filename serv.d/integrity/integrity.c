@@ -13,10 +13,15 @@ void Startup()
     signal(SIGTERM,sigterm_handler);
 }
 
-void SaveAndExit(int status)
+void Save()
 {
     AuthSave(AUTH_FILE);
     RelaySave(RELAY_FILE);
     RelaySyncreadSave(RELAY_SYNCREAD_FILE);
+}
+
+void SaveAndExit(int status)
+{
+    Save();
     exit(status);
 }

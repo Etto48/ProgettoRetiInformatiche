@@ -112,6 +112,7 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr)
 
 void NetworkDeleteConnection(int sockfd)
 {
+    NetworkDeletedConnectionHook(sockfd);
     FD_CLR(sockfd, &NetworkMasterFdSet);
     NetworkConnectedDevices[sockfd].sockfd = 0;
     memset(&NetworkConnectedDevices[sockfd].address, 0, sizeof(struct sockaddr_in));

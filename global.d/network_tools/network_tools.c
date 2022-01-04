@@ -43,8 +43,8 @@ size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t
         header.payload_size = MESSAGE_SYNCREAD_SIZE;
         break;
     case MESSAGE_DATA:
-        header.payload_size =
-            MESSAGE_DATA_TEXT_MIN_SIZE +
+        header.payload_size = MESSAGE_DATA_TEXT_MIN_SIZE;
+        header.payload_size +=
             payload[USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + sizeof(uint64_t)] == 'F'
                 ? sizeof(uint32_t) + strlen((char *)(payload + MESSAGE_DATA_FILE_MIN_SIZE))
                 : strlen((char *)(payload + MESSAGE_DATA_TEXT_MIN_SIZE));
@@ -211,6 +211,12 @@ void NetworkDeserializeMessageDataText(size_t payload_size, const uint8_t *paylo
 {  
     if(payload_size>=MESSAGE_DATA_TEXT_MIN_SIZE && payload && src_username && dst_username && timestamp && text)
     {
+        memcpy(src_username->str,payload,USERNAME_MAX_LENGTH);
+        memcpy(dst_username->str,payload+USERNAME_MAX_LENGTH,USERNAME_MAX_LENGTH);
+        uint64_t net_timestamp;
+        memcpy(&net_timestamp,payload+USERNAME_MAX_LENGTH+USERNAME_MAX_LENGTH,sizeof(uint64_t));
+        *timestamp = ntohq(net_timestamp);
+
         size_t text_size = NetworkMessageDataTextLength(payload_size,payload);
         memcpy(text,payload+MESSAGE_DATA_TEXT_MIN_SIZE,text_size);
         text[text_size]='\0';
@@ -222,6 +228,12 @@ void NetworkDeserializeMessageDataFile(size_t payload_size, const uint8_t *paylo
 {
     if(payload_size>=MESSAGE_DATA_FILE_MIN_SIZE && payload && src_username && dst_username && timestamp && filename && data)
     {
+        memcpy(src_username->str,payload,USERNAME_MAX_LENGTH);
+        memcpy(dst_username->str,payload+USERNAME_MAX_LENGTH,USERNAME_MAX_LENGTH);
+        uint64_t net_timestamp;
+        memcpy(&net_timestamp,payload+USERNAME_MAX_LENGTH+USERNAME_MAX_LENGTH,sizeof(uint64_t));
+        *timestamp = ntohq(net_timestamp);
+
         size_t filename_size = NetworkMessageDataFilenameLength(payload_size,payload);
         size_t file_size = NetworkMessageDataFileSize(payload_size,payload);
         memcpy(filename,payload+MESSAGE_DATA_FILE_MIN_SIZE,filename_size);

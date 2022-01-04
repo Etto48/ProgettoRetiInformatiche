@@ -105,6 +105,13 @@ bool NetworkIsSocketLoggedIn(int sockfd);
 extern void NetworkHandleNewMessage(int sockfd);
 
 /**
+ * @brief called when a user disconnects
+ * 
+ * @param sockfd user socket file descriptor
+ */
+extern void NetworkDeletedConnectionHook(int sockfd);
+
+/**
  * @brief defined inside cli.h
  * 
  */

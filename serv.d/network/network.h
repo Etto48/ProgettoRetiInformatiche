@@ -10,6 +10,8 @@
 #include "../cli/cli.h"
 #include "../../global.d/network_tools/network_common/network_common.h"
 
+#define AUTOSAVE_TIME_INTERVAL 60
+
 /**
  * @brief handles a generic message sending it to the appropriate handler
  * 
@@ -71,3 +73,10 @@ void NetworkHandleError(int sockfd);
  * 
  */
 void NetworkFreeTime();
+
+/**
+ * @brief called when a user disconnects
+ * 
+ * @param sockfd socket file descriptor of the user
+ */
+void NetworkDeletedConnectionHook(int sockfd);

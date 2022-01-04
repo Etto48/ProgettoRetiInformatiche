@@ -8,9 +8,9 @@ CommandMode CLIMode = MODE_LOGIN;
 void CLIHandleInput()
 {
     char first_char = getchar();
+    ungetc(first_char, stdin);
     if (CLIMode != MODE_CHAT || first_char == '\\')
     {
-        ungetc(first_char, stdin);
         DeviceCommandInfo dci = CommandParserGetCommand(CLIMode);
         switch (dci.command)
         {
@@ -189,12 +189,52 @@ void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIShow(DeviceCommandInfo dci)
 {
-    // TODO: fill me
+    if(NetworkServerInfo.connected)
+    {
+        UserName username = CreateUserName(dci.args[0]);
+        if(NetworkSendMessageHanging(NetworkServerInfo.sockfd,&username) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
+        {
+            bool done = false;
+            while(NetworkServerInfo.message_list_head && !done)
+            {
+                switch(NetworkServerInfo.message_list_head->header.type)
+                {
+                    case MESSAGE_RESPONSE:
+                        done = true;
+                        printf("Successfully received message list\n");
+                        break;
+                    case MESSAGE_DATA:
+                    {
+                        bool is_file = NetworkMessageDataContainsFile(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
+                        if(is_file)
+                            ChatSaveMessageFile(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
+                        else
+                            ChatSaveMessageText(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
+                        break;
+                    }
+                    default:
+                        printf("Message not expected\n");
+                }
+                NetworkDeleteOneFromServer();
+            }
+        }
+    }
+    else
+    {
+        printf("An error occurred trying to connect to the server\n");
+    }
 }
 void CLIChat(DeviceCommandInfo dci)
 {
-    // TODO: fill me
-    // TODO: set CLIMode = MODE_CHAT; if success
+    UserName target = CreateUserName(dci.args[0]);
+    if(ChatAddTarget(target))
+    {
+        CLIMode = MODE_CHAT;
+        ChatLoad(target);
+        Chat* chat = ChatAddChat(target);
+        for(ChatMessage* i = chat->head;i;i=i->next)
+            ChatPrintMessage(*i,target);
+    }
 }
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
@@ -224,7 +264,8 @@ void CLIEsc(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIChatQuit(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    // TODO: fill me
+    CLIMode = MODE_STANDARD;
+    ChatQuit();
 }
 void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
 {
@@ -232,7 +273,11 @@ void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIChatAdd(DeviceCommandInfo dci)
 {
-    // TODO: fill me
+    UserName target = CreateUserName(dci.args[0]);
+    if(ChatAddTarget(target))
+    {
+        printf("%s added to the chat\n",target.str);
+    }
 }
 void CLIChatFile(DeviceCommandInfo dci)
 {

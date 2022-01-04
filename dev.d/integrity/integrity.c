@@ -10,8 +10,13 @@ void Startup()
     signal(SIGTERM,sigterm_handler);
 }
 
-void SaveAndExit(int status)
+void Save()
 {
     ChatSave();
+}
+
+void SaveAndExit(int status)
+{
+    Save();
     exit(status);
 }

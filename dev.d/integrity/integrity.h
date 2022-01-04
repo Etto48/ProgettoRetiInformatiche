@@ -10,6 +10,12 @@
 void Startup();
 
 /**
+ * @brief save all the data like SaveAndExit but without exiting
+ * 
+ */
+void Save();
+
+/**
  * @brief save necessary data to file and exit, do not exit in other way
  * 
  * @param status the status to pass to the exit() call

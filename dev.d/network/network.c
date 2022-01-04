@@ -31,7 +31,16 @@ void NetworkHandleNewMessage(int sockfd)
 
 void NetworkHandleData(int sockfd)
 {
-    // TODO: fill me
+    NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
+    if(ncd->username.str[0]!='\0')
+    {
+        if(NetworkMessageDataContainsFile(ncd->mh.payload_size,ncd->receive_buffer))
+            ChatSaveMessageFile(ncd->mh.payload_size,ncd->receive_buffer);
+        else
+            ChatSaveMessageText(ncd->mh.payload_size,ncd->receive_buffer);
+        if(ChatTargetFind(ncd->username))
+            ChatPrintMessage(*(ChatFind(ncd->username)->tail),ncd->username);
+    }
 }
 
 void NetworkHandleLogin(int sockfd)
@@ -54,6 +63,7 @@ void NetworkHandleError(int sockfd)
 
 bool NetworkStartServerConnection(uint16_t port)
 {
+    static bool was_connected = false;
     if (!NetworkServerInfo.connected)
     {
         if (NetworkServerInfo.sockfd < 0)
@@ -73,14 +83,17 @@ bool NetworkStartServerConnection(uint16_t port)
             return false;
         }
         NetworkServerInfo.connected = true;
-
+        if(was_connected)
+        {
+            printf("Successfully reconnected to the server\n");
+        }
+        was_connected = true;
         // Autologin if we was already logged in
         if (CLIActiveUsername.str[0])
         {
             if (NetworkAutoLogin(CLIActiveUsername, CLIActivePassword))
             {
-                //DebugLog("Successfully reconnected to the server");
-                printf("Successfully reconnected to the server\n");
+                printf("Successfully restored login\n");
             }
         }
     }
@@ -102,6 +115,14 @@ void NetworkServerDisconnected()
 
 void NetworkFreeTime()
 {
+    static time_t last_time = 0;
+    time_t this_time = time(NULL);
+    if (last_time == 0 || this_time - last_time > AUTOSAVE_TIME_INTERVAL)
+    {
+        last_time = this_time;
+        Save();
+    }
+
     if (NetworkServerInfo.connected)
     {
         fd_set only_server;
@@ -274,7 +295,6 @@ void NetworkHandleServerNotifications()
 
 void NetworkHandleSyncread(ServerMessage *syncread_message)
 {
-    // TODO: fill me
     UserName username;
     time_t timestamp;
     NetworkDeserializeMessageSyncread(syncread_message->header.payload_size, syncread_message->payload, &username, &timestamp);
@@ -295,4 +315,9 @@ bool NetworkAutoLogin(UserName username, Password password)
     }
     else
         return false;
+}
+
+void NetworkDeletedConnectionHook(int sockfd)
+{
+
 }

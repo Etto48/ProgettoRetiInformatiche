@@ -4,4 +4,5 @@ serv
 .vscode
 Auth.lst
 Relay.lst
-LastLogin.dat
+Chat
+File

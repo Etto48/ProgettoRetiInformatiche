@@ -19,8 +19,9 @@ uint64_t htonq(uint64_t quad)
 
 uint64_t ntohq(uint64_t quad)
 {
-    unsigned char out[8] = {quad,quad>>8,quad>>16,quad>>24,quad>>32,quad>>40,quad>>48,quad>>56};
-    return *(uint64_t*)out;
+    //unsigned char out[8] = {quad,quad>>8,quad>>16,quad>>24,quad>>32,quad>>40,quad>>48,quad>>56};
+    //return *(uint64_t*)out;
+    return htonq(quad);
 }
 
 UserName CreateUserName(const char* username)

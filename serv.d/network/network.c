@@ -58,12 +58,13 @@ void NetworkHandleLogin(int sockfd)
     NetworkSendMessageResponse(sockfd, ok);
     if (ok)
     { // we check if user has a pending syncread message
-        RelaySyncreadNotice* rsn;
-        while((rsn = RelaySyncreadFind(&username,NULL)))
+        RelaySyncreadNotice *rsn;
+        while ((rsn = RelaySyncreadFind(&username, NULL)))
         {
-            if(NetworkSendMessageSyncread(sockfd,rsn->dst,rsn->timestamp))
-                RelaySyncreadDelete(&username,NULL);
-            else break; // we failed to send a syncread message so we can't delete it, we will try next time
+            if (NetworkSendMessageSyncread(sockfd, rsn->dst, rsn->timestamp))
+                RelaySyncreadDelete(&username, NULL);
+            else
+                break; // we failed to send a syncread message so we can't delete it, we will try next time
         }
     }
 }
@@ -115,13 +116,12 @@ void NetworkHandleHanging(int sockfd)
                 }
                 last_timestamp = i->timestamp > last_timestamp ? i->timestamp : last_timestamp;
             }
-            if(last_timestamp > 0)
+            if (last_timestamp > 0)
             { // now we must send a message syncread to the other end if possible
-                RelaySyncreadEdit(from,ncd->username,last_timestamp);
+                RelaySyncreadEdit(from, ncd->username, last_timestamp);
             }
         }
         NetworkSendMessageResponse(sockfd, true);
-        
     }
     else
         NetworkSendMessageResponse(sockfd, false);
@@ -188,5 +188,19 @@ void NetworkHandleError(int sockfd)
 
 void NetworkFreeTime()
 {
-    
+    static time_t last_time = 0;
+    time_t this_time = time(NULL);
+    if (last_time == 0 || this_time - last_time > AUTOSAVE_TIME_INTERVAL)
+    {
+        last_time = this_time;
+        Save();
+    }
+}
+
+void NetworkDeletedConnectionHook(int sockfd)
+{
+    if(NetworkConnectedDevices[sockfd].username.str[0]!='\0')
+    {
+        IndexLogout(NetworkConnectedDevices[sockfd].username);
+    }
 }

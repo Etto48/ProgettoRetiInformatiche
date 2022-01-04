@@ -5,9 +5,11 @@
 #include <sys/select.h>
 #include "../cli/cli.h"
 #include "../chat_manager/chat_manager.h"
+#include "../integrity/integrity.h"
 #include "../../global.d/network_tools/network_tools.h"
 #include "../../global.d/network_tools/network_common/network_common.h"
 
+#define AUTOSAVE_TIME_INTERVAL 60
 
 #define SERVER_ADDRESS "0.0.0.0"
 
@@ -136,3 +138,10 @@ void NetworkHandleSyncread(ServerMessage* syncread_message);
  * @return true if the login was successful
  */
 bool NetworkAutoLogin(UserName username, Password password);
+
+/**
+ * @brief called when a user disconnects
+ * 
+ * @param sockfd socket file descriptor of the user
+ */
+void NetworkDeletedConnectionHook(int sockfd);
