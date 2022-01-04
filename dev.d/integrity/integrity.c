@@ -12,5 +12,6 @@ void Startup()
 
 void SaveAndExit(int status)
 {
+    ChatSave();
     exit(status);
 }

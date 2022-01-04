@@ -157,7 +157,8 @@ void RelayLoad(const char* filename);
 void RelaySave(const char* filename);
 
 /**
- * @brief when a relay message is read we update the corresponding RelaySyncreadList entry with this function
+ * @brief when a relay message is read if possible we try to send a message syncread to src,
+ * we update the entry in the list otherwise
  * 
  * @param src message sender
  * @param dst message receiver
@@ -168,17 +169,17 @@ void RelaySyncreadEdit(UserName src, UserName dst, time_t timestamp);
 /**
  * @brief find an entry in RelaySyncreadList
  * 
- * @param src message sender
- * @param dst message receiver
- * @return pointer to the resoult if found, NULL otherwise
+ * @param src message sender, set to NULL to ignore it
+ * @param dst message receiver, set to NULL to ignore it
+ * @return pointer to the first entry found, NULL if no entry was found
  */
 RelaySyncreadNotice* RelaySyncreadFind(UserName* src, UserName* dst);
 
 /**
  * @brief delete an entry in RelaySyncreadList after it is delivered
  * 
- * @param src message sender
- * @param dst message receiver
+ * @param src message sender, set to NULL to ignore it
+ * @param dst message receiver, set to NULL to ignore it
  */
 void RelaySyncreadDelete(UserName* src, UserName* dst);
 

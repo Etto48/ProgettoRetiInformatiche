@@ -56,6 +56,16 @@ void NetworkHandleLogin(int sockfd)
     if (ok)
         ncd->username = username;
     NetworkSendMessageResponse(sockfd, ok);
+    if (ok)
+    { // we check if user has a pending syncread message
+        RelaySyncreadNotice* rsn;
+        while((rsn = RelaySyncreadFind(&username,NULL)))
+        {
+            if(NetworkSendMessageSyncread(sockfd,rsn->dst,rsn->timestamp))
+                RelaySyncreadDelete(&username,NULL);
+            else break; // we failed to send a syncread message so we can't delete it, we will try next time
+        }
+    }
 }
 
 void NetworkHandleLogout(int sockfd)
@@ -91,6 +101,7 @@ void NetworkHandleHanging(int sockfd)
         }
         else
         { // only messages from user
+            time_t last_timestamp = 0;
             for (RelayMessage *i = RelayHangingPopFirst(&from, &ncd->username); i; RelayHangingDestroyMessage(i))
             {
                 switch (i->type)
@@ -102,9 +113,15 @@ void NetworkHandleHanging(int sockfd)
                     NetworkSendMessageDataFileBuffer(sockfd, from, ncd->username, i->timestamp, i->filename, i->data_size, i->data);
                     break;
                 }
+                last_timestamp = i->timestamp > last_timestamp ? i->timestamp : last_timestamp;
+            }
+            if(last_timestamp > 0)
+            { // now we must send a message syncread to the other end if possible
+                RelaySyncreadEdit(from,ncd->username,last_timestamp);
             }
         }
         NetworkSendMessageResponse(sockfd, true);
+        
     }
     else
         NetworkSendMessageResponse(sockfd, false);

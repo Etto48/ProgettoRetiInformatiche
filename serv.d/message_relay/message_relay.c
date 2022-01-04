@@ -96,6 +96,26 @@ void RelaySave(const char* filename)
     //TODO: fill me
 }
 
+void RelaySyncreadEdit(UserName src, UserName dst, time_t timestamp)
+{
+    //TODO: fill me
+}
+
+RelaySyncreadNotice* RelaySyncreadFind(UserName* src, UserName* dst)
+{
+    for(RelaySyncreadNotice* i = RelaySyncreadList;i;i=i->next)
+    {
+        if((!src||strncmp(src->str,i->src.str,USERNAME_MAX_LENGTH)==0) && (!dst || strncmp(dst->str,i->dst.str,USERNAME_MAX_LENGTH)==0))
+            return i;
+    }
+    return NULL;
+}
+
+void RelaySyncreadDelete(UserName* src, UserName* dst)
+{
+    //TODO: fill me
+}
+
 void RelaySyncreadLoad(const char* filename)
 {
     //TODO: fill me

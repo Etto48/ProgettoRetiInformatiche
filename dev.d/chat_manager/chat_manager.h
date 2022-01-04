@@ -1,10 +1,13 @@
 #pragma once
 #include <time.h>
+#include <errno.h>
 #include <stdio.h>
 #include "../network/network.h"
 #include "../../global.d/network_tools/network_tools.h"
 
 #define CHAT_MAX_MESSAGE_LEN (1024*4)
+
+#define CHAT_DIR "./Chat"
 
 /**
  * @brief specify if a message contains text or a file
@@ -174,6 +177,12 @@ void ChatHandleSyncread(UserName dst, time_t timestamp);
 bool ChatLoad(UserName user);
 
 /**
+ * @brief save every chat to it's file
+ * 
+ */
+void ChatSave();
+
+/**
  * @brief get a line from stdin and write it to the ative chat
  * 
  */
@@ -185,7 +194,7 @@ void ChatWrite();
  * @param username target username
  * @return true if user added correctly,
  */
-bool ChatAdd(UserName username);
+bool ChatAddTarget(UserName username);
 
 /**
  * @brief close the chat and deallocate the target list
@@ -200,6 +209,48 @@ void ChatQuit();
  * @param dst other end username
  */
 void ChatPrintMessage(ChatMessage msg, UserName dst);
+
+/**
+ * @brief find a chat with dst, remember to do ChatLoad(dst) before calling this if you need the loaded chat 
+ * 
+ * @param dst username of the other end
+ * @return if the chat was found a pointer to its entry, NULL otherwise
+ */
+Chat* ChatFind(UserName dst);
+
+/**
+ * @brief calculate the pathname for a given user
+ * 
+ * @param dst username
+ * @return pointer to an internal buffer containing the pathname
+ */
+char* ChatGetFilename(UserName dst);
+
+/**
+ * @brief add a new message to a message list
+ * 
+ * @param dst destination username
+ * @param dir message received or sent
+ * @param read message received from dst
+ * @param type file or text
+ * @param timestamp timestamp of message creation
+ * @param content message content
+ */
+void ChatAddMessage(UserName dst, ChatMessageDirection dir, bool read, ChatMessageType type, time_t timestamp, char* content);
+
+/**
+ * @brief add a chat with dst to the list, if chat already present does the same to ChatFind(dst)
+ * 
+ * @param dst destination username
+ * @return pointer to the newly created chat struct
+ */
+Chat* ChatAddChat(UserName dst);
+
+/**
+ * @brief save everything and clean the memory allocated for ChatList and the lists inside it
+ * 
+ */
+void ChatFree();
 
 /**
  * @note we should save the chat to a different user in a different file

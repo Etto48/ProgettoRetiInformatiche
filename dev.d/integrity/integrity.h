@@ -1,6 +1,7 @@
 #pragma once
 #include <stdlib.h>
 #include <signal.h>
+#include "../chat_manager/chat_manager.h"
 
 /**
  * @brief load necessary data from file, you must call this at the beginning of main
