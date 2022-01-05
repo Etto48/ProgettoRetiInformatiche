@@ -12,7 +12,6 @@
 #include "../globalDefine.h"
 #include "../debug/debug.h"
 #include "../tools/tools.h"
-#include "../base64/base64.h"
 
 #define NETWORK_SERIALIZED_HEADER_SIZE 5
 
@@ -128,9 +127,10 @@ typedef struct
  * @param[in] type message type
  * @param[in] payload message payload (refer to MessageType documentation), this should be already serialized
  * @param[out] dst_stream destination stream on which we serialize the input; THIS WILL BE DINAMICALLY ALLOCATED, REMEMBER TO FREE IT
+ * @param[in] file_size if you are sending a MESSAGE_DATA with a file, specify the file size as it cannot be deduced, set to NULL otherwise
  * @return total size of the message (header + payload)
  */
-size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t **dst_stream);
+size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t **dst_stream, const size_t* file_size);
 
 /**
  * @brief we get the header in network format (serialized) from src_stream and deserialze it

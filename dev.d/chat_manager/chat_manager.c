@@ -118,6 +118,7 @@ bool ChatLoad(UserName user)
             buf);
         free(buf);
     }
+    close(chat_fd);
     return true;
 }
 
@@ -222,6 +223,7 @@ char* ChatGetFilename(UserName dst)
 
 void ChatAddMessage(UserName dst, ChatMessageDirection dir, bool read, ChatMessageType type, time_t timestamp, char* content)
 {
+    //ChatLoad(dst);//try to load chat with dst
     Chat* target_chat = ChatAddChat(dst);
 
     ChatMessage* target = (ChatMessage*)malloc(sizeof(ChatMessage));

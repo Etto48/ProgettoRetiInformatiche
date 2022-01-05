@@ -44,8 +44,7 @@ void NetworkMainLoop(uint16_t port)
     FD_ZERO(&NetworkMasterFdSet);
     FD_SET(server_socket, &NetworkMasterFdSet);
     FD_SET(STDIN_FILENO, &NetworkMasterFdSet);
-    struct timeval zero_timer;
-    memset(&zero_timer, 0, sizeof(struct timeval));
+    struct timeval select_timer;
     int ready_fd_count;
 
     NetworkListeningPort = port;
@@ -55,7 +54,9 @@ void NetworkMainLoop(uint16_t port)
         do
         {
             slave_set = NetworkMasterFdSet;
-            ready_fd_count = select(MAX_FDI, &slave_set, NULL, NULL, &zero_timer);
+            select_timer.tv_sec=1;
+            select_timer.tv_usec=0;
+            ready_fd_count = select(MAX_FDI, &slave_set, NULL, NULL, &select_timer);
             if (ready_fd_count < 0)
             {
                 dbgerror("Error selecting available FDs");

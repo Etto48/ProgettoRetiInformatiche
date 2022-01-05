@@ -198,6 +198,7 @@ void CLIShow(DeviceCommandInfo dci)
         UserName username = CreateUserName(dci.args[0]);
         if(NetworkSendMessageHanging(NetworkServerInfo.sockfd,&username) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
         {
+            ChatLoad(username);
             bool done = false;
             while(NetworkServerInfo.message_list_head && !done)
             {
@@ -255,6 +256,11 @@ void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
             memset(CLIActivePassword.str, 0, PASSWORD_MAX_LENGTH + 1);
             CLIMode = MODE_LOGIN;
             NetworkServerInfo.address.sin_port = 0; // prevent auto reconnect
+            for(size_t i=3;i<NETWORK_MAX_CONNECTIONS;i++) // disconnect from every peer
+            {
+                if(NetworkConnectedDevices[i].sockfd)
+                    NetworkDeleteConnection(i);
+            }
         }
         else
         {

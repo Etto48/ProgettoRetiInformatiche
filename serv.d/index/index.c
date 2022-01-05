@@ -120,13 +120,12 @@ bool AuthLoad(const char* filename)
         *new_copy_entry = new_entry;
         AuthList = new_copy_entry;
     }
+    close(fd);
     if(error)
     {
         AuthDestroy();
         return false;
     }
-    
-    close(fd);
     return true;
 }
 

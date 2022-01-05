@@ -25,8 +25,24 @@ void RelayHangingAdd(UserName src, UserName dst, time_t timestamp, RelayMessageT
         memcpy(new_message->data,data,data_size);
         break;
     }
-    new_message->next = RelayHangingList;
-    RelayHangingList = new_message;
+    //we must add in order (by timestamp)
+    RelayMessage* last = NULL;
+    for(RelayMessage* i = RelayHangingList; i; i=i->next)
+    {
+        if(i->timestamp >= new_message->timestamp)
+            break;
+        last = i;
+    }
+    if(!last)
+    { // head
+        new_message->next = RelayHangingList;
+        RelayHangingList = new_message;
+    }
+    else
+    { // middle
+        new_message->next = last->next;
+        last->next = new_message;
+    }
 }
 
 RelayMessage *RelayHangingFindFirst(RelayMessage* message_list, UserName *src, UserName *dst)
