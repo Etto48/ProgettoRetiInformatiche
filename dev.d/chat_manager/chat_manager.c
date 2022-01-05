@@ -15,7 +15,6 @@ void ChatHandleSyncread(UserName dst, time_t timestamp)
         {
             if(i->timestamp <= timestamp)
                 i->read = true;
-            else break;
         }
     }
 }
@@ -28,6 +27,8 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
         if (NetworkConnectedDevices[i].sockfd && strncmp(username.str, NetworkConnectedDevices[i].username.str, USERNAME_MAX_LENGTH) == 0)
             return i;
     }
+    if(port==0)
+        return -1;
     // failed to find it, now we must try to connect
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -41,11 +42,7 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
         .sin_port = htons(port),
         .sin_zero = {0}};
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-    {
-        //dbgerror("Error connecting to device");
-        printf("Device is offline, connecting in relay mode\n");
         return -1;
-    }
     NetworkNewConnection(sockfd, addr);
     NetworkConnectedDevices[sockfd].username = username;
     NetworkSendMessageLogin(sockfd, 0, CLIActiveUsername, CreatePassword("")); // send your username
@@ -67,6 +64,8 @@ bool ChatAddTarget(UserName username)
             NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload, &ip, &port);
             NetworkDeleteOneFromServer();
             new_target->sockfd = ChatConnectTo(username, ip, port);
+            if(new_target->sockfd<0)
+                printf("Device is offline, connecting in relay mode\n");
         }
         else
         { // user does not exists
@@ -371,4 +370,37 @@ ChatTarget* ChatTargetFind(UserName user)
             return i;
     }
     return NULL;
+}
+
+bool ChatSyncWith(UserName user)
+{
+    ChatLoad(user);
+    // now we load every hanging message
+    if (NetworkSendMessageHanging(NetworkServerInfo.sockfd, &user) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
+    {
+        bool done = false;
+        while (NetworkServerInfo.message_list_head && !done)
+        {
+            switch (NetworkServerInfo.message_list_head->header.type)
+            {
+            case MESSAGE_RESPONSE:
+                done = true;
+                break;
+            case MESSAGE_DATA:
+            {
+                bool is_file = NetworkMessageDataContainsFile(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload);
+                if (is_file)
+                    ChatSaveMessageFile(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload);
+                else
+                    ChatSaveMessageText(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload);
+                break;
+            }
+            default:
+                printf("Message not expected\n");
+            }
+            NetworkDeleteOneFromServer();
+        }
+        return true;
+    }
+    else return false;
 }

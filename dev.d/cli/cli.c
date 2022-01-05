@@ -196,34 +196,17 @@ void CLIShow(DeviceCommandInfo dci)
     if(NetworkServerInfo.connected)
     {
         UserName username = CreateUserName(dci.args[0]);
-        if(NetworkSendMessageHanging(NetworkServerInfo.sockfd,&username) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
+        ChatLoad(username);
+        Chat* chat = ChatAddChat(username);
+        ChatMessage* latest = chat->tail;
+        if(ChatSyncWith(username))
         {
-            ChatLoad(username);
-            bool done = false;
-            while(NetworkServerInfo.message_list_head && !done)
-            {
-                switch(NetworkServerInfo.message_list_head->header.type)
-                {
-                    case MESSAGE_RESPONSE:
-                        done = true;
-                        printf("Successfully received message list\n");
-                        break;
-                    case MESSAGE_DATA:
-                    {
-                        bool is_file = NetworkMessageDataContainsFile(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
-                        if(is_file)
-                            ChatSaveMessageFile(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
-                        else
-                            ChatSaveMessageText(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
-                        ChatPrintMessage(*(ChatFind(username)->tail),username);
-                        break;
-                    }
-                    default:
-                        printf("Message not expected\n");
-                }
-                NetworkDeleteOneFromServer();
-            }
+            for(ChatMessage* i = latest?latest->next:chat->head;i;i=i->next)
+                ChatPrintMessage(*i,username);
+            printf("Successfully received message list\n");
         }
+        else
+            printf("An error occurred while receiving hanging messages\n");
     }
     else
     {
@@ -236,7 +219,10 @@ void CLIChat(DeviceCommandInfo dci)
     if(ChatAddTarget(target))
     {
         CLIMode = MODE_CHAT;
-        ChatLoad(target);
+        if(!ChatSyncWith(target))
+        { 
+            printf("This chat might not be up to date\n");
+        }
         Chat* chat = ChatAddChat(target);
         for(ChatMessage* i = chat->head;i;i=i->next)
             ChatPrintMessage(*i,target);

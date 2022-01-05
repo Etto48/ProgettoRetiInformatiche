@@ -287,6 +287,9 @@ void ChatSaveMessageText(uint32_t payload_size, const uint8_t* payload);
 ChatTarget* ChatTargetFind(UserName user);
 
 /**
- * @note we should save the chat to a different user in a different file
+ * @brief similar to CLIShow but doesn't print any message
  * 
+ * @param user the user with who we want to sync
+ * @return true if correctly synced
  */
+bool ChatSyncWith(UserName user);

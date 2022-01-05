@@ -53,6 +53,19 @@ void NetworkHandleLogin(int sockfd)
         Password dummy_password;
         NetworkDeserializeMessageLogin(ncd->mh.payload_size, ncd->receive_buffer, &dummy_port, &username, &dummy_password);
         ncd->username = username;
+
+        //check if you are chatting with someone offline that just connected
+        ChatTarget* chat = ChatTargetFind(username);
+        if(chat && chat->sockfd<0)
+        {
+            chat->sockfd = sockfd;
+            printf("%s connected, switching to p2p mode\n",username.str);
+        }
+        else
+        {
+            ChatSyncWith(username);
+            printf("%s is chatting with you\n",username.str);
+        }
     }
 }
 
@@ -109,19 +122,43 @@ void NetworkServerDisconnected()
         NetworkServerInfo.sockfd = -1;
         NetworkServerInfo.connected = false;
         //DebugLog("Connection to the server was interrupted");
-        printf("Connection to the server was interrupted\n");
+        if(NetworkServerInfo.address.sin_port)
+            printf("Connection to the server was interrupted\n");
     }
 }
 
 void NetworkFreeTime()
 {
-    static time_t last_time = 0;
-    time_t this_time = time(NULL);
-    if (last_time == 0 || this_time - last_time > AUTOSAVE_TIME_INTERVAL)
+    static time_t last_save_time = 0;
+    time_t this_save_time = time(NULL);
+    if (last_save_time == 0 || this_save_time - last_save_time > AUTOSAVE_TIME_INTERVAL)
     {
-        last_time = this_time;
+        last_save_time = this_save_time;
         Save();
     }
+
+    /* // NOTE: this section enables you to costantly check if the people you are chatting with become available, and connect to them
+    static time_t last_user_check_time = 0;
+    time_t this_user_check_time = time(NULL);
+    if (last_user_check_time == 0 || this_user_check_time - last_user_check_time > AUTO_USER_CHECK_TIME_INTERVAL)
+    {
+        for(ChatTarget* i = ChatTargetList; i; i=i->next)
+        {
+            if(i->sockfd<0 && NetworkServerInfo.connected)
+            {
+                if (NetworkSendMessageUserinfoReq(NetworkServerInfo.sockfd, i->dst) && NetworkReceiveResponseFromServer(MESSAGE_USERINFO_RES))
+                { // user online
+                    uint32_t ip;
+                    uint16_t port;
+                    NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload, &ip, &port);
+                    NetworkDeleteOneFromServer();
+                    i->sockfd = ChatConnectTo(i->dst, ip, port);
+                    if(i->sockfd>=0)
+                        printf("%s connected, switching to p2p mode\n",i->dst.str);
+                }
+            }
+        }
+    } */
 
     if (NetworkServerInfo.connected)
     {
@@ -325,9 +362,14 @@ void NetworkDeletedConnectionHook(int sockfd)
 {
     NetworkDeviceConnection* ncd = NetworkConnectedDevices + sockfd;
     ChatTarget* target;
-    if(ncd->username.str[0]!='\0' && (target = ChatTargetFind(ncd->username)))
+    if(ncd->username.str[0]!='\0')
     {
-        target->sockfd = -1;
-        printf("%s disconnected, switching to relay mode\n",ncd->username.str);
+        if((target = ChatTargetFind(ncd->username)))
+        {
+            target->sockfd = -1;
+            printf("%s disconnected, switching to relay mode\n",ncd->username.str);
+        }
+        else
+            printf("%s disconnected\n",ncd->username.str);
     }
 }

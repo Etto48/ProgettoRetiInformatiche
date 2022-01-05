@@ -10,6 +10,7 @@
 #include "../../global.d/network_tools/network_common/network_common.h"
 
 #define AUTOSAVE_TIME_INTERVAL 60
+#define AUTO_USER_CHECK_TIME_INTERVAL 10
 
 #define SERVER_ADDRESS "0.0.0.0"
 
