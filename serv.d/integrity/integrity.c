@@ -15,9 +15,12 @@ void Startup()
 
 void Save()
 {
-    AuthSave(AUTH_FILE);
-    RelaySave(RELAY_FILE);
-    RelaySyncreadSave(RELAY_SYNCREAD_FILE);
+    bool ok = true;
+    ok = ok && AuthSave(AUTH_FILE);
+    ok = ok && RelaySave(RELAY_FILE);
+    ok = ok && RelaySyncreadSave(RELAY_SYNCREAD_FILE);
+    if(!ok)
+        printf("An errror occurred saving files\n");
 }
 
 void SaveAndExit(int status)

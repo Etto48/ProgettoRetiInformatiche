@@ -206,11 +206,15 @@ bool NetworkReceiveResponseFromServer(MessageType expected_type)
                 NetworkServerInfo.message_list_tail->header.payload_size,
                 NetworkServerInfo.message_list_tail->payload,
                 &ok);
-            error = !ok;
+            error = !ok || expected_type!=MESSAGE_RESPONSE; // if we weren't expecting a MESSAGE_RESPONSE we should know somthing went wrong
+            count++;
             break; // we have received everything
         }
         else if (NetworkServerInfo.message_list_tail->header.type == expected_type)
+        {
+            count++;
             break; // we are requested to stop here
+        }
         else
         {
             NetworkHandleServerNotifications();

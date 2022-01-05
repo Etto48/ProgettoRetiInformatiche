@@ -26,7 +26,7 @@
 #define MESSAGE_USERINFO_RES_SIZE (sizeof(uint32_t)+sizeof(uint16_t))
 #define MESSAGE_SYNCREAD_SIZE (USERNAME_MAX_LENGTH+sizeof(uint64_t))
 #define MESSAGE_DATA_TEXT_MIN_SIZE (USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + sizeof(uint64_t) + sizeof(uint8_t))
-#define MESSAGE_DATA_FILE_MIN_SIZE (MESSAGE_DATA_TEXT_MIN_SIZE + sizeof(uint32_t))
+#define MESSAGE_DATA_FILE_MIN_SIZE (USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + sizeof(uint64_t) + sizeof(uint8_t) + sizeof(uint32_t))
 
 /**
  * @brief payload description is under the message type

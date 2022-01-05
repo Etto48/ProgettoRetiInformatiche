@@ -6,7 +6,7 @@ size_t ToolsBasename(const char* path)
     for(size_t i = 0; path[i] != '\0'; i++)
     {
         if(path[i]=='/')
-            ret = i;
+            ret = i + 1;
     }
     return ret;
 }

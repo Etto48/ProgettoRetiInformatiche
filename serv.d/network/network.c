@@ -144,7 +144,7 @@ void NetworkHandleHanging(int sockfd)
         else
         { // only messages from user
             time_t last_timestamp = 0;
-            for (RelayMessage *i = RelayHangingPopFirst(&from, &ncd->username); i; RelayHangingDestroyMessage(i))
+            for (RelayMessage *i = RelayHangingPopFirst(&from, &ncd->username); i; i=RelayHangingPopFirst(&from, &ncd->username))
             {
                 switch (i->type)
                 {
@@ -156,6 +156,7 @@ void NetworkHandleHanging(int sockfd)
                     break;
                 }
                 last_timestamp = i->timestamp > last_timestamp ? i->timestamp : last_timestamp;
+                RelayHangingDestroyMessage(i);
             }
             if (last_timestamp > 0)
             { // now we must send a message syncread to the other end if possible
@@ -175,10 +176,16 @@ void NetworkHandleUserinfoReq(int sockfd)
     {
         UserName username;
         NetworkDeserializeMessageUserinfoReq(ncd->mh.payload_size, ncd->receive_buffer, &username);
-        IndexEntry *res = IndexGetOnline(username);
-        uint32_t ip = res ? res->ip : 0;
-        uint16_t port = res ? res->port : 0;
-        NetworkSendMessageUserinfoRes(sockfd, ip, port);
+
+        if(AuthExists(username))
+        {
+            IndexEntry *res = IndexGetOnline(username);
+            uint32_t ip = res ? res->ip : 0;
+            uint16_t port = res ? res->port : 0;
+            NetworkSendMessageUserinfoRes(sockfd, ip, port);
+        }
+        else
+            NetworkSendMessageResponse(sockfd, false);
     }
     else
         NetworkSendMessageResponse(sockfd, false);

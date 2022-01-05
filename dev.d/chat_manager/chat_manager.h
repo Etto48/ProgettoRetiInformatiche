@@ -180,8 +180,9 @@ bool ChatLoad(UserName user);
 /**
  * @brief save every chat to it's file
  * 
+ * @return true if saved correctly
  */
-void ChatSave();
+bool ChatSave();
 
 /**
  * @brief get a line from stdin and write it to the ative chat

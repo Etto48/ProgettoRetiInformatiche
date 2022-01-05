@@ -65,6 +65,14 @@ bool AuthRegister(UserName username, Password password);
 bool AuthCheck(UserName username, Password password);
 
 /**
+ * @brief check if a user exists
+ * 
+ * @param username username
+ * @return true if the user exits
+ */
+bool AuthExists(UserName username);
+
+/**
  * @brief load auth information from a file
  * 
  * @param filename path of the file

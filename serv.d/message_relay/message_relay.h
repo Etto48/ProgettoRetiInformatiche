@@ -1,5 +1,6 @@
 #pragma once
 #include <time.h>
+#include <arpa/inet.h>
 #include "../index/index.h"
 
 #define RELAY_FILE "./Relay.lst"
@@ -143,18 +144,20 @@ RelayMessage* RelayHangingPopFirst(UserName *src, UserName *dst);
 void RelayHangingDestroyMessage(RelayMessage* msg);
 
 /**
- * @brief load RelayHangingList from file
+ * @brief load RelayHangingList from file, RelayHangingList must be empty
  * 
  * @param filename file path
+ * @return true if loaded correctly
  */
-void RelayLoad(const char* filename);
+bool RelayLoad(const char* filename);
 
 /**
  * @brief save RelayHangingList to file
  * 
  * @param filename file path
+ * @return true if saved correctly
  */
-void RelaySave(const char* filename);
+bool RelaySave(const char* filename);
 
 /**
  * @brief when a relay message is read if possible we try to send a message syncread to src,
@@ -187,12 +190,14 @@ void RelaySyncreadDelete(UserName* src, UserName* dst);
  * @brief load RelaySyncreadList from file
  * 
  * @param filename path to file
+ * @return true if loaded correctly
  */
-void RelaySyncreadLoad(const char* filename);
+bool RelaySyncreadLoad(const char* filename);
 
 /**
  * @brief save RelaySyncreadList to file
  * 
  * @param filename path to file
+ * @return true if saved correctly
  */
-void RelaySyncreadSave(const char* filename);
+bool RelaySyncreadSave(const char* filename);

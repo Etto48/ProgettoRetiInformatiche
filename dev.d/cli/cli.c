@@ -8,8 +8,12 @@ CommandMode CLIMode = MODE_LOGIN;
 void CLIHandleInput()
 {
     char first_char = getchar();
-    ungetc(first_char, stdin);
-    if (CLIMode != MODE_CHAT || first_char == '\\')
+    char second_char = getchar(); 
+    // you can escape a command to send something that begins with "\"
+    ungetc(second_char, stdin);
+    if(!(first_char == '\\' && second_char == '\\'))
+        ungetc(first_char, stdin);
+    if (CLIMode != MODE_CHAT || (first_char == '\\' && second_char != '\\'))
     {
         DeviceCommandInfo dci = CommandParserGetCommand(CLIMode);
         switch (dci.command)
@@ -210,6 +214,7 @@ void CLIShow(DeviceCommandInfo dci)
                             ChatSaveMessageFile(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
                         else
                             ChatSaveMessageText(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload);
+                        ChatPrintMessage(*(ChatFind(username)->tail),username);
                         break;
                     }
                     default:
@@ -235,6 +240,8 @@ void CLIChat(DeviceCommandInfo dci)
         for(ChatMessage* i = chat->head;i;i=i->next)
             ChatPrintMessage(*i,target);
     }
+    else
+        printf("%s is not a valid username\n",target.str);
 }
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
@@ -279,8 +286,32 @@ void CLIChatAdd(DeviceCommandInfo dci)
     {
         printf("%s added to the chat\n",target.str);
     }
+    else
+    {
+        printf("%s is not a valid username\n",target.str);
+    }
 }
 void CLIChatFile(DeviceCommandInfo dci)
 {
-    // TODO: fill me
+    char* filename = dci.args[0];
+    struct stat st;
+    int fd = -1;
+    if(stat(filename,&st)<0 || (fd = open(filename,O_RDONLY))<0)
+    {
+        printf("Could not open %s\n",filename);
+        return;
+    }
+    uint8_t* file_buffer = (uint8_t*)malloc(st.st_size);
+    read(fd,file_buffer,st.st_size);
+    close(fd);
+    time_t timestamp = time(NULL);
+    for(ChatTarget* i = ChatTargetList;i;i=i->next)
+    {
+        NetworkSendMessageDataFileBuffer(
+            (i->sockfd<0?NetworkServerInfo.sockfd:i->sockfd),
+            CLIActiveUsername,i->dst,timestamp,filename+ToolsBasename(filename),st.st_size,file_buffer);
+        ChatAddMessage(i->dst,CHAT_MESSAGE_SENT,i->sockfd>=0,CHAT_MESSAGE_FILE,timestamp,filename);
+    }
+    ChatPrintMessage(*(ChatFind(ChatTargetList->dst)->tail),ChatTargetList->dst);
+    free(file_buffer);
 }

@@ -238,7 +238,8 @@ void NetworkDeserializeMessageDataFile(size_t payload_size, const uint8_t *paylo
         size_t file_size = NetworkMessageDataFileSize(payload_size,payload);
         memcpy(filename,payload+MESSAGE_DATA_FILE_MIN_SIZE,filename_size);
         filename[filename_size]='\0';
-        B64Decode(payload+MESSAGE_DATA_FILE_MIN_SIZE+filename_size,B64EncSize(file_size),data);
+        size_t b64_size = B64EncSize(file_size);
+        B64Decode(payload+MESSAGE_DATA_FILE_MIN_SIZE+filename_size,b64_size,data);
     }
     else
         DebugLog("DATA deserialization error");
@@ -345,23 +346,6 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
     bool ret = NetworkSendMessageDataFileBuffer(sockfd,src_username,dst_username,timestamp,filename+basename_offset,st.st_size,file_buffer);
     free(file_buffer);
     return ret;
-    /*size_t file_base64_size = B64EncSize(st.st_size) + 1;
-    uint8_t *file_base64_buffer = (uint8_t *)malloc(file_base64_size);
-    B64Encode(file_buffer, st.st_size, file_base64_buffer);
-    free(file_buffer);
-
-    size_t basename_offset = ToolsBasename(filename);
-    uint32_t basename_length = strlen(filename + basename_offset);
-    uint8_t *payload = (uint8_t *)malloc(USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4 + basename_length + file_base64_size);
-    memcpy(payload, src_username.str, USERNAME_MAX_LENGTH);
-    memcpy(payload + USERNAME_MAX_LENGTH, dst_username.str, USERNAME_MAX_LENGTH);
-    *(uint64_t *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH) = htonq(timestamp);
-    *(char *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8) = 'F';
-    *(uint32_t *)(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1) = htonl(basename_length);
-    memcpy(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4, filename + basename_offset, basename_length);
-    memcpy(payload + USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4 + basename_length, file_base64_buffer, file_base64_size);
-    free(file_base64_buffer);*/
-
 }
 
 bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename, size_t file_size, const uint8_t* data)
@@ -369,6 +353,7 @@ bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserNam
     size_t file_base64_size = B64EncSize(file_size) + 1;
     uint8_t *file_base64_buffer = (uint8_t *)malloc(file_base64_size);
     B64Encode(data, file_size, file_base64_buffer);
+    file_base64_buffer[file_base64_size-1] = '\0';
 
     uint32_t basename_length = strlen(filename); 
     uint8_t *payload = (uint8_t *)malloc(USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + 8 + 1 + 4 + basename_length + file_base64_size);

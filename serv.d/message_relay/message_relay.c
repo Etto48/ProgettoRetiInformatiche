@@ -86,14 +86,114 @@ void RelayHangingDestroyMessage(RelayMessage* msg)
     }
 }
 
-void RelayLoad(const char* filename)
+bool RelayLoad(const char* filename)
 {
-    //TODO: fill me
+    // TODO: fill me
+    if(RelayHangingList)
+        return false;
+    int fd = open(filename,O_RDWR|O_CREAT,S_IRUSR|S_IWUSR);
+    if (fd < 0)
+    {
+        dbgerror("Error opening relay file");
+        return false;
+    }
+    while(true)
+    {
+        UserName src;
+        UserName dst;
+        uint64_t timestamp;
+        char type;
+        uint32_t data_len = 0;
+        char* filename = NULL;
+        uint8_t* data = NULL;
+        if(read(fd,src.str,USERNAME_MAX_LENGTH)==0)
+            break;
+        src.str[USERNAME_MAX_LENGTH] = '\0';
+        read(fd,dst.str,USERNAME_MAX_LENGTH);
+        dst.str[USERNAME_MAX_LENGTH] = '\0';
+        read(fd,&timestamp,sizeof(uint64_t));
+        timestamp = ntohq(timestamp);
+        read(fd,&type,sizeof(char));
+        switch (type)
+        {
+        case 'F':
+            {
+                uint32_t filename_len;
+                read(fd,&filename_len,sizeof(uint32_t));
+                filename_len = ntohl(filename_len);
+                filename = (char*)malloc(filename_len+1);
+                read(fd,filename,filename_len);
+                filename[filename_len] = '\0';
+                read(fd,&data_len,sizeof(uint32_t));
+                data_len = ntohl(data_len);
+                data = (uint8_t*)malloc(data_len);
+                read(fd,data,data_len);
+            }
+            break;
+        case 'T':
+            {
+                read(fd,&data_len,sizeof(uint32_t));
+                data_len = ntohl(data_len);
+                data = (uint8_t*)malloc(data_len+1);
+                read(fd,data,data_len);
+                data[data_len]='\0';
+            }
+            break;
+        }
+        RelayHangingAdd(src,dst,timestamp,
+            type=='F'?RELAY_MESSAGE_FILE:RELAY_MESSAGE_TEXT,
+            filename,
+            data_len,
+            data);
+        if(filename)
+            free(filename);
+        free(data);
+    }
+    close(fd);
+    return true;
 }
 
-void RelaySave(const char* filename)
+bool RelaySave(const char* filename)
 {
-    //TODO: fill me
+    // TODO: fill me
+    int fd = open(filename,O_WRONLY|O_CREAT,S_IRUSR|S_IWUSR);
+    if (fd < 0)
+    {
+        dbgerror("Error opening relay file");
+        return false;
+    }
+    for(RelayMessage* i = RelayHangingList; i; i=i->next)
+    {
+        write(fd,i->src.str,USERNAME_MAX_LENGTH);
+        write(fd,i->dst.str,USERNAME_MAX_LENGTH);
+        uint64_t timestamp = htonq(i->timestamp);
+        write(fd,&timestamp,sizeof(uint64_t));
+        switch (i->type)
+        {
+        case RELAY_MESSAGE_FILE:
+            {
+                write(fd,"F",sizeof(char));
+                uint32_t filename_len = htonl(strlen(i->filename));
+                write(fd,&filename_len,sizeof(uint32_t));
+                write(fd,i->filename,strlen(i->filename));
+                uint32_t file_len = htonl(i->data_size);
+                write(fd,&file_len,sizeof(uint32_t));
+                write(fd,i->data,i->data_size);
+            }
+            break;
+        
+        case RELAY_MESSAGE_TEXT:
+            {
+                write(fd,"T",sizeof(char));
+                uint32_t text_len = htonl(strlen((char*)i->data));
+                write(fd,&text_len,sizeof(uint32_t));
+                write(fd,i->data,strlen((char*)i->data));
+            }
+            break;
+        }        
+    }
+    close(fd);
+    return true;
 }
 
 void RelaySyncreadEdit(UserName src, UserName dst, time_t timestamp)
@@ -116,12 +216,14 @@ void RelaySyncreadDelete(UserName* src, UserName* dst)
     //TODO: fill me
 }
 
-void RelaySyncreadLoad(const char* filename)
+bool RelaySyncreadLoad(const char* filename)
 {
     //TODO: fill me
+    return true;
 }
 
-void RelaySyncreadSave(const char* filename)
+bool RelaySyncreadSave(const char* filename)
 {
     //TODO: fill me
+    return true;
 }

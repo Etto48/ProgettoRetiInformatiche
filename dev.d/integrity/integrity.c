@@ -12,7 +12,10 @@ void Startup()
 
 void Save()
 {
-    ChatSave();
+    bool ok = true;
+    ok = ok && ChatSave();
+    if(!ok)
+        printf("An errror occurred saving files\n");
 }
 
 void SaveAndExit(int status)

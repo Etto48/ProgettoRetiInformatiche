@@ -69,8 +69,9 @@ bool ChatAddTarget(UserName username)
             new_target->sockfd = ChatConnectTo(username, ip, port);
         }
         else
-        { // user offline
-            new_target->sockfd = -1;
+        { // user does not exists
+            free(new_target);
+            return false;
         }
         new_target->next = ChatTargetList;
         ChatTargetList = new_target;
@@ -120,14 +121,14 @@ bool ChatLoad(UserName user)
     return true;
 }
 
-void ChatSave()
+bool ChatSave()
 {
     if(mkdir(CHAT_DIR,S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)<0)
     {
         if(errno!=EEXIST)
         {
             dbgerror("Error creating chat directory");
-            return;
+            return false;
         }
     }
     for(Chat* i = ChatList; i; i=i->next)
@@ -136,7 +137,7 @@ void ChatSave()
         if(chat_fd<0)
         {
             dbgerror("Error opening chat file");
-            return;
+            return false;
         }
         for(ChatMessage* j = i->head; j; j=j->next)
         {   
@@ -152,6 +153,7 @@ void ChatSave()
         }
         close(chat_fd);
     }
+    return true;
 }
 
 void ChatWrite()
@@ -169,8 +171,8 @@ void ChatWrite()
         // we must add the message to the list and write it to file
         ChatLoad(i->dst);
         ChatAddMessage(i->dst,CHAT_MESSAGE_SENT,i->sockfd>=0,CHAT_MESSAGE_TEXT,timestamp,text);
-        ChatPrintMessage(*(ChatFind(i->dst)->tail),i->dst);
     }
+    ChatPrintMessage(*(ChatFind(ChatTargetList->dst)->tail),ChatTargetList->dst);
 }
 
 void ChatQuit()
@@ -181,7 +183,6 @@ void ChatQuit()
         ChatTargetList = target->next;
         free(target);
     }
-
 }
 
 void ChatPrintMessage(ChatMessage msg, UserName dst)
@@ -195,7 +196,7 @@ void ChatPrintMessage(ChatMessage msg, UserName dst)
              timestamp.tm_hour,
              timestamp.tm_min,
              timestamp.tm_sec);
-    printf("%-20s | %-20s | %2s %s%s\n",
+    printf(" %-20s | %-20s | %2s %s%s\n",
            time_buf,
            msg.direction == CHAT_MESSAGE_SENT ? "You" : dst.str,
            msg.read ? "**" : "*",

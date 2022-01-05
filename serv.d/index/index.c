@@ -57,7 +57,17 @@ bool AuthCheck(UserName username, Password password)
 {
     for(AuthEntry* i = AuthList; i; i=i->next)
     {
-        if(strcmp(username.str,i->username.str)==0 && memcmp(password.str,i->password.str,PASSWORD_MAX_LENGTH)==0)
+        if(strncmp(username.str,i->username.str,USERNAME_MAX_LENGTH)==0 && memcmp(password.str,i->password.str,PASSWORD_MAX_LENGTH)==0)
+            return true;
+    }
+    return false;
+}
+
+bool AuthExists(UserName username)
+{
+    for(AuthEntry* i=AuthList; i; i=i->next)
+    {
+        if(strncmp(username.str,i->username.str,USERNAME_MAX_LENGTH)==0)
             return true;
     }
     return false;
