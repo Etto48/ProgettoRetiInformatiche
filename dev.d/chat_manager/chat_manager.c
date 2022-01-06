@@ -8,6 +8,7 @@ ChatTarget *ChatTargetList = NULL;
 void ChatHandleSyncread(UserName dst, time_t timestamp)
 {
     ChatLoad(dst);
+    //ChatTarget* target = ChatTargetFind(dst); //NOTE: if set, the messages you are seeing may have * instead of **
     Chat* chat = ChatFind(dst);
     if(chat)
     {
@@ -22,11 +23,9 @@ void ChatHandleSyncread(UserName dst, time_t timestamp)
 int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
 {
     // search in the chat
-    for (size_t i = 3; i < NETWORK_MAX_CONNECTIONS; i++)
-    {
-        if (NetworkConnectedDevices[i].sockfd && strncmp(username.str, NetworkConnectedDevices[i].username.str, USERNAME_MAX_LENGTH) == 0)
-            return i;
-    }
+    int check_connected = NetworkFindConnection(username);
+    if(check_connected>=0)
+        return check_connected;
     if(port==0)
         return -1;
     // failed to find it, now we must try to connect

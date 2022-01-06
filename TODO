@@ -28,3 +28,6 @@ Todo:
 
 Fixme:
     ✔ Check NetworkReceiveNewData when there is a wrong header @done(21-12-27 23:39)
+
+Note:
+    ☐ @critical when using strcmp or strncmp you must check if it EQUALS 0

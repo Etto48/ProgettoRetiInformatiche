@@ -136,6 +136,17 @@ void NetworkDeleteConnection(int sockfd)
 #endif
 }
 
+int NetworkFindConnection(UserName user)
+{
+    for(int i = 3; i<NETWORK_MAX_CONNECTIONS;i++)
+    {
+        NetworkDeviceConnection* ncd = NetworkConnectedDevices + i;
+        if(ncd->sockfd && strncmp(user.str,ncd->username.str,USERNAME_MAX_LENGTH) == 0)
+            return i;
+    }
+    return -1;
+}
+
 void NetworkReceiveNewData(int sockfd)
 {
     if (!NetworkConnectedDevices[sockfd].header_received && !NetworkConnectedDevices[sockfd].receive_buffer)

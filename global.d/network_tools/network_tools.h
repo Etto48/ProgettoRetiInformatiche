@@ -339,7 +339,7 @@ bool NetworkSendMessageUserinfoRes(int sockfd, uint32_t ip, uint16_t port);
  * @brief send MESSAGE_SYNCREAD
  *
  * @param sockfd socket fd on which we send the message
- * @param username username of the message sender
+ * @param username username of the receiver
  * @param timestamp timestamp of the last message read
  * @return true if the message was sent correctly
  */

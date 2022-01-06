@@ -84,6 +84,14 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr);
 void NetworkDeleteConnection(int sockfd);
 
 /**
+ * @brief check if a user is currently connected and return it's socket file descriptor
+ * 
+ * @param user username
+ * @return socket file descriptor of the user, -1 if not found
+ */
+int NetworkFindConnection(UserName user);
+
+/**
  * @brief we use this to receive new data and handle the request
  * 
  * @param sockfd socket file descriptor from which we receive data

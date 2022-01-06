@@ -30,7 +30,6 @@ static inline uint32_t right_rot(uint32_t value, unsigned int count)
  * @param h Pointer to the first hash item, of a total of eight.
  * @param p Pointer to the chunk data, which has a standard length.
  *
- * @note This is the SHA-256 work horse.
  */
 static inline void consume_chunk(uint32_t *h, const uint8_t *p)
 {

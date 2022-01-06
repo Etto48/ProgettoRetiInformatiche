@@ -2,6 +2,8 @@
 #include <time.h>
 #include <arpa/inet.h>
 #include "../index/index.h"
+#include "../../global.d/network_tools/network_tools.h"
+#include "../../global.d/network_tools/network_common/network_common.h"
 
 #define RELAY_FILE "./Relay.lst"
 #define RELAY_SYNCREAD_FILE "./Syncread.lst"
@@ -163,7 +165,7 @@ bool RelaySave(const char* filename);
  * @brief when a relay message is read if possible we try to send a message syncread to src,
  * we update the entry in the list otherwise
  * 
- * @param src message sender
+ * @param src message sender, the notification will be delivered to it
  * @param dst message receiver
  * @param timestamp last received message timestamp
  */

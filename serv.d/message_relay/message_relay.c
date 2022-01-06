@@ -214,7 +214,23 @@ bool RelaySave(const char* filename)
 
 void RelaySyncreadEdit(UserName src, UserName dst, time_t timestamp)
 {
-    //TODO: fill me
+    //first we check if the user is online
+    int check_connected = NetworkFindConnection(src);
+    bool sent = false;
+    if(check_connected>=0)
+    { // the user is online, we must send to him the message directly
+        sent = NetworkSendMessageSyncread(check_connected,dst,timestamp);
+    }
+    
+    if(!sent)
+    { // the user is offline we store the message for the future
+        RelaySyncreadNotice* new_notice = (RelaySyncreadNotice*)malloc(sizeof(RelaySyncreadNotice));
+        new_notice->src = src;
+        new_notice->dst = dst;
+        new_notice->timestamp = timestamp;
+        new_notice->next = RelaySyncreadList;
+        RelaySyncreadList = new_notice;
+    }
 }
 
 RelaySyncreadNotice* RelaySyncreadFind(UserName* src, UserName* dst)
@@ -229,7 +245,26 @@ RelaySyncreadNotice* RelaySyncreadFind(UserName* src, UserName* dst)
 
 void RelaySyncreadDelete(UserName* src, UserName* dst)
 {
-    //TODO: fill me
+    RelaySyncreadNotice* last = NULL;
+    RelaySyncreadNotice* i = NULL;
+    for(i = RelaySyncreadList; i; i=i->next)
+    {
+        if((!src || strncmp(src->str,i->src.str,USERNAME_MAX_LENGTH)==0) && (!dst || strncmp(dst->str,i->dst.str,USERNAME_MAX_LENGTH)==0))
+            break;
+        last = i;
+    }
+    if(i)
+    { // we need to delete something
+        if(!last)
+        { // delete the head
+            RelaySyncreadList = i->next;
+        }
+        else
+        { // delete the middle
+            last->next = i->next;
+        }
+        free(i);
+    }
 }
 
 bool RelaySyncreadLoad(const char* filename)

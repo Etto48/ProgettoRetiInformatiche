@@ -86,12 +86,23 @@ void NetworkHandleLogout(int sockfd)
     close(sockfd);
 }
 
+
+/**
+ * @brief this struct is used to memorize the usernames that need to be sent with a response to a MESSAGE_HANGING
+ * 
+ */
 typedef struct _UserNameList
 {
     UserName user;
     struct _UserNameList* next;
 } UserNameList;
-
+/**
+ * @brief find a username in a list made from the previous struct
+ * 
+ * @param list pointer to the list
+ * @param user username
+ * @return pointer to the entry if found, NULL otherwise 
+ */
 UserNameList* UserNameListFind(UserNameList* list, UserName user)
 {
     for(UserNameList* j = list; j; j=j->next)
@@ -103,6 +114,12 @@ UserNameList* UserNameListFind(UserNameList* list, UserName user)
     }
     return NULL;
 }
+/**
+ * @brief add an entry to a username list
+ * 
+ * @param list pointer to the list
+ * @param user username to add
+ */
 void UserNameListAdd(UserNameList** list, UserName user)
 {
     UserNameList* target = (UserNameList*)malloc(sizeof(UserNameList));
@@ -110,6 +127,11 @@ void UserNameListAdd(UserNameList** list, UserName user)
     target->next = *list;
     *list = target;
 }
+/**
+ * @brief delete a username list
+ * 
+ * @param list pointer to the list
+ */
 void UserNameListDelete(UserNameList** list)
 {
     UserNameList* next = NULL;
@@ -160,6 +182,7 @@ void NetworkHandleHanging(int sockfd)
             }
             if (last_timestamp > 0)
             { // now we must send a message syncread to the other end if possible
+            //FIXME: possibly broken
                 RelaySyncreadEdit(from, ncd->username, last_timestamp);
             }
         }

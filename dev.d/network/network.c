@@ -167,10 +167,8 @@ void NetworkFreeTime()
         FD_SET(NetworkServerInfo.sockfd, &only_server);
         struct timeval zero_timer;
         memset(&zero_timer, 0, sizeof(struct timeval));
-        if (select(NetworkServerInfo.sockfd + 1, &only_server, NULL, NULL, &zero_timer) <= 0)
-        {
+        if (select(NetworkServerInfo.sockfd + 1, &only_server, NULL, NULL, &zero_timer) < 0)
             return;
-        }
         else if (FD_ISSET(NetworkServerInfo.sockfd, &only_server))
         {
             if (NetworkReceiveOneFromServer())
@@ -236,6 +234,7 @@ bool NetworkReceiveResponseFromServer(MessageType expected_type)
             error = true;
             break;
         }
+        count++;
         if (NetworkServerInfo.message_list_tail->header.type == MESSAGE_RESPONSE)
         {
             bool ok = false;
@@ -244,19 +243,12 @@ bool NetworkReceiveResponseFromServer(MessageType expected_type)
                 NetworkServerInfo.message_list_tail->payload,
                 &ok);
             error = !ok || expected_type!=MESSAGE_RESPONSE; // if we weren't expecting a MESSAGE_RESPONSE we should know somthing went wrong
-            count++;
             break; // we have received everything
         }
         else if (NetworkServerInfo.message_list_tail->header.type == expected_type)
-        {
-            count++;
             break; // we are requested to stop here
-        }
         else
-        {
             NetworkHandleServerNotifications();
-        }
-        count++;
     }
     if (error)
     { // if we have some error receiving from the server mid-transmission, we delete the trasmission
@@ -320,13 +312,13 @@ bool NetworkDeleteOneFromServer()
 
 void NetworkHandleServerNotifications()
 {
-    if (NetworkServerInfo.message_list_head)
+    if (NetworkServerInfo.message_list_tail)
     { // if there is anything in the list
-        switch (NetworkServerInfo.message_list_head->header.type)
+        switch (NetworkServerInfo.message_list_tail->header.type)
         {
         case MESSAGE_SYNCREAD:
-            NetworkHandleSyncread(NetworkServerInfo.message_list_head);
-            NetworkDeleteOneFromServer();
+            NetworkHandleSyncread(NetworkServerInfo.message_list_tail);
+            NetworkDeleteOneFromServerTail();
             break;
         default:
             break;
