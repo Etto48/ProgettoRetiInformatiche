@@ -30,7 +30,7 @@ ServerCommand CommandParserGetCommand()
     }
     else 
     {
-        printf("Not a valid command, type \"help\" to get a list of valid commands.\n");
+        printf("Not a valid command, type \"help\" to get a list of commands\n");
         return COMMAND_ERROR;
     }
     return COMMAND_ERROR;

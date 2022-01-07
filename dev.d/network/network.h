@@ -14,6 +14,12 @@
 
 #define SERVER_ADDRESS "0.0.0.0"
 
+/**
+ * @brief if set to true the program will execute SaveAndExit ASAP
+ * 
+ */
+extern bool NetworkShutdownRequested;
+
 typedef struct _ServerMessage
 {
     MessageHeader header;

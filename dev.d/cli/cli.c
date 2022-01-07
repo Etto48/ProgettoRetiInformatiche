@@ -19,8 +19,8 @@ void CLIHandleInput()
         switch (dci.command)
         {
         case COMMAND_HELP:
-            // DebugTag("HELP");
-            printf("\
+            if(CLIMode!=MODE_CHAT)
+                printf("\
 Available commands:\n\
  - help\n\
    (This command is available before and after the login) shows a command list + instructions\n\
@@ -37,6 +37,13 @@ Available commands:\n\
  - show <username>\n\
    request a list of hanging messages from <username> (This command is only available after the login)\n\
 \n\
+ - rmchat <username>\n\
+   delete the chat history with <username> and remove it from the\n\
+   contact list\n\
+\n\
+ - users\n\
+   it's equivalent to \\u but can be used outside the chat\n\
+\n\
  - chat <username>\n\
    you can start a chat with <username> with this command\n\
    once in a chat you can use the following commands\n\
@@ -49,64 +56,69 @@ Available commands:\n\
      add a user to the chat\n\
    > f <filename>\n\
      share a file with the chat\n\
+   > h\n\
+     shows a help page about chat commands\n\
 \n\
  - [log]out\n\
    logs you out and closes the program (This command is only available after the login)\n\
 \n\
  - esc|exit\n\
    saves everything and closes the program\n");
+            else
+                printf("\
+Chat commands:\n\
+ \\q\n\
+   close the chat\n\
+ \\u\n\
+   list online users available for chat\n\
+ \\a <username>\n\
+   add a user to the chat\n\
+ \\f <filename>\n\
+   share a file with the chat\n\
+ \\h\n\
+   shows a help page about chat commands\n");
             break;
         case COMMAND_SIGNUP:
-            // DebugTag("SIGNUP");
             CLISignup(dci);
             break;
         case COMMAND_IN:
-            // DebugTag("IN");
             CLILogin(dci);
             break;
         case COMMAND_HANGING:
-            // DebugTag("HANGING");
             CLIHanging(dci);
             break;
         case COMMAND_SHOW:
-            // DebugTag("SHOW");
             CLIShow(dci);
             break;
+        case COMMAND_RMCHAT:
+            CLIRmchat(dci);
+            break;
+        case COMMAND_USERS:
+            CLIChatUsers(dci);
+            break;
         case COMMAND_CHAT:
-            // DebugTag("CHAT");
             CLIChat(dci);
             break;
         case COMMAND_OUT:
-            // DebugTag("OUT");
             CLILogout(dci);
             break;
         case COMMAND_ESC:
-            // DebugTag("ESC");
             CLIEsc(dci);
             break;
         case COMMAND_CHAT_QUIT:
-            // DebugTag("CHAT->QUIT");
             CLIChatQuit(dci);
             break;
         case COMMAND_CHAT_USERS:
-            // DebugTag("CHAT->USERS");
             CLIChatUsers(dci);
             break;
         case COMMAND_CHAT_ADD:
-            // DebugTag("CHAT->ADD");
             CLIChatAdd(dci);
             break;
         case COMMAND_CHAT_FILE:
-            // DebugTag("CHAT->FILE");
             CLIChatFile(dci);
             break;
         default:
-            // DebugTag("ERROR");
-            printf("The command is not valid");
-            if (CLIMode == MODE_LOGIN)
-                printf(" or you need to login first\n");
-            else
-                printf("\n");
+            break;
         }
     }
     else
@@ -239,6 +251,17 @@ void CLIChat(DeviceCommandInfo dci)
     else
         printf("%s is not a valid username\n", target.str);
 }
+void CLIRmchat(DeviceCommandInfo dci)
+{
+    UserName target = CreateUserName(dci.args[0]);
+    if(remove(ChatGetFilename(target))<0)
+        printf("Nothing to remove\n");
+    else
+    {
+        ChatDelete(target);
+        printf("%s successfully removed\n",target.str);
+    }
+}
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
     if (NetworkServerInfo.connected)
@@ -297,10 +320,8 @@ void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
                         uint16_t port;
                         NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload,&ip,&port);
                         NetworkDeleteOneFromServer();
-                        if(port)
-                            printf("+ %s (%u)\n", dir->d_name,port);
-                        else
-                            printf("- %s (%u)\n", dir->d_name,port);
+                        char online = port ? '+':'-';
+                        printf("%c %s\n", online, dir->d_name);
                     }
                 }
             }
@@ -343,6 +364,7 @@ void CLIChatFile(DeviceCommandInfo dci)
     uint8_t *file_buffer = (uint8_t *)malloc(st.st_size);
     read(fd, file_buffer, st.st_size);
     close(fd);
+    printf("\e[1A\r");
     time_t timestamp = time(NULL);
     for (ChatTarget *i = ChatTargetList; i; i = i->next)
     {

@@ -312,7 +312,6 @@ Chat *ChatAddChat(UserName dst)
 
 void ChatFree()
 {
-    ChatSave();
     Chat *next_chat = NULL;
     for (Chat *i = ChatList; i; i = next_chat)
     {
@@ -327,6 +326,37 @@ void ChatFree()
         free(i);
     }
     ChatList = NULL;
+}
+
+void ChatDelete(UserName user)
+{
+    Chat *last = NULL;
+    Chat *i = NULL;
+    for (i = ChatList; i; i = i->next)
+    {
+        if (strncmp(i->dst.str, user.str, USERNAME_MAX_LENGTH) == 0)
+            break;
+        last = i;
+    }
+    if (i)
+    {
+        if (!last)
+        { // head
+            ChatList = i->next;
+        }
+        else
+        { // middle
+            last->next = i->next;
+        }
+        ChatMessage *next = NULL;
+        for (ChatMessage *j = i->head; j; j = next)
+        {
+            next = j->next;
+            free(j->content);
+            free(j);
+        }
+        free(i);
+    }
 }
 
 char *ChatNewFilePath(char *filename)

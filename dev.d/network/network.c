@@ -1,5 +1,7 @@
 #include "network.h"
 
+bool NetworkShutdownRequested = false;
+
 ServerConnectionInfo NetworkServerInfo = {
     .connected = false,
     .sockfd = -1,
@@ -16,15 +18,15 @@ void NetworkHandleNewMessage(int sockfd)
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
     case MESSAGE_DATA: // chat message received
-        //DebugTag("DEV DATA");
+        // DebugTag("DEV DATA");
         NetworkHandleData(sockfd);
         break;
     case MESSAGE_LOGIN:
-        //DebugTag("DEV LOGIN");
+        // DebugTag("DEV LOGIN");
         NetworkHandleLogin(sockfd);
         break;
     default:
-        //DebugTag("DEV ERROR");
+        // DebugTag("DEV ERROR");
         NetworkHandleError(sockfd);
     }
 }
@@ -32,39 +34,46 @@ void NetworkHandleNewMessage(int sockfd)
 void NetworkHandleData(int sockfd)
 {
     NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
-    if(NetworkIsSocketLoggedIn(sockfd))
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
-        if(NetworkMessageDataContainsFile(ncd->mh.payload_size,ncd->receive_buffer))
-            ChatSaveMessageFile(ncd->mh.payload_size,ncd->receive_buffer);
+        if (NetworkMessageDataContainsFile(ncd->mh.payload_size, ncd->receive_buffer))
+            ChatSaveMessageFile(ncd->mh.payload_size, ncd->receive_buffer);
         else
-            ChatSaveMessageText(ncd->mh.payload_size,ncd->receive_buffer);
-        if(ChatTargetFind(ncd->username))
-            ChatPrintMessage(*(ChatFind(ncd->username)->tail),ncd->username);
+            ChatSaveMessageText(ncd->mh.payload_size, ncd->receive_buffer);
+        if (ChatTargetFind(ncd->username))
+            ChatPrintMessage(*(ChatFind(ncd->username)->tail), ncd->username);
     }
 }
 
 void NetworkHandleLogin(int sockfd)
 {
     NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
-    if(!NetworkIsSocketLoggedIn(sockfd))
+    if (!NetworkIsSocketLoggedIn(sockfd))
     {
         UserName username;
-        uint16_t dummy_port;    
+        uint16_t dummy_port;
         Password dummy_password;
         NetworkDeserializeMessageLogin(ncd->mh.payload_size, ncd->receive_buffer, &dummy_port, &username, &dummy_password);
-        ncd->username = username;
-
-        //check if you are chatting with someone offline that just connected
-        ChatTarget* chat = ChatTargetFind(username);
-        if(chat && chat->sockfd<0)
-        {
-            chat->sockfd = sockfd;
-            printf("%s connected, switching to p2p mode\n",username.str);
+        if (NetworkFindConnection(username) < 0)
+        { // nobody is currently connected with this username
+            ncd->username = username;
+            // check if you are chatting with someone offline that just connected
+            ChatTarget *chat = ChatTargetFind(username);
+            if (chat && chat->sockfd < 0)
+            {
+                chat->sockfd = sockfd;
+                printf("%s connected, switching to p2p mode\n", username.str);
+            }
+            else
+            {
+                ChatSyncWith(username);
+                printf("%s is chatting with you\n", username.str);
+            }
         }
         else
-        {
-            ChatSyncWith(username);
-            printf("%s is chatting with you\n",username.str);
+        { // somebody already logged in with this username
+            NetworkDeleteConnection(sockfd);
+            printf("Duplicate %s connection, connection refused\n",username.str);
         }
     }
 }
@@ -90,13 +99,9 @@ bool NetworkStartServerConnection(uint16_t port)
         NetworkServerInfo.address.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
         NetworkServerInfo.address.sin_port = htons(port);
         if (connect(NetworkServerInfo.sockfd, (struct sockaddr *)&NetworkServerInfo.address, sizeof(NetworkServerInfo.address)) < 0)
-        {
-            // we disable the error to keep the stdout cleaner
-            // dbgerror("Error connecting to the server");
             return false;
-        }
         NetworkServerInfo.connected = true;
-        if(was_connected)
+        if (was_connected)
         {
             printf("Successfully reconnected to the server\n");
         }
@@ -121,14 +126,16 @@ void NetworkServerDisconnected()
         close(NetworkServerInfo.sockfd);
         NetworkServerInfo.sockfd = -1;
         NetworkServerInfo.connected = false;
-        //DebugLog("Connection to the server was interrupted");
-        if(NetworkServerInfo.address.sin_port)
+        if (NetworkServerInfo.address.sin_port)
             printf("Connection to the server was interrupted\n");
     }
 }
 
 void NetworkFreeTime()
 {
+    if(NetworkShutdownRequested)
+        SaveAndExit(0);
+        
     static time_t last_save_time = 0;
     time_t this_save_time = time(NULL);
     if (last_save_time == 0 || this_save_time - last_save_time > AUTOSAVE_TIME_INTERVAL)
@@ -242,8 +249,8 @@ bool NetworkReceiveResponseFromServer(MessageType expected_type)
                 NetworkServerInfo.message_list_tail->header.payload_size,
                 NetworkServerInfo.message_list_tail->payload,
                 &ok);
-            error = !ok || expected_type!=MESSAGE_RESPONSE; // if we weren't expecting a MESSAGE_RESPONSE we should know somthing went wrong
-            break; // we have received everything
+            error = !ok || expected_type != MESSAGE_RESPONSE; // if we weren't expecting a MESSAGE_RESPONSE we should know somthing went wrong
+            break;                                            // we have received everything
         }
         else if (NetworkServerInfo.message_list_tail->header.type == expected_type)
             break; // we are requested to stop here
@@ -352,16 +359,16 @@ bool NetworkAutoLogin(UserName username, Password password)
 
 void NetworkDeletedConnectionHook(int sockfd)
 {
-    NetworkDeviceConnection* ncd = NetworkConnectedDevices + sockfd;
-    ChatTarget* target;
-    if(NetworkIsSocketLoggedIn(sockfd))
+    NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
+    ChatTarget *target;
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
-        if((target = ChatTargetFind(ncd->username)))
+        if ((target = ChatTargetFind(ncd->username)))
         {
             target->sockfd = -1;
-            printf("%s disconnected, switching to relay mode\n",ncd->username.str);
+            printf("%s disconnected, switching to relay mode\n", ncd->username.str);
         }
         else
-            printf("%s disconnected\n",ncd->username.str);
+            printf("%s disconnected\n", ncd->username.str);
     }
 }

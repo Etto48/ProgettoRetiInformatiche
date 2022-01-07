@@ -2,14 +2,13 @@
 
 void sigterm_handler(int sig __attribute__((unused)))
 {
-    SaveAndExit(0);
+    NetworkShutdownRequested = true;
 }
 
 void Startup()
 {
-    //removed because they may cause inconsistency
-    //signal(SIGTERM,sigterm_handler);
-    //signal(SIGINT,sigterm_handler);
+    signal(SIGTERM,sigterm_handler);
+    signal(SIGINT,sigterm_handler);
 }
 
 void Save()

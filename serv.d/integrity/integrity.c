@@ -2,7 +2,7 @@
 
 void sigterm_handler(int sig __attribute__((unused)))
 {
-    SaveAndExit(0);
+    NetworkShutdownRequested = true;
 }
 
 void Startup()
@@ -10,9 +10,8 @@ void Startup()
     AuthLoad(AUTH_FILE);
     RelayLoad(RELAY_FILE);
     RelaySyncreadLoad(RELAY_SYNCREAD_FILE);
-    //removed because they may cause inconsistency
-    //signal(SIGTERM,sigterm_handler);
-    //signal(SIGINT,sigterm_handler);
+    signal(SIGTERM,sigterm_handler);
+    signal(SIGINT,sigterm_handler);
 }
 
 void Save()

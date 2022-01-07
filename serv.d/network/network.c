@@ -1,5 +1,7 @@
 #include "network.h"
 
+bool NetworkShutdownRequested = false;
+
 void NetworkHandleNewMessage(int sockfd)
 {
     switch (NetworkConnectedDevices[sockfd].mh.type)
@@ -271,6 +273,9 @@ void NetworkHandleError(int sockfd)
 
 void NetworkFreeTime()
 {
+    if(NetworkShutdownRequested)
+        SaveAndExit(0);
+
     static time_t last_time = 0;
     time_t this_time = time(NULL);
     if (last_time == 0 || this_time - last_time > AUTOSAVE_TIME_INTERVAL)

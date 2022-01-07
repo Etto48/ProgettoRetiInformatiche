@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include "../../global.d/command_input/command_input.h"
 
 #define MAX_ARG_NUM 4
@@ -21,6 +22,13 @@
  * 
  * - show <username>
  *   request a list of hanging messages from <username>
+ *
+ * - rmchat <username>
+ *   delete the chat history with <username> and remove it from the
+ *   contact list 
+ *
+ * - users
+ *   it's equivalent to \u but can be used outside the chat
  * 
  * - chat <username>
  *   you can start a chat with <username> with this command
@@ -34,6 +42,8 @@
  *     add a user to the chat
  *   > f <filename>
  *     share a file with the chat
+ *   > h
+ *     show this page
  * 
  * - out
  *   logs you out and closes the program
@@ -48,6 +58,8 @@ typedef enum
     COMMAND_HANGING,
     COMMAND_SHOW,
     COMMAND_CHAT,
+    COMMAND_RMCHAT,
+    COMMAND_USERS,
     COMMAND_CHAT_QUIT,
     COMMAND_CHAT_USERS,
     COMMAND_CHAT_ADD,

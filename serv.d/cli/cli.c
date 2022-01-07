@@ -6,7 +6,6 @@ void CLIHandleInput()
         switch (sc)
         {
         case COMMAND_HELP:
-            //DebugTag("HELP");
             printf("\
 Available commands:\n\
  - help\n\
@@ -19,16 +18,13 @@ Available commands:\n\
    stop the server and exit\n");
             break;
         case COMMAND_LIST:
-            //DebugTag("LIST");
             CLIPrintConnectedUsers();
             break;
         case COMMAND_ESC:
-            //DebugTag("ESC");
             SaveAndExit(0);
             break;
         default:
-            //DebugTag("ERROR");
-            printf("The command is not valid\n");
+            break;
         }
 }
 

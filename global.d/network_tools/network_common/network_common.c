@@ -53,13 +53,22 @@ void NetworkMainLoop(uint16_t port)
         do
         {
             slave_set = NetworkMasterFdSet;
+            // because select changes the timer we must reset it every time
             select_timer.tv_sec=1;
             select_timer.tv_usec=0;
             ready_fd_count = select(NETWORK_MAX_CONNECTIONS + 1, &slave_set, NULL, NULL, &select_timer);
+            // select is used with a timer to detect when the program has "free time"
+            // we set a nonzero time in the select timer to avoid busy waiting
             if (ready_fd_count < 0)
             {
-                dbgerror("Error selecting available FDs");
-                SaveAndExit(-1);
+                // if the syscall was interrupted we must close the program ASAP and save the files
+                if(errno!=EINTR)
+                { // the syscall was not interrupted, fatal error
+                    dbgerror("Error selecting available FDs");
+                    SaveAndExit(-1);
+                }
+                else
+                    SaveAndExit(0);
             }
             if (ready_fd_count == 0)
             { // in case we have nothing to do

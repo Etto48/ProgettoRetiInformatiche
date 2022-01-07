@@ -31,9 +31,10 @@ Fixme:
     ✔ Check NetworkReceiveNewData when there is a wrong header @done(21-12-27 23:39)
 
 Note:
-    ☐ @critical when using strcmp or strncmp you must check if it EQUALS 0
+    ✔ @critical when using strcmp or strncmp you must check if it EQUALS 0 @done(22-01-07 12:37)
 
 Test:
-    ☐ Group file share
-    ☐ Group mixed online/offline
-    ☐ Offline file share
+    ✔ Group file share @done(22-01-07 12:45)
+    ✔ Group mixed online/offline @done(22-01-07 12:45)
+    ✔ Offline file share @done(22-01-07 12:37)
+    ☐ Testing on Debian8

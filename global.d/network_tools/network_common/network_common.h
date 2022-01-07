@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/select.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "../../debug/debug.h"
 #include "../network_tools.h"
 

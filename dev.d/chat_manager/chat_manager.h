@@ -256,10 +256,17 @@ void ChatAddMessage(UserName dst, ChatMessageDirection dir, bool read, ChatMessa
 Chat* ChatAddChat(UserName dst);
 
 /**
- * @brief save everything and clean the memory allocated for ChatList and the lists inside it
+ * @brief free the memory allocated for ChatList and the lists inside it
  * 
  */
 void ChatFree();
+
+/**
+ * @brief delete the chat with a user
+ * 
+ * @param user username
+ */
+void ChatDelete(UserName user);
 
 /**
  * @brief calculate the file name for a new file

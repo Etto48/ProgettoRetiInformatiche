@@ -66,6 +66,14 @@ void CLIShow(DeviceCommandInfo dci);
 void CLIChat(DeviceCommandInfo dci);
 
 /**
+ * @brief delete the chat history with a user and remove it from the
+ * contact list
+ * 
+ * @param dci command args
+ */
+void CLIRmchat(DeviceCommandInfo dci);
+
+/**
  * @brief run every logout command operation
  * 
  * @param dci command args

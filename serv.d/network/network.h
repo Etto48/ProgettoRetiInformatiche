@@ -13,6 +13,12 @@
 #define AUTOSAVE_TIME_INTERVAL 60
 
 /**
+ * @brief if set to true the program will execute SaveAndExit ASAP
+ * 
+ */
+extern bool NetworkShutdownRequested;
+
+/**
  * @brief handles a generic message sending it to the appropriate handler
  * 
  * @param sockfd socket file descriptor on which the message was received

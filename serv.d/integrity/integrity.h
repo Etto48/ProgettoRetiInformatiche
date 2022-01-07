@@ -3,6 +3,7 @@
 #include <signal.h>
 #include "../index/index.h"
 #include "../message_relay/message_relay.h"
+#include "../network/network.h"
 
 /**
  * @brief load necessary data from file, you must call this at the beginning of main
