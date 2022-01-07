@@ -12,7 +12,10 @@
 #define AUTOSAVE_TIME_INTERVAL 60
 #define AUTO_USER_CHECK_TIME_INTERVAL 10
 
-#define SERVER_ADDRESS "0.0.0.0"
+#define SERVER_DEFAULT_ADDRESS "0.0.0.0"
+#define IP_MAX_LEN 16
+
+extern uint32_t NetworkServerAddress;
 
 /**
  * @brief if set to true the program will execute SaveAndExit ASAP
