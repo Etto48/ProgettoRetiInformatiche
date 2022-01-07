@@ -48,11 +48,15 @@ global.d/%.o: global.d/%.c $(GLOBAL_HEADERS) $(THIS)
 	@echo Compiling $@
 	@$(CC) -c $< -o $@ $(CARGS)
 
-.PHONY: clean dry_run
+.PHONY: clean clean-data dry-run
 clean:
 	@echo Removing object files and executables
 	@rm -f $(ALL_OBJ) $(SERVER) $(DEVICE)
 
-dry_run: 
+clean-data:
+	@echo Removing program execution related data
+	@rm -frd Chat File Relay.lst Syncread.lst Auth.lst
+
+dry-run: 
 	@$(CC) $(DEV_CFILES) $(GLOBAL_CFILES) -o /dev/null $(CARGS)
 	@$(CC) $(SERV_CFILES) $(GLOBAL_CFILES) -o /dev/null $(CARGS)
