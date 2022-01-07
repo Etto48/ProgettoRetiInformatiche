@@ -1,6 +1,7 @@
 #include "network.h"
 
 bool NetworkShutdownRequested = false;
+uint32_t NetworkServerAddress = INADDR_ANY;
 
 ServerConnectionInfo NetworkServerInfo = {
     .connected = false,
@@ -93,7 +94,7 @@ bool NetworkStartServerConnection(uint16_t port)
             return false;
         }
         NetworkServerInfo.address.sin_family = AF_INET;
-        NetworkServerInfo.address.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
+        NetworkServerInfo.address.sin_addr.s_addr = NetworkServerAddress;
         NetworkServerInfo.address.sin_port = htons(port);
         if (connect(NetworkServerInfo.sockfd, (struct sockaddr *)&NetworkServerInfo.address, sizeof(NetworkServerInfo.address)) < 0)
             return false;
