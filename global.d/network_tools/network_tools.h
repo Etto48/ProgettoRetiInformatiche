@@ -16,14 +16,14 @@
 #define NETWORK_SERIALIZED_HEADER_SIZE 5
 
 #define MESSAGE_RESPONSE_SIZE sizeof(uint8_t)
-#define MESSAGE_SIGNUP_SIZE (USERNAME_MAX_LENGTH+PASSWORD_MAX_LENGTH)
-#define MESSAGE_LOGIN_SIZE (sizeof(uint16_t)+USERNAME_MAX_LENGTH+PASSWORD_MAX_LENGTH)
+#define MESSAGE_SIGNUP_SIZE (USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH)
+#define MESSAGE_LOGIN_SIZE (sizeof(uint16_t) + USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH)
 #define MESSAGE_LOGOUT_SIZE 0
 #define MESSAGE_HANGING_MIN_SIZE 0
 #define MESSAGE_HANGING_MAX_SIZE USERNAME_MAX_LENGTH
 #define MESSAGE_USERINFO_REQ_SIZE USERNAME_MAX_LENGTH
-#define MESSAGE_USERINFO_RES_SIZE (sizeof(uint32_t)+sizeof(uint16_t))
-#define MESSAGE_SYNCREAD_SIZE (USERNAME_MAX_LENGTH+sizeof(uint64_t))
+#define MESSAGE_USERINFO_RES_SIZE (sizeof(uint32_t) + sizeof(uint16_t))
+#define MESSAGE_SYNCREAD_SIZE (USERNAME_MAX_LENGTH + sizeof(uint64_t))
 #define MESSAGE_DATA_TEXT_MIN_SIZE (USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + sizeof(uint64_t) + sizeof(uint8_t))
 #define MESSAGE_DATA_FILE_MIN_SIZE (USERNAME_MAX_LENGTH + USERNAME_MAX_LENGTH + sizeof(uint64_t) + sizeof(uint8_t) + sizeof(uint32_t))
 
@@ -65,7 +65,7 @@ typedef enum
     /**
      * @brief payload: [username:20B]
      * used for the hanging and show command (response to the last one will be served with multiple MESSAGE_DATA messages)
-     * 
+     *
      * if no username was specified expect a sequence of MESSAGE_HANGING with username followed by a MESSAGE_RESPONSE ok
      * if a username was provided expect a sequence of MESSAGE_DATA followed by a MESSAGE_RESPONSE ok
      */
@@ -102,7 +102,7 @@ typedef enum
      */
     MESSAGE_DATA = 8
 
-    //devices must never respond to the server
+    // devices must never respond to the server
 } MessageType;
 
 #define MAX_MESSAGE_TYPE 8
@@ -130,7 +130,7 @@ typedef struct
  * @param[in] file_size if you are sending a MESSAGE_DATA with a file, specify the file size as it cannot be deduced, set to NULL otherwise
  * @return total size of the message (header + payload)
  */
-size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t **dst_stream, const size_t* file_size);
+size_t NetworkSerializeMessage(MessageType type, const uint8_t *payload, uint8_t **dst_stream, const size_t *file_size);
 
 /**
  * @brief we get the header in network format (serialized) from src_stream and deserialze it
@@ -142,7 +142,7 @@ MessageHeader NetworkDeserializeHeader(const uint8_t *src_stream);
 
 /**
  * @brief deserialize a MESSAGE_RESPONSE
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] ok response ok?
@@ -151,28 +151,28 @@ void NetworkDeserializeMessageResponse(size_t payload_size, const uint8_t *paylo
 
 /**
  * @brief deserialize a MESSAGE_SIGNUP
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] username sender username
- * @param[out] password sender password (hashed) 
+ * @param[out] password sender password (hashed)
  */
 void NetworkDeserializeMessageSignup(size_t payload_size, const uint8_t *payload, UserName *username, Password *password);
 
 /**
  * @brief deserialize a MESSAGE_LOGIN
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] port port on which the device listens to other devices
  * @param[out] username sender username
  * @param[out] password sender password (hashed)
  */
-void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload, uint16_t* port, UserName *username, Password *password);
+void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload, uint16_t *port, UserName *username, Password *password);
 
 /**
  * @brief deserialize a MESSAGE_HANGING
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] username message source username to check for, if empty no username was provided
@@ -181,7 +181,7 @@ void NetworkDeserializeMessageHanging(size_t payload_size, const uint8_t *payloa
 
 /**
  * @brief deserialize a MESSAGE_USERINFO_REQ
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] username requested user
@@ -190,7 +190,7 @@ void NetworkDeserializeMessageUserinfoReq(size_t payload_size, const uint8_t *pa
 
 /**
  * @brief deserialize a MESSAGE_USERINFO_RES
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] ip requested user ip (if user was not found this should be 0)
@@ -200,7 +200,7 @@ void NetworkDeserializeMessageUserinfoRes(size_t payload_size, const uint8_t *pa
 
 /**
  * @brief deserialize a MESSAGE_SYNCREAD
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] username message receiver username
@@ -210,7 +210,7 @@ void NetworkDeserializeMessageSyncread(size_t payload_size, const uint8_t *paylo
 
 /**
  * @brief check if a MESSAGE_DATA is containing a file or just text
- * 
+ *
  * @param payload_size header field payload_size
  * @param payload pointer to the payload
  * @return true if payload contains a file, false otherwise
@@ -219,7 +219,7 @@ bool NetworkMessageDataContainsFile(size_t payload_size, const uint8_t *payload)
 
 /**
  * @brief get text length (excluding null termination) contained in the payload of a MESSAGE_DATA (text)
- * 
+ *
  * @param payload_size header field payload_size
  * @param payload pointer to the payload
  * @return text length
@@ -228,7 +228,7 @@ size_t NetworkMessageDataTextLength(size_t payload_size, const uint8_t *payload)
 
 /**
  * @brief get filename length (excluding null termination) contained in the payload of a MESSAGE_DATA (file)
- * 
+ *
  * @param payload_size header field payload_size
  * @param payload pointer to the payload
  * @return file length
@@ -237,7 +237,7 @@ size_t NetworkMessageDataFilenameLength(size_t payload_size, const uint8_t *payl
 
 /**
  * @brief get file size after decoding from base64 contained in the payload of a MESSAGE_DATA (file)
- * 
+ *
  * @param payload_size header field payload_size
  * @param payload pointer to the payload
  * @return file size
@@ -246,7 +246,7 @@ size_t NetworkMessageDataFileSize(size_t payload_size, const uint8_t *payload);
 
 /**
  * @brief deserialize a MESSAGE_DATA (text)
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] src_username sender username
@@ -258,7 +258,7 @@ void NetworkDeserializeMessageDataText(size_t payload_size, const uint8_t *paylo
 
 /**
  * @brief deserialize a MESSAGE_DATA (file)
- * 
+ *
  * @param[in] payload_size header field payload_size
  * @param[in] payload pointer to the payload
  * @param[out] src_username sender username
@@ -371,7 +371,7 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
 
 /**
  * @brief send MESSAGE_DATA containing a file that was already read from the disk
- * 
+ *
  * @param sockfd socket fd on which we send the message
  * @param src_username username of the message sender
  * @param dst_username username of the message receiver
@@ -381,4 +381,4 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
  * @param data buffer containing the file
  * @return true if the message was sent correctly
  */
-bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename, size_t file_size, const uint8_t* data);
+bool NetworkSendMessageDataFileBuffer(int sockfd, UserName src_username, UserName dst_username, time_t timestamp, const char *filename, size_t file_size, const uint8_t *data);

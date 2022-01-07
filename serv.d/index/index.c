@@ -180,8 +180,8 @@ bool IndexLogout(UserName username)
 
 void IndexFree()
 {
-    IndexEntry* next = NULL;
-    for(IndexEntry* i = IndexList; i; i=next)
+    IndexEntry *next = NULL;
+    for (IndexEntry *i = IndexList; i; i = next)
     {
         next = i->next;
         free(i);

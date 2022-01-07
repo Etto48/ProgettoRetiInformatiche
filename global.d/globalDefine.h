@@ -7,10 +7,10 @@
 
 typedef struct
 {
-    char str[USERNAME_MAX_LENGTH+1];
+    char str[USERNAME_MAX_LENGTH + 1];
 } UserName;
 
 typedef struct
 {
-    uint8_t str[PASSWORD_MAX_LENGTH+1];
+    uint8_t str[PASSWORD_MAX_LENGTH + 1];
 } Password;

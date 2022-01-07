@@ -7,16 +7,16 @@ void sigterm_handler(int sig __attribute__((unused)))
 
 void Startup()
 {
-    signal(SIGTERM,sigterm_handler);
-    signal(SIGINT,sigterm_handler);
+    signal(SIGTERM, sigterm_handler);
+    signal(SIGINT, sigterm_handler);
 }
 
 void Save()
 {
     bool ok = true;
-    if(CLIMode!=MODE_LOGIN)
+    if (CLIMode != MODE_LOGIN)
         ok = ok && ChatSave();
-    if(!ok)
+    if (!ok)
         printf("An errror occurred saving files\n");
 }
 

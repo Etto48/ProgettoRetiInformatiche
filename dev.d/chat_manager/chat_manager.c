@@ -1,23 +1,21 @@
 #include "chat_manager.h"
 
-#define MK_CHAT_DIR                                                                   \
-    if (mkdir(CHAT_DIR, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)         \
-    {                                                                                 \
-        if (errno != EEXIST)                                                          \
-        {                                                                             \
-            dbgerror("Error creating chat directory");                                \
-            return false;                                                             \
-        }                                                                             \
-    }                                                                                 \
-    if (mkdir(ChatGetDirname(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0) \
-    {                                                                                 \
-        if (errno != EEXIST)                                                          \
-        {                                                                             \
-            dbgerror("Error creating chat user directory");                           \
-            return false;                                                             \
-        }                                                                             \
+#define MK_CHAT_DIR                                                                                      \
+    if (mkdir(CHAT_DIR, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 && errno != EEXIST)         \
+    {                                                                                                    \
+        dbgerror("Error creating chat directory");                                                       \
+        return false;                                                                                    \
+    }                                                                                                    \
+    if (mkdir(ChatGetDirname(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 && errno != EEXIST) \
+    {                                                                                                    \
+        dbgerror("Error creating chat user directory");                                                  \
+        return false;                                                                                    \
     }
 
+/**
+ * @brief used as interal buffer for ChatGetFilename and ChatGetDirname
+ *
+ */
 char filename_tmp_buffer[FILENAME_MAX] = "";
 
 Chat *ChatList = NULL;
@@ -25,11 +23,13 @@ ChatTarget *ChatTargetList = NULL;
 
 void ChatHandleSyncread(UserName dst, time_t timestamp)
 {
+    // we try to load the chat first, to prevent inconsistencies
     ChatLoad(dst);
-    // ChatTarget* target = ChatTargetFind(dst); //NOTE: if set, the messages you are seeing may have * instead of **
+    // ChatTarget* target = ChatTargetFind(dst); //NOTE: if target!=NULL the messages you are seeing may have * instead of **
     Chat *chat = ChatFind(dst);
     if (chat)
     {
+        // update every entry before the timestamp
         for (ChatMessage *i = chat->head; i; i = i->next)
         {
             if (i->timestamp <= timestamp)
@@ -44,6 +44,7 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
     int check_connected = NetworkFindConnection(username);
     if (check_connected >= 0)
         return check_connected;
+    // if we know that the client is offline
     if (port == 0)
         return -1;
     // failed to find it, now we must try to connect
@@ -58,8 +59,10 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
         .sin_addr = {.s_addr = htonl(ip)},
         .sin_port = htons(port),
         .sin_zero = {0}};
+    // fd -1 will tell the caller the server must be used as relay
     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
         return -1;
+    // add the connection to NetworkConnectedDevices
     NetworkNewConnection(sockfd, addr);
     NetworkConnectedDevices[sockfd].username = username;
     NetworkSendMessageLogin(sockfd, 0, CLIActiveUsername, CreatePassword("")); // send your username
@@ -83,29 +86,32 @@ bool ChatAddTarget(UserName username)
             uint16_t port;
             NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload, &ip, &port);
             NetworkDeleteOneFromServer();
+            // we try to connect to the requested user
             new_target->sockfd = ChatConnectTo(username, ip, port);
             if (new_target->sockfd < 0)
                 printf("%s is offline, connecting in relay mode\n", username.str);
             else
                 printf("%s is online, connecting in p2p mode\n", username.str);
+            new_target->next = ChatTargetList;
+            ChatTargetList = new_target;
+            return true;
         }
         else
         { // user does not exists
             free(new_target);
             return false;
         }
-        new_target->next = ChatTargetList;
-        ChatTargetList = new_target;
-        return true;
     }
-    else
+    else // we are offline
         return false;
 }
 
 bool ChatLoad(UserName user)
 {
+    // we can't load a chat if we aren't logged in because the file path depends on our username
     if (CLIMode != MODE_LOGIN)
     {
+        // check if the chat is already loaded
         if (ChatFind(user))
             return true;
 
@@ -117,6 +123,7 @@ bool ChatLoad(UserName user)
             dbgerror("Error reading chat file");
             return false;
         }
+        // now we deserialize the chat reading from the appropriate file
         while (true)
         {
             uint64_t timestamp;
@@ -153,10 +160,12 @@ bool ChatLoad(UserName user)
 
 bool ChatSave()
 {
+    // we can't save a chat if we aren't logged in because the file path depends on our username
     if (CLIMode != MODE_LOGIN)
     {
         MK_CHAT_DIR
 
+        // we save every loaded chat
         for (Chat *i = ChatList; i; i = i->next)
         {
             int chat_fd = open(ChatGetFilename(i->dst), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -165,6 +174,7 @@ bool ChatSave()
                 dbgerror("Error opening chat file");
                 return false;
             }
+            // now we serialize the chat writing on the appropriate file
             for (ChatMessage *j = i->head; j; j = j->next)
             {
                 uint32_t content_len = htonl(strlen(j->content));
@@ -189,7 +199,9 @@ void ChatWrite()
 {
     char text[CHAT_MAX_MESSAGE_LEN];
     memset(text, 0, CHAT_MAX_MESSAGE_LEN);
+    // get a line from stdin
     fgets(text, CHAT_MAX_MESSAGE_LEN, stdin);
+    // we erase the stdin line to overwrite it afterwards using ChatPrintMessage
     printf("\e[1A\r");
     *strrchr(text, '\n') = '\0';
     time_t timestamp = time(NULL);
@@ -201,11 +213,13 @@ void ChatWrite()
         ChatLoad(i->dst);
         ChatAddMessage(i->dst, CHAT_MESSAGE_SENT, i->sockfd >= 0, CHAT_MESSAGE_TEXT, timestamp, text);
     }
+    // print our message in a nice format
     ChatPrintMessage(*(ChatFind(ChatTargetList->dst)->tail), ChatTargetList->dst);
 }
 
 void ChatQuit()
 {
+    // free each entry of ChatTargetList
     while (ChatTargetList)
     {
         ChatTarget *target = ChatTargetList;
@@ -218,6 +232,7 @@ void ChatPrintMessage(ChatMessage msg, UserName dst)
 {
     struct tm timestamp = *localtime(&msg.timestamp);
     char time_buf[21];
+    // first we format time
     snprintf(time_buf, 21, "%02d/%02d/%d %02d:%02d:%02d",
              timestamp.tm_mday,
              timestamp.tm_mon + 1,
@@ -225,6 +240,7 @@ void ChatPrintMessage(ChatMessage msg, UserName dst)
              timestamp.tm_hour,
              timestamp.tm_min,
              timestamp.tm_sec);
+    // then we print time | sender | ** text leaving always the same spacing, aligning text to the left
     printf(" %-20s | %-20s | %2s %s%s\n",
            time_buf,
            msg.direction == CHAT_MESSAGE_SENT ? "You" : dst.str,
@@ -235,6 +251,7 @@ void ChatPrintMessage(ChatMessage msg, UserName dst)
 
 Chat *ChatFind(UserName dst)
 {
+    // we simply scroll through the list
     for (Chat *i = ChatList; i; i = i->next)
     {
         if (strncmp(i->dst.str, dst.str, USERNAME_MAX_LENGTH) == 0)
@@ -270,7 +287,6 @@ char *ChatGetDirname()
 
 void ChatAddMessage(UserName dst, ChatMessageDirection dir, bool read, ChatMessageType type, time_t timestamp, char *content)
 {
-    // ChatLoad(dst);//try to load chat with dst
     Chat *target_chat = ChatAddChat(dst);
 
     ChatMessage *target = (ChatMessage *)malloc(sizeof(ChatMessage));
@@ -312,6 +328,7 @@ Chat *ChatAddChat(UserName dst)
 
 void ChatFree()
 {
+    // for each chat we delete every message in it
     Chat *next_chat = NULL;
     for (Chat *i = ChatList; i; i = next_chat)
     {
@@ -330,6 +347,7 @@ void ChatFree()
 
 void ChatDelete(UserName user)
 {
+    // first we find the chat
     Chat *last = NULL;
     Chat *i = NULL;
     for (i = ChatList; i; i = i->next)
@@ -339,7 +357,7 @@ void ChatDelete(UserName user)
         last = i;
     }
     if (i)
-    {
+    { // if found we free every entry in it
         if (!last)
         { // head
             ChatList = i->next;
@@ -355,6 +373,7 @@ void ChatDelete(UserName user)
             free(j->content);
             free(j);
         }
+        // then we free the chat itself
         free(i);
     }
 }
@@ -363,6 +382,7 @@ char *ChatNewFilePath(char *filename)
 {
     filename += ToolsBasename(filename);
     size_t filename_no_ext_len = 0;
+    // we count every char before the first '.'
     for (char *c = filename; *c != '\0' && *c != '.'; c++)
         filename_no_ext_len++;
 
@@ -371,16 +391,32 @@ char *ChatNewFilePath(char *filename)
     strncpy(filename_no_ext, filename, filename_no_ext_len);
     bool success = false;
     size_t try = 0;
+    // first we try to create the directory
+    snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s", CHAT_FILE_DIR, CLIActiveUsername.str);
+
+    if (mkdir(CHAT_FILE_DIR, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 && errno != EEXIST)
+    {
+        dbgerror("Error creating file directory");
+        return NULL;
+    }
+    if (mkdir(filename_tmp_buffer, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0 && errno != EEXIST)
+    {
+        dbgerror("Error creating file directory");
+        free(filename_no_ext);
+        return NULL;
+    }
+    // now we try to find a filename not yet in use
     while (!success)
     {
         if (try == 0)
-            snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s", CHAT_FILE_DIR, filename);
+            snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s/%s", CHAT_FILE_DIR, CLIActiveUsername.str, filename);
         else
-            snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s_%lu%s", CHAT_FILE_DIR, filename_no_ext, try, filename + filename_no_ext_len);
+            snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s/%s_%lu%s", CHAT_FILE_DIR, CLIActiveUsername.str, filename_no_ext, try, filename + filename_no_ext_len);
 
         struct stat s;
+        // we eliminate the race condition using the username in the path
         if (stat(filename_tmp_buffer, &s) < 0)
-        { // file desn't exists
+        { // file desn't exist
             success = true;
         }
         try++;
@@ -391,14 +427,6 @@ char *ChatNewFilePath(char *filename)
 
 void ChatSaveMessageFile(uint32_t payload_size, const uint8_t *payload)
 {
-    if (mkdir(CHAT_FILE_DIR, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) < 0)
-    {
-        if (errno != EEXIST)
-        {
-            dbgerror("Error creating file directory");
-            return;
-        }
-    }
     size_t filename_len = NetworkMessageDataFilenameLength(payload_size, payload);
     size_t file_len = NetworkMessageDataFileSize(payload_size, payload);
 
@@ -407,9 +435,9 @@ void ChatSaveMessageFile(uint32_t payload_size, const uint8_t *payload)
     time_t timestamp;
     char *filename = (char *)malloc(sizeof(char) * (filename_len + 1));
     uint8_t *file = (uint8_t *)malloc(file_len);
-
+    // simly deserialize the message
     NetworkDeserializeMessageDataFile(payload_size, payload, &src, &dst, &timestamp, filename, file);
-
+    // save the file and it's path to the message list
     char *file_path = ChatNewFilePath(filename);
     ChatAddMessage(src, CHAT_MESSAGE_RECEIVED, true, CHAT_MESSAGE_FILE, timestamp, file_path);
     int file_fd = open(file_path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
@@ -435,7 +463,9 @@ void ChatSaveMessageText(uint32_t payload_size, const uint8_t *payload)
     UserName src;
     UserName dst;
     time_t timestamp;
+    // simly deserialize the message
     NetworkDeserializeMessageDataText(payload_size, payload, &src, &dst, &timestamp, text);
+    // and add it to the message list
     ChatAddMessage(src, CHAT_MESSAGE_RECEIVED, true, CHAT_MESSAGE_TEXT, timestamp, text);
 
     free(text);
@@ -454,7 +484,7 @@ ChatTarget *ChatTargetFind(UserName user)
 bool ChatSyncWith(UserName user)
 {
     ChatLoad(user);
-    // now we load every hanging message
+    // now we request hanging messages from the server and receive the entire list until a MESSAGE_OK is received
     if (NetworkSendMessageHanging(NetworkServerInfo.sockfd, &user) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
     {
         bool done = false;

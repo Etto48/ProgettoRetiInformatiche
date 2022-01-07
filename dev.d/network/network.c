@@ -18,15 +18,12 @@ void NetworkHandleNewMessage(int sockfd)
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
     case MESSAGE_DATA: // chat message received
-        // DebugTag("DEV DATA");
         NetworkHandleData(sockfd);
         break;
     case MESSAGE_LOGIN:
-        // DebugTag("DEV LOGIN");
         NetworkHandleLogin(sockfd);
         break;
     default:
-        // DebugTag("DEV ERROR");
         NetworkHandleError(sockfd);
     }
 }
@@ -73,7 +70,7 @@ void NetworkHandleLogin(int sockfd)
         else
         { // somebody already logged in with this username
             NetworkDeleteConnection(sockfd);
-            printf("Duplicate %s connection, connection refused\n",username.str);
+            printf("Duplicate %s connection, connection refused\n", username.str);
         }
     }
 }
@@ -133,9 +130,9 @@ void NetworkServerDisconnected()
 
 void NetworkFreeTime()
 {
-    if(NetworkShutdownRequested)
+    if (NetworkShutdownRequested)
         SaveAndExit(0);
-        
+
     static time_t last_save_time = 0;
     time_t this_save_time = time(NULL);
     if (last_save_time == 0 || this_save_time - last_save_time > AUTOSAVE_TIME_INTERVAL)

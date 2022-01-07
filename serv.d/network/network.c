@@ -7,32 +7,24 @@ void NetworkHandleNewMessage(int sockfd)
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
     case MESSAGE_SIGNUP:
-        //DebugTag("SERV SIGNUP");
         NetworkHandleSignup(sockfd);
         break;
     case MESSAGE_LOGIN:
-        //DebugTag("SERV LOGIN");
         NetworkHandleLogin(sockfd);
         break;
     case MESSAGE_LOGOUT:
-        //DebugTag("SERV LOGOUT");
         NetworkHandleLogout(sockfd);
-        NetworkDeleteConnection(sockfd);
         break;
     case MESSAGE_HANGING:
-        //DebugTag("SERV HANGING");
         NetworkHandleHanging(sockfd);
         break;
     case MESSAGE_USERINFO_REQ:
-        //DebugTag("SERV USERINFO_REQ");
         NetworkHandleUserinfoReq(sockfd);
         break;
     case MESSAGE_DATA:
-        //DebugTag("SERV DATA");
         NetworkHandleData(sockfd);
         break;
     default:
-        //DebugTag("SERV ERROR");
         NetworkHandleError(sockfd);
     }
 }
@@ -44,8 +36,8 @@ void NetworkHandleSignup(int sockfd)
     Password password;
     NetworkDeserializeMessageSignup(ncd->mh.payload_size, ncd->receive_buffer, &username, &password);
     bool ok = AuthRegister(username, password);
-    if(ok)
-        printf("%s created a new account\n",username.str); // verbose
+    if (ok)
+        printf("%s created a new account\n", username.str); // verbose
     NetworkSendMessageResponse(sockfd, ok);
 }
 
@@ -60,7 +52,7 @@ void NetworkHandleLogin(int sockfd)
     if (ok)
     {
         ncd->username = username;
-        printf("%s logged in\n",username.str); // verbose
+        printf("%s logged in\n", username.str); // verbose
     }
     NetworkSendMessageResponse(sockfd, ok);
     if (ok)
@@ -85,7 +77,7 @@ void NetworkHandleLogout(int sockfd)
         ok = IndexLogout(ncd->username);
         if (ok)
         {
-            printf("%s logged out\n",ncd->username.str); // verbose
+            printf("%s logged out\n", ncd->username.str); // verbose
             memset(ncd->username.str, 0, USERNAME_MAX_LENGTH + 1);
         }
     }
@@ -94,30 +86,30 @@ void NetworkHandleLogout(int sockfd)
     NetworkSendMessageResponse(sockfd, ok);
     shutdown(sockfd, SHUT_RDWR);
     close(sockfd);
+    NetworkDeleteConnection(sockfd);
 }
-
 
 /**
  * @brief this struct is used to memorize the usernames that need to be sent with a response to a MESSAGE_HANGING
- * 
+ *
  */
 typedef struct _UserNameList
 {
     UserName user;
-    struct _UserNameList* next;
+    struct _UserNameList *next;
 } UserNameList;
 /**
  * @brief find a username in a list made from the previous struct
- * 
+ *
  * @param list pointer to the list
  * @param user username
- * @return pointer to the entry if found, NULL otherwise 
+ * @return pointer to the entry if found, NULL otherwise
  */
-UserNameList* UserNameListFind(UserNameList* list, UserName user)
+UserNameList *UserNameListFind(UserNameList *list, UserName user)
 {
-    for(UserNameList* j = list; j; j=j->next)
+    for (UserNameList *j = list; j; j = j->next)
     {
-        if(strncmp(j->user.str,user.str,USERNAME_MAX_LENGTH) == 0)
+        if (strncmp(j->user.str, user.str, USERNAME_MAX_LENGTH) == 0)
         {
             return j;
         }
@@ -126,26 +118,26 @@ UserNameList* UserNameListFind(UserNameList* list, UserName user)
 }
 /**
  * @brief add an entry to a username list
- * 
+ *
  * @param list pointer to the list
  * @param user username to add
  */
-void UserNameListAdd(UserNameList** list, UserName user)
+void UserNameListAdd(UserNameList **list, UserName user)
 {
-    UserNameList* target = (UserNameList*)malloc(sizeof(UserNameList));
+    UserNameList *target = (UserNameList *)malloc(sizeof(UserNameList));
     target->user = user;
     target->next = *list;
     *list = target;
 }
 /**
  * @brief delete a username list
- * 
+ *
  * @param list pointer to the list
  */
-void UserNameListDelete(UserNameList** list)
+void UserNameListDelete(UserNameList **list)
 {
-    UserNameList* next = NULL;
-    for(UserNameList* i = *list; i;i=next)
+    UserNameList *next = NULL;
+    for (UserNameList *i = *list; i; i = next)
     {
         next = i->next;
         free(i);
@@ -162,22 +154,22 @@ void NetworkHandleHanging(int sockfd)
         NetworkDeserializeMessageHanging(ncd->mh.payload_size, ncd->receive_buffer, &from);
         if (from.str[0] == '\0')
         { // only users
-            UserNameList* list = NULL;
+            UserNameList *list = NULL;
             for (RelayMessage *i = RelayHangingFindFirst(RelayHangingList, NULL, &ncd->username); i; i = RelayHangingFindFirst(i->next, NULL, &ncd->username))
             {
-                if(!UserNameListFind(list,i->src))
+                if (!UserNameListFind(list, i->src))
                 {
-                    UserNameListAdd(&list,i->src);
+                    UserNameListAdd(&list, i->src);
                     NetworkSendMessageHanging(sockfd, &i->src);
                 }
             }
             UserNameListDelete(&list);
-            printf("%s requested a list of hanging contacts\n",ncd->username.str); // verbose
+            printf("%s requested a list of hanging contacts\n", ncd->username.str); // verbose
         }
         else
         { // only messages from user
             time_t last_timestamp = 0;
-            for (RelayMessage *i = RelayHangingPopFirst(&from, &ncd->username); i; i=RelayHangingPopFirst(&from, &ncd->username))
+            for (RelayMessage *i = RelayHangingPopFirst(&from, &ncd->username); i; i = RelayHangingPopFirst(&from, &ncd->username))
             {
                 switch (i->type)
                 {
@@ -195,7 +187,7 @@ void NetworkHandleHanging(int sockfd)
             { // now we must send a message syncread to the other end if possible
                 RelaySyncreadEdit(from, ncd->username, last_timestamp);
             }
-            printf("%s requested a list of hanging messages from %s\n",ncd->username.str,from.str); // verbose
+            printf("%s requested a list of hanging messages from %s\n", ncd->username.str, from.str); // verbose
         }
         NetworkSendMessageResponse(sockfd, true);
     }
@@ -211,13 +203,13 @@ void NetworkHandleUserinfoReq(int sockfd)
         UserName username;
         NetworkDeserializeMessageUserinfoReq(ncd->mh.payload_size, ncd->receive_buffer, &username);
 
-        if(AuthExists(username))
+        if (AuthExists(username))
         {
             IndexEntry *res = IndexGetOnline(username);
             uint32_t ip = res ? res->ip : 0;
             uint16_t port = res ? res->port : 0;
             NetworkSendMessageUserinfoRes(sockfd, ip, port);
-            printf("%s requested info about %s\n",ncd->username.str,username.str); // verbose
+            printf("%s requested info about %s\n", ncd->username.str, username.str); // verbose
         }
         else
             NetworkSendMessageResponse(sockfd, false);
@@ -245,7 +237,7 @@ void NetworkHandleData(int sockfd)
             RelayHangingAdd(ncd->username, dst, timestamp, RELAY_MESSAGE_FILE, filename, file_size, file_data);
             free(filename);
             free(file_data);
-            printf("%s sent a file to %s\n",ncd->username.str,dst.str); // verbose
+            printf("%s sent a file to %s\n", ncd->username.str, dst.str); // verbose
         }
         else
         { // text
@@ -258,12 +250,12 @@ void NetworkHandleData(int sockfd)
             // we must use ncd->username instead of src to avoid security issues
             RelayHangingAdd(ncd->username, dst, timestamp, RELAY_MESSAGE_TEXT, NULL, text_len, (uint8_t *)text);
             free(text);
-            printf("%s sent a text message to %s\n",ncd->username.str,dst.str); // verbose
+            printf("%s sent a text message to %s\n", ncd->username.str, dst.str); // verbose
         }
-        //NetworkSendMessageResponse(sockfd, true);
+        // NetworkSendMessageResponse(sockfd, true);
     }
-    //else
-        //NetworkSendMessageResponse(sockfd, false);
+    // else
+    // NetworkSendMessageResponse(sockfd, false);
 }
 
 void NetworkHandleError(int sockfd)
@@ -273,7 +265,7 @@ void NetworkHandleError(int sockfd)
 
 void NetworkFreeTime()
 {
-    if(NetworkShutdownRequested)
+    if (NetworkShutdownRequested)
         SaveAndExit(0);
 
     static time_t last_time = 0;
@@ -287,10 +279,10 @@ void NetworkFreeTime()
 
 void NetworkDeletedConnectionHook(int sockfd)
 {
-    NetworkDeviceConnection* ncd = NetworkConnectedDevices + sockfd;
-    if(NetworkIsSocketLoggedIn(sockfd))
+    NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
+    if (NetworkIsSocketLoggedIn(sockfd))
     {
         IndexLogout(ncd->username);
-        printf("%s disconnected\n",ncd->username.str); // verbose
+        printf("%s disconnected\n", ncd->username.str); // verbose
     }
 }

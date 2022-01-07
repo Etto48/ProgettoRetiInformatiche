@@ -54,15 +54,15 @@ void NetworkMainLoop(uint16_t port)
         {
             slave_set = NetworkMasterFdSet;
             // because select changes the timer we must reset it every time
-            select_timer.tv_sec=1;
-            select_timer.tv_usec=0;
+            select_timer.tv_sec = 1;
+            select_timer.tv_usec = 0;
             ready_fd_count = select(NETWORK_MAX_CONNECTIONS + 1, &slave_set, NULL, NULL, &select_timer);
             // select is used with a timer to detect when the program has "free time"
             // we set a nonzero time in the select timer to avoid busy waiting
             if (ready_fd_count < 0)
             {
                 // if the syscall was interrupted we must close the program ASAP and save the files
-                if(errno!=EINTR)
+                if (errno != EINTR)
                 { // the syscall was not interrupted, fatal error
                     dbgerror("Error selecting available FDs");
                     SaveAndExit(-1);
@@ -114,9 +114,9 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr)
     NetworkConnectedDevices[sockfd].header_received = false;
     NetworkConnectedDevices[sockfd].received_bytes = 0;
 
-//#ifdef DEBUG
-//    printf("DBG: FD %d connected\n", sockfd);
-//#endif
+    //#ifdef DEBUG
+    //    printf("DBG: FD %d connected\n", sockfd);
+    //#endif
 }
 
 void NetworkDeleteConnection(int sockfd)
@@ -139,17 +139,17 @@ void NetworkDeleteConnection(int sockfd)
     shutdown(sockfd, SHUT_RDWR);
     close(sockfd);
 
-//#ifdef DEBUG
-//    printf("DBG: FD %d disconnected\n", sockfd);
-//#endif
+    //#ifdef DEBUG
+    //    printf("DBG: FD %d disconnected\n", sockfd);
+    //#endif
 }
 
 int NetworkFindConnection(UserName user)
 {
-    for(int i = 3; i<NETWORK_MAX_CONNECTIONS;i++)
+    for (int i = 3; i < NETWORK_MAX_CONNECTIONS; i++)
     {
-        NetworkDeviceConnection* ncd = NetworkConnectedDevices + i;
-        if(ncd->sockfd && strncmp(user.str,ncd->username.str,USERNAME_MAX_LENGTH) == 0)
+        NetworkDeviceConnection *ncd = NetworkConnectedDevices + i;
+        if (ncd->sockfd && strncmp(user.str, ncd->username.str, USERNAME_MAX_LENGTH) == 0)
             return i;
     }
     return -1;
@@ -209,5 +209,5 @@ void NetworkReceiveNewData(int sockfd)
 
 bool NetworkIsSocketLoggedIn(int sockfd)
 {
-    return NetworkConnectedDevices[sockfd].username.str[0]!='\0';
+    return NetworkConnectedDevices[sockfd].username.str[0] != '\0';
 }

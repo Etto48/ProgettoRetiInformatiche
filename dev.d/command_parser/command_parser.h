@@ -5,38 +5,38 @@
 
 #define MAX_ARG_NUM 4
 /*****************************
- * Available Server Commands *  
+ * Available Server Commands *
  *****************************
- * 
+ *
  * - help
  *   shows a command list + instructions
- * 
+ *
  * - signup <server port> <username> <password>
  *   request the creation of an account to the main server located on port <server port>
- * 
+ *
  * - in <server port> <username> <password>
  *   request a login to the main server located on port <server port>
- *   
+ *
  * - hanging
  *   request a list of users who sent you a message while you was offline
- * 
+ *
  * - show <username>
  *   request a list of hanging messages from <username>
  *
  * - rmchat <username>
  *   delete the chat history with <username> and remove it from the
- *   contact list 
+ *   contact list
  *
  * - users
  *   it's equivalent to \u but can be used outside the chat
- * 
+ *
  * - chat <username>
  *   you can start a chat with <username> with this command
  *   once in a chat you can use the following commands
  *   prefixing them with a "\"
  *   > q
  *     close the chat
- *   > u 
+ *   > u
  *     list online users available for chat
  *   > a <username>
  *     add a user to the chat
@@ -44,13 +44,13 @@
  *     share a file with the chat
  *   > h
  *     show this page
- * 
+ *
  * - out
  *   logs you out and closes the program
- * 
+ *
  ****************************/
 
-typedef enum 
+typedef enum
 {
     COMMAND_HELP,
     COMMAND_SIGNUP,
@@ -73,7 +73,7 @@ typedef struct
 {
     DeviceCommand command;
     int argc;
-    char args[MAX_ARG_NUM-1][INPUT_LEN];
+    char args[MAX_ARG_NUM - 1][INPUT_LEN];
 } DeviceCommandInfo;
 
 typedef enum
@@ -84,8 +84,8 @@ typedef enum
 } CommandMode;
 /**
  * @brief requires an input from stdin
- * 
- * @param mode use it to select the mode you want, if a command is not accepted in the selected mode an error will be displayed 
+ *
+ * @param mode use it to select the mode you want, if a command is not accepted in the selected mode an error will be displayed
  * and the return will be COMMAND_ERROR
  * @return struct containing command and args, command is COMMAND_ERROR if an error occured during parsing
  */

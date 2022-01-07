@@ -19,7 +19,7 @@ void CLIHandleInput()
         switch (dci.command)
         {
         case COMMAND_HELP:
-            if(CLIMode!=MODE_CHAT)
+            if (CLIMode != MODE_CHAT)
                 printf("\
 Available commands:\n\
  - help\n\
@@ -170,6 +170,7 @@ void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 {
     if (NetworkServerInfo.connected)
     {
+        printf("Hanging users:\n");
         if (NetworkSendMessageHanging(NetworkServerInfo.sockfd, NULL) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
         {
             bool done = false;
@@ -179,7 +180,6 @@ void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
                 {
                 case MESSAGE_RESPONSE:
                     done = true;
-                    printf("Successfully received hanging list\n");
                     break;
                 case MESSAGE_HANGING:
                 {
@@ -216,11 +216,11 @@ void CLIShow(DeviceCommandInfo dci)
         ChatLoad(username);
         Chat *chat = ChatAddChat(username);
         ChatMessage *latest = chat->tail;
+        printf("Hanging messages from %s:\n", username.str);
         if (ChatSyncWith(username))
         {
             for (ChatMessage *i = latest ? latest->next : chat->head; i; i = i->next)
                 ChatPrintMessage(*i, username);
-            printf("Successfully received message list\n");
         }
         else
             printf("An error occurred while receiving hanging messages\n");
@@ -248,18 +248,20 @@ void CLIChat(DeviceCommandInfo dci)
         for (ChatMessage *i = chat->head; i; i = i->next)
             ChatPrintMessage(*i, target);
     }
-    else
+    else if (NetworkServerInfo.connected)
         printf("%s is not a valid username\n", target.str);
+    else
+        printf("You need to be connected to the server to connect to %s\n", target.str);
 }
 void CLIRmchat(DeviceCommandInfo dci)
 {
     UserName target = CreateUserName(dci.args[0]);
-    if(remove(ChatGetFilename(target))<0)
+    if (remove(ChatGetFilename(target)) < 0)
         printf("Nothing to remove\n");
     else
     {
         ChatDelete(target);
-        printf("%s successfully removed\n",target.str);
+        printf("%s successfully removed\n", target.str);
     }
 }
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
@@ -318,9 +320,9 @@ void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
                     {
                         uint32_t ip;
                         uint16_t port;
-                        NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload,&ip,&port);
+                        NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size, NetworkServerInfo.message_list_head->payload, &ip, &port);
                         NetworkDeleteOneFromServer();
-                        char online = port ? '+':'-';
+                        char online = port ? '+' : '-';
                         printf("%c %s\n", online, dir->d_name);
                     }
                 }

@@ -1,10 +1,9 @@
 #pragma once
 
-//Source: https://github.com/amosnier/sha-2
+// Source: https://github.com/amosnier/sha-2
 
 #include <stdint.h>
 #include <string.h>
-
 
 /**
  * @brief Size of the SHA-256 sum. This times eight is 256 bits.
@@ -21,7 +20,8 @@
  * @brief The opaque SHA-256 type, that should be instantiated when using the streaming API.
  *
  */
-struct Sha_256 {
+struct Sha_256
+{
 	uint8_t *hash;
 	uint8_t chunk[SIZE_OF_SHA_256_CHUNK];
 	uint8_t *chunk_pos;

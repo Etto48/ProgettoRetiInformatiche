@@ -10,8 +10,8 @@ void Startup()
     AuthLoad(AUTH_FILE);
     RelayLoad(RELAY_FILE);
     RelaySyncreadLoad(RELAY_SYNCREAD_FILE);
-    signal(SIGTERM,sigterm_handler);
-    signal(SIGINT,sigterm_handler);
+    signal(SIGTERM, sigterm_handler);
+    signal(SIGINT, sigterm_handler);
 }
 
 void Save()
@@ -20,7 +20,7 @@ void Save()
     ok = ok && AuthSave(AUTH_FILE);
     ok = ok && RelaySave(RELAY_FILE);
     ok = ok && RelaySyncreadSave(RELAY_SYNCREAD_FILE);
-    if(!ok)
+    if (!ok)
         printf("An errror occurred saving files\n");
 }
 

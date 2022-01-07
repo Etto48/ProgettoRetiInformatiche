@@ -213,8 +213,8 @@ bool RelaySave(const char *filename)
 
 void RelayFree()
 {
-    RelayMessage* next = NULL;
-    for(RelayMessage* i = RelayHangingList; i; i=next)
+    RelayMessage *next = NULL;
+    for (RelayMessage *i = RelayHangingList; i; i = next)
     {
         next = i->next;
         RelayHangingDestroyMessage(i);
@@ -340,8 +340,8 @@ bool RelaySyncreadSave(const char *filename)
 
 void RelaySyncreadFree()
 {
-    RelaySyncreadNotice* next = NULL;
-    for(RelaySyncreadNotice* i = RelaySyncreadList; i; i=next)
+    RelaySyncreadNotice *next = NULL;
+    for (RelaySyncreadNotice *i = RelaySyncreadList; i; i = next)
     {
         next = i->next;
         free(i);

@@ -186,7 +186,7 @@ DeviceCommandInfo CommandParserGetCommand(CommandMode mode)
         }
         else if (strcmp("\\h", command) == 0)
         {
-            if(argc == 0)
+            if (argc == 0)
                 ret.command = COMMAND_HELP;
             else
             {
@@ -196,7 +196,7 @@ DeviceCommandInfo CommandParserGetCommand(CommandMode mode)
         }
         break;
     }
-    if(ret.command == COMMAND_ERROR && !usage_prompt)
+    if (ret.command == COMMAND_ERROR && !usage_prompt)
         printf("Not a valid command, type \"help\" to get a list of commands\n");
     return ret;
 }
