@@ -16,15 +16,15 @@ void NetworkHandleNewMessage(int sockfd)
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
     case MESSAGE_DATA: // chat message received
-        DebugTag("DEV DATA");
+        //DebugTag("DEV DATA");
         NetworkHandleData(sockfd);
         break;
     case MESSAGE_LOGIN:
-        DebugTag("DEV LOGIN");
+        //DebugTag("DEV LOGIN");
         NetworkHandleLogin(sockfd);
         break;
     default:
-        DebugTag("DEV ERROR");
+        //DebugTag("DEV ERROR");
         NetworkHandleError(sockfd);
     }
 }
@@ -32,7 +32,7 @@ void NetworkHandleNewMessage(int sockfd)
 void NetworkHandleData(int sockfd)
 {
     NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
-    if(ncd->username.str[0]!='\0')
+    if(NetworkIsSocketLoggedIn(sockfd))
     {
         if(NetworkMessageDataContainsFile(ncd->mh.payload_size,ncd->receive_buffer))
             ChatSaveMessageFile(ncd->mh.payload_size,ncd->receive_buffer);
@@ -46,7 +46,7 @@ void NetworkHandleData(int sockfd)
 void NetworkHandleLogin(int sockfd)
 {
     NetworkDeviceConnection *ncd = NetworkConnectedDevices + sockfd;
-    if(ncd->username.str[0]=='\0')
+    if(!NetworkIsSocketLoggedIn(sockfd))
     {
         UserName username;
         uint16_t dummy_port;    
@@ -102,7 +102,7 @@ bool NetworkStartServerConnection(uint16_t port)
         }
         was_connected = true;
         // Autologin if we was already logged in
-        if (CLIActiveUsername.str[0])
+        if (CLIMode != MODE_LOGIN)
         {
             if (NetworkAutoLogin(CLIActiveUsername, CLIActivePassword))
             {
@@ -354,7 +354,7 @@ void NetworkDeletedConnectionHook(int sockfd)
 {
     NetworkDeviceConnection* ncd = NetworkConnectedDevices + sockfd;
     ChatTarget* target;
-    if(ncd->username.str[0]!='\0')
+    if(NetworkIsSocketLoggedIn(sockfd))
     {
         if((target = ChatTargetFind(ncd->username)))
         {

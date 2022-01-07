@@ -10,7 +10,9 @@ void Startup()
     AuthLoad(AUTH_FILE);
     RelayLoad(RELAY_FILE);
     RelaySyncreadLoad(RELAY_SYNCREAD_FILE);
-    signal(SIGTERM,sigterm_handler);
+    //removed because they may cause inconsistency
+    //signal(SIGTERM,sigterm_handler);
+    //signal(SIGINT,sigterm_handler);
 }
 
 void Save()
@@ -23,8 +25,17 @@ void Save()
         printf("An errror occurred saving files\n");
 }
 
+void FreeResources()
+{
+    AuthFree();
+    IndexFree();
+    RelayFree();
+    RelaySyncreadFree();
+}
+
 void SaveAndExit(int status)
 {
     Save();
+    FreeResources();
     exit(status);
 }

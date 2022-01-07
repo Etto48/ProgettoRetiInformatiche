@@ -16,6 +16,12 @@ void Startup();
 void Save();
 
 /**
+ * @brief free all the resources used by the program before exiting (called by SaveAndExit)
+ * 
+ */
+void FreeResources();
+
+/**
  * @brief save necessary data to file and exit, do not exit in other way
  * 
  * @param status the status to pass to the exit() call

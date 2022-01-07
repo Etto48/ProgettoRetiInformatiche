@@ -8,10 +8,10 @@ CommandMode CLIMode = MODE_LOGIN;
 void CLIHandleInput()
 {
     char first_char = getchar();
-    char second_char = getchar(); 
+    char second_char = getchar();
     // you can escape a command to send something that begins with "\"
     ungetc(second_char, stdin);
-    if(!(first_char == '\\' && second_char == '\\'))
+    if (!(first_char == '\\' && second_char == '\\'))
         ungetc(first_char, stdin);
     if (CLIMode != MODE_CHAT || (first_char == '\\' && second_char != '\\'))
     {
@@ -19,7 +19,7 @@ void CLIHandleInput()
         switch (dci.command)
         {
         case COMMAND_HELP:
-            DebugTag("HELP");
+            // DebugTag("HELP");
             printf("\
 Available commands:\n\
  - help\n\
@@ -57,51 +57,56 @@ Available commands:\n\
    saves everything and closes the program\n");
             break;
         case COMMAND_SIGNUP:
-            DebugTag("SIGNUP");
+            // DebugTag("SIGNUP");
             CLISignup(dci);
             break;
         case COMMAND_IN:
-            DebugTag("IN");
+            // DebugTag("IN");
             CLILogin(dci);
             break;
         case COMMAND_HANGING:
-            DebugTag("HANGING");
+            // DebugTag("HANGING");
             CLIHanging(dci);
             break;
         case COMMAND_SHOW:
-            DebugTag("SHOW");
+            // DebugTag("SHOW");
             CLIShow(dci);
             break;
         case COMMAND_CHAT:
-            DebugTag("CHAT");
+            // DebugTag("CHAT");
             CLIChat(dci);
             break;
         case COMMAND_OUT:
-            DebugTag("OUT");
+            // DebugTag("OUT");
             CLILogout(dci);
             break;
         case COMMAND_ESC:
-            DebugTag("ESC");
+            // DebugTag("ESC");
             CLIEsc(dci);
             break;
         case COMMAND_CHAT_QUIT:
-            DebugTag("CHAT->QUIT");
+            // DebugTag("CHAT->QUIT");
             CLIChatQuit(dci);
             break;
         case COMMAND_CHAT_USERS:
-            DebugTag("CHAT->USERS");
+            // DebugTag("CHAT->USERS");
             CLIChatUsers(dci);
             break;
         case COMMAND_CHAT_ADD:
-            DebugTag("CHAT->ADD");
+            // DebugTag("CHAT->ADD");
             CLIChatAdd(dci);
             break;
         case COMMAND_CHAT_FILE:
-            DebugTag("CHAT->FILE");
+            // DebugTag("CHAT->FILE");
             CLIChatFile(dci);
             break;
         default:
-            DebugTag("ERROR");
+            // DebugTag("ERROR");
+            printf("The command is not valid");
+            if (CLIMode == MODE_LOGIN)
+                printf(" or you need to login first\n");
+            else
+                printf("\n");
         }
     }
     else
@@ -193,16 +198,16 @@ void CLIHanging(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIShow(DeviceCommandInfo dci)
 {
-    if(NetworkServerInfo.connected)
+    if (NetworkServerInfo.connected)
     {
         UserName username = CreateUserName(dci.args[0]);
         ChatLoad(username);
-        Chat* chat = ChatAddChat(username);
-        ChatMessage* latest = chat->tail;
-        if(ChatSyncWith(username))
+        Chat *chat = ChatAddChat(username);
+        ChatMessage *latest = chat->tail;
+        if (ChatSyncWith(username))
         {
-            for(ChatMessage* i = latest?latest->next:chat->head;i;i=i->next)
-                ChatPrintMessage(*i,username);
+            for (ChatMessage *i = latest ? latest->next : chat->head; i; i = i->next)
+                ChatPrintMessage(*i, username);
             printf("Successfully received message list\n");
         }
         else
@@ -216,19 +221,23 @@ void CLIShow(DeviceCommandInfo dci)
 void CLIChat(DeviceCommandInfo dci)
 {
     UserName target = CreateUserName(dci.args[0]);
-    if(ChatAddTarget(target))
+    if (strncmp(target.str, CLIActiveUsername.str, USERNAME_MAX_LENGTH) == 0)
+    {
+        printf("You can't chat with yourself\n");
+    }
+    else if (ChatAddTarget(target))
     {
         CLIMode = MODE_CHAT;
-        if(!ChatSyncWith(target))
-        { 
+        if (!ChatSyncWith(target))
+        {
             printf("This chat might not be up to date\n");
         }
-        Chat* chat = ChatAddChat(target);
-        for(ChatMessage* i = chat->head;i;i=i->next)
-            ChatPrintMessage(*i,target);
+        Chat *chat = ChatAddChat(target);
+        for (ChatMessage *i = chat->head; i; i = i->next)
+            ChatPrintMessage(*i, target);
     }
     else
-        printf("%s is not a valid username\n",target.str);
+        printf("%s is not a valid username\n", target.str);
 }
 void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
 {
@@ -237,26 +246,26 @@ void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
         if (NetworkSendMessageLogout(NetworkServerInfo.sockfd) && NetworkReceiveResponseFromServer(MESSAGE_RESPONSE))
         {
             NetworkDeleteOneFromServer();
-            printf("Successfully logged out\n");
+
+            Save();          // we must save the chat until we know the username
+            FreeResources(); // we deallocate every chat structure used as it can cause problems if we login with another user
+
             memset(CLIActiveUsername.str, 0, USERNAME_MAX_LENGTH + 1);
             memset(CLIActivePassword.str, 0, PASSWORD_MAX_LENGTH + 1);
             CLIMode = MODE_LOGIN;
-            NetworkServerInfo.address.sin_port = 0; // prevent auto reconnect
-            for(size_t i=3;i<NETWORK_MAX_CONNECTIONS;i++) // disconnect from every peer
+            NetworkServerInfo.address.sin_port = 0;              // prevent auto reconnect
+            for (size_t i = 3; i < NETWORK_MAX_CONNECTIONS; i++) // disconnect from every peer
             {
-                if(NetworkConnectedDevices[i].sockfd)
+                if (NetworkConnectedDevices[i].sockfd)
                     NetworkDeleteConnection(i);
             }
+            printf("Successfully logged out\n");
         }
         else
-        {
             printf("An error occurred during the logout procedure\n");
-        }
     }
     else
-    {
         printf("An error occurred trying to connect to the server\n");
-    }
 }
 void CLIEsc(__attribute__((unused)) DeviceCommandInfo dci)
 {
@@ -266,44 +275,82 @@ void CLIChatQuit(__attribute__((unused)) DeviceCommandInfo dci)
 {
     CLIMode = MODE_STANDARD;
     ChatQuit();
+    printf("You closed the chat\n");
 }
 void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
 {
-    // TODO: fill me
+    if (NetworkServerInfo.connected)
+    {
+        printf("Users (+ online | - offline):\n");
+        struct dirent *dir;
+        DIR *d = opendir(ChatGetDirname());
+        if (d)
+        {
+            while ((dir = readdir(d)))
+            {
+                *strchr(dir->d_name, '.') = '\0'; // we don't want to display ".chat"
+                if (strlen(dir->d_name))
+                {
+                    if (NetworkSendMessageUserinfoReq(NetworkServerInfo.sockfd, CreateUserName(dir->d_name)) && NetworkReceiveResponseFromServer(MESSAGE_USERINFO_RES))
+                    {
+                        uint32_t ip;
+                        uint16_t port;
+                        NetworkDeserializeMessageUserinfoRes(NetworkServerInfo.message_list_head->header.payload_size,NetworkServerInfo.message_list_head->payload,&ip,&port);
+                        NetworkDeleteOneFromServer();
+                        if(port)
+                            printf("+ %s (%u)\n", dir->d_name,port);
+                        else
+                            printf("- %s (%u)\n", dir->d_name,port);
+                    }
+                }
+            }
+            closedir(d);
+        }
+    }
+    else
+        printf("An error occurred trying to connect to the server\n");
 }
 void CLIChatAdd(DeviceCommandInfo dci)
 {
     UserName target = CreateUserName(dci.args[0]);
-    if(ChatAddTarget(target))
+    if (strncmp(target.str, CLIActiveUsername.str, USERNAME_MAX_LENGTH) == 0)
     {
-        printf("%s added to the chat\n",target.str);
+        printf("You can't chat with yourself\n");
+    }
+    else if (ChatTargetFind(target))
+    {
+        printf("You're already chatting with %s", target.str);
+    }
+    else if (ChatAddTarget(target))
+    {
+        printf("%s added to the chat\n", target.str);
     }
     else
     {
-        printf("%s is not a valid username\n",target.str);
+        printf("%s is not a valid username\n", target.str);
     }
 }
 void CLIChatFile(DeviceCommandInfo dci)
 {
-    char* filename = dci.args[0];
+    char *filename = dci.args[0];
     struct stat st;
     int fd = -1;
-    if(stat(filename,&st)<0 || (fd = open(filename,O_RDONLY))<0)
+    if (stat(filename, &st) < 0 || (fd = open(filename, O_RDONLY)) < 0)
     {
-        printf("Could not open %s\n",filename);
+        printf("Could not open %s\n", filename);
         return;
     }
-    uint8_t* file_buffer = (uint8_t*)malloc(st.st_size);
-    read(fd,file_buffer,st.st_size);
+    uint8_t *file_buffer = (uint8_t *)malloc(st.st_size);
+    read(fd, file_buffer, st.st_size);
     close(fd);
     time_t timestamp = time(NULL);
-    for(ChatTarget* i = ChatTargetList;i;i=i->next)
+    for (ChatTarget *i = ChatTargetList; i; i = i->next)
     {
         NetworkSendMessageDataFileBuffer(
-            (i->sockfd<0?NetworkServerInfo.sockfd:i->sockfd),
-            CLIActiveUsername,i->dst,timestamp,filename+ToolsBasename(filename),st.st_size,file_buffer);
-        ChatAddMessage(i->dst,CHAT_MESSAGE_SENT,i->sockfd>=0,CHAT_MESSAGE_FILE,timestamp,filename);
+            (i->sockfd < 0 ? NetworkServerInfo.sockfd : i->sockfd),
+            CLIActiveUsername, i->dst, timestamp, filename + ToolsBasename(filename), st.st_size, file_buffer);
+        ChatAddMessage(i->dst, CHAT_MESSAGE_SENT, i->sockfd >= 0, CHAT_MESSAGE_FILE, timestamp, filename);
     }
-    ChatPrintMessage(*(ChatFind(ChatTargetList->dst)->tail),ChatTargetList->dst);
+    ChatPrintMessage(*(ChatFind(ChatTargetList->dst)->tail), ChatTargetList->dst);
     free(file_buffer);
 }

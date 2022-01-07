@@ -1,5 +1,4 @@
 #include "network_common.h"
-#define MAX_FDI (NETWORK_MAX_CONNECTIONS + 1)
 
 NetworkDeviceConnection NetworkConnectedDevices[NETWORK_MAX_CONNECTIONS];
 
@@ -56,7 +55,7 @@ void NetworkMainLoop(uint16_t port)
             slave_set = NetworkMasterFdSet;
             select_timer.tv_sec=1;
             select_timer.tv_usec=0;
-            ready_fd_count = select(MAX_FDI, &slave_set, NULL, NULL, &select_timer);
+            ready_fd_count = select(NETWORK_MAX_CONNECTIONS + 1, &slave_set, NULL, NULL, &select_timer);
             if (ready_fd_count < 0)
             {
                 dbgerror("Error selecting available FDs");
@@ -68,7 +67,7 @@ void NetworkMainLoop(uint16_t port)
             }
         } while (ready_fd_count == 0);
 
-        for (int target_fd = 0; target_fd < MAX_FDI; target_fd++)
+        for (int target_fd = 0; target_fd < NETWORK_MAX_CONNECTIONS; target_fd++)
         {
             if (FD_ISSET(target_fd, &slave_set))
             {
@@ -106,9 +105,9 @@ void NetworkNewConnection(int sockfd, struct sockaddr_in addr)
     NetworkConnectedDevices[sockfd].header_received = false;
     NetworkConnectedDevices[sockfd].received_bytes = 0;
 
-#ifdef DEBUG
-    printf("DBG: FD %d connected\n", sockfd);
-#endif
+//#ifdef DEBUG
+//    printf("DBG: FD %d connected\n", sockfd);
+//#endif
 }
 
 void NetworkDeleteConnection(int sockfd)
@@ -131,9 +130,9 @@ void NetworkDeleteConnection(int sockfd)
     shutdown(sockfd, SHUT_RDWR);
     close(sockfd);
 
-#ifdef DEBUG
-    printf("DBG: FD %d disconnected\n", sockfd);
-#endif
+//#ifdef DEBUG
+//    printf("DBG: FD %d disconnected\n", sockfd);
+//#endif
 }
 
 int NetworkFindConnection(UserName user)
@@ -201,5 +200,5 @@ void NetworkReceiveNewData(int sockfd)
 
 bool NetworkIsSocketLoggedIn(int sockfd)
 {
-    return NetworkConnectedDevices[sockfd].username.str[0];
+    return NetworkConnectedDevices[sockfd].username.str[0]!='\0';
 }

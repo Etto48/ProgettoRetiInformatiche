@@ -221,12 +221,19 @@ void ChatPrintMessage(ChatMessage msg, UserName dst);
 Chat* ChatFind(UserName dst);
 
 /**
- * @brief calculate the pathname for a given user
+ * @brief calculate the path for a given user
  * 
  * @param dst username
- * @return pointer to an internal buffer containing the pathname
+ * @return pointer to an internal buffer containing the path
  */
 char* ChatGetFilename(UserName dst);
+
+/**
+ * @brief calculate the path for the chat directory
+ * 
+ * @return pointer to an internal buffer containing the path
+ */
+char* ChatGetDirname();
 
 /**
  * @brief add a new message to a message list

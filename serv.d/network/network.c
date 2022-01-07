@@ -5,32 +5,32 @@ void NetworkHandleNewMessage(int sockfd)
     switch (NetworkConnectedDevices[sockfd].mh.type)
     {
     case MESSAGE_SIGNUP:
-        DebugTag("SERV SIGNUP");
+        //DebugTag("SERV SIGNUP");
         NetworkHandleSignup(sockfd);
         break;
     case MESSAGE_LOGIN:
-        DebugTag("SERV LOGIN");
+        //DebugTag("SERV LOGIN");
         NetworkHandleLogin(sockfd);
         break;
     case MESSAGE_LOGOUT:
-        DebugTag("SERV LOGOUT");
+        //DebugTag("SERV LOGOUT");
         NetworkHandleLogout(sockfd);
         NetworkDeleteConnection(sockfd);
         break;
     case MESSAGE_HANGING:
-        DebugTag("SERV HANGING");
+        //DebugTag("SERV HANGING");
         NetworkHandleHanging(sockfd);
         break;
     case MESSAGE_USERINFO_REQ:
-        DebugTag("SERV USERINFO_REQ");
+        //DebugTag("SERV USERINFO_REQ");
         NetworkHandleUserinfoReq(sockfd);
         break;
     case MESSAGE_DATA:
-        DebugTag("SERV DATA");
+        //DebugTag("SERV DATA");
         NetworkHandleData(sockfd);
         break;
     default:
-        DebugTag("SERV ERROR");
+        //DebugTag("SERV ERROR");
         NetworkHandleError(sockfd);
     }
 }
@@ -42,6 +42,8 @@ void NetworkHandleSignup(int sockfd)
     Password password;
     NetworkDeserializeMessageSignup(ncd->mh.payload_size, ncd->receive_buffer, &username, &password);
     bool ok = AuthRegister(username, password);
+    if(ok)
+        printf("%s created a new account\n",username.str); // verbose
     NetworkSendMessageResponse(sockfd, ok);
 }
 
@@ -54,7 +56,10 @@ void NetworkHandleLogin(int sockfd)
     NetworkDeserializeMessageLogin(ncd->mh.payload_size, ncd->receive_buffer, &port, &username, &password);
     bool ok = IndexLogin(username, password, ntohl(ncd->address.sin_addr.s_addr), port);
     if (ok)
+    {
         ncd->username = username;
+        printf("%s logged in\n",username.str); // verbose
+    }
     NetworkSendMessageResponse(sockfd, ok);
     if (ok)
     { // we check if user has a pending syncread message
@@ -77,7 +82,10 @@ void NetworkHandleLogout(int sockfd)
     {
         ok = IndexLogout(ncd->username);
         if (ok)
+        {
+            printf("%s logged out\n",ncd->username.str); // verbose
             memset(ncd->username.str, 0, USERNAME_MAX_LENGTH + 1);
+        }
     }
     else
         ok = false;
@@ -162,6 +170,7 @@ void NetworkHandleHanging(int sockfd)
                 }
             }
             UserNameListDelete(&list);
+            printf("%s requested a list of hanging contacts\n",ncd->username.str); // verbose
         }
         else
         { // only messages from user
@@ -182,9 +191,9 @@ void NetworkHandleHanging(int sockfd)
             }
             if (last_timestamp > 0)
             { // now we must send a message syncread to the other end if possible
-            //FIXME: possibly broken
                 RelaySyncreadEdit(from, ncd->username, last_timestamp);
             }
+            printf("%s requested a list of hanging messages from %s\n",ncd->username.str,from.str); // verbose
         }
         NetworkSendMessageResponse(sockfd, true);
     }
@@ -206,6 +215,7 @@ void NetworkHandleUserinfoReq(int sockfd)
             uint32_t ip = res ? res->ip : 0;
             uint16_t port = res ? res->port : 0;
             NetworkSendMessageUserinfoRes(sockfd, ip, port);
+            printf("%s requested info about %s\n",ncd->username.str,username.str); // verbose
         }
         else
             NetworkSendMessageResponse(sockfd, false);
@@ -233,6 +243,7 @@ void NetworkHandleData(int sockfd)
             RelayHangingAdd(ncd->username, dst, timestamp, RELAY_MESSAGE_FILE, filename, file_size, file_data);
             free(filename);
             free(file_data);
+            printf("%s sent a file to %s\n",ncd->username.str,dst.str); // verbose
         }
         else
         { // text
@@ -245,6 +256,7 @@ void NetworkHandleData(int sockfd)
             // we must use ncd->username instead of src to avoid security issues
             RelayHangingAdd(ncd->username, dst, timestamp, RELAY_MESSAGE_TEXT, NULL, text_len, (uint8_t *)text);
             free(text);
+            printf("%s sent a text message to %s\n",ncd->username.str,dst.str); // verbose
         }
         //NetworkSendMessageResponse(sockfd, true);
     }
@@ -270,8 +282,10 @@ void NetworkFreeTime()
 
 void NetworkDeletedConnectionHook(int sockfd)
 {
-    if(NetworkConnectedDevices[sockfd].username.str[0]!='\0')
+    NetworkDeviceConnection* ncd = NetworkConnectedDevices + sockfd;
+    if(NetworkIsSocketLoggedIn(sockfd))
     {
-        IndexLogout(NetworkConnectedDevices[sockfd].username);
+        IndexLogout(ncd->username);
+        printf("%s disconnected\n",ncd->username.str); // verbose
     }
 }

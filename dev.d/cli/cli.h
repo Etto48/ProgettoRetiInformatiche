@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <string.h>
+#include <dirent.h>
 #include "../command_parser/command_parser.h"
 #include "../../global.d/debug/debug.h"
 #include "../network/network.h"

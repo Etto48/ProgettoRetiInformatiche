@@ -162,6 +162,21 @@ bool RelayLoad(const char* filename);
 bool RelaySave(const char* filename);
 
 /**
+ * @brief free every entry of RelayHangingList
+ * 
+ */
+void RelayFree();
+
+/**
+ * @brief add an entry to RelaySyncreadList without checking anything
+ * 
+ * @param src message sender
+ * @param dst message receiver
+ * @param timestamp last received message timestamp
+ */
+void RelaySyncreadAdd(UserName src, UserName dst, time_t timestamp);
+
+/**
  * @brief when a relay message is read if possible we try to send a message syncread to src,
  * we update the entry in the list otherwise
  * 
@@ -189,7 +204,7 @@ RelaySyncreadNotice* RelaySyncreadFind(UserName* src, UserName* dst);
 void RelaySyncreadDelete(UserName* src, UserName* dst);
 
 /**
- * @brief load RelaySyncreadList from file
+ * @brief load RelaySyncreadList from file, RelaySyncreadList must be empty
  * 
  * @param filename path to file
  * @return true if loaded correctly
@@ -203,3 +218,9 @@ bool RelaySyncreadLoad(const char* filename);
  * @return true if saved correctly
  */
 bool RelaySyncreadSave(const char* filename);
+
+/**
+ * @brief free every entry of RelaySyncreadList
+ * 
+ */
+void RelaySyncreadFree();

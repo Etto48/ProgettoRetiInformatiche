@@ -73,6 +73,12 @@ bool AuthCheck(UserName username, Password password);
 bool AuthExists(UserName username);
 
 /**
+ * @brief free every entry of AuthList
+ * 
+ */
+void AuthFree();
+
+/**
  * @brief load auth information from a file
  * 
  * @param filename path of the file
@@ -109,6 +115,12 @@ bool IndexLogin(UserName username, Password password, uint32_t ip, uint16_t port
  * @return true if everything ok and user was logged
  */
 bool IndexLogout(UserName username);
+
+/**
+ * @brief free every entry of IndexList
+ * 
+ */
+void IndexFree();
 
 /**
  * @brief like index find but returns NULL if the user is offline
