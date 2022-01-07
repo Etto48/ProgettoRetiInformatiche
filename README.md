@@ -18,6 +18,10 @@ Per evitare che il server rimanga in idle attendendo un intero messaggio da un d
 ## Gestione della modalità P2P dei device
 Anche per la gestione dei messaggi ricevuti in P2P dai device viene utilizzato lo stesso codice che il server usa per gestire le richieste, in questo modo più messaggi possono essere ricevuti contemporaneamente. 
 ## Gestione della connessione al server da parte del device
-Ho scelto di controllare se il server ha mandato notifiche al device nei momenti in cui quest’ultimo non deve gestire altre connessioni. I messaggi dal server però vengono ricevuti in ogni caso in modo **sincrono** poiché mi aspetto che ci sia un throughput accettabile e che il server non faccia attacchi DoS.
+I messaggi da parte del server sono gestiti in due modi diversi:
+-	Se non abbiamo mandato alcuna richiesta al server viene fatto un controllo grazie a select per controllare se ci sono messaggi da ricevere
+-	Se abbiamo fatto una richiesta al server il device si blocca in attesa della risposta
 
-In caso di disconnessione dal server, il device tenta periodicamente di riconnettersi ma non interrompe le altre operazioni
+Ho scelto questo comportamento perché non posso sapere a priori quando il server invia una notifica ma se invio una richiesta non posso continuare l’esecuzione finché non ricevo la risposta (o non si verifica un errore)
+
+Se perde la connessione con il server, il device tenta di riconnettersi periodicamente, senza però interrompere le altre attività
