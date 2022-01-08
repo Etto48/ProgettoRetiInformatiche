@@ -4,52 +4,11 @@
 #include "../../global.d/command_input/command_input.h"
 
 #define MAX_ARG_NUM 4
-/*****************************
- * Available Server Commands *
- *****************************
- *
- * - help
- *   shows a command list + instructions
- *
- * - signup <server port> <username> <password>
- *   request the creation of an account to the main server located on port <server port>
- *
- * - in <server port> <username> <password>
- *   request a login to the main server located on port <server port>
- *
- * - hanging
- *   request a list of users who sent you a message while you was offline
- *
- * - show <username>
- *   request a list of hanging messages from <username>
- *
- * - rmchat <username>
- *   delete the chat history with <username> and remove it from the
- *   contact list
- *
- * - users
- *   it's equivalent to \u but can be used outside the chat
- *
- * - chat <username>
- *   you can start a chat with <username> with this command
- *   once in a chat you can use the following commands
- *   prefixing them with a "\"
- *   > q
- *     close the chat
- *   > u
- *     list online users available for chat
- *   > a <username>
- *     add a user to the chat
- *   > f <filename>
- *     share a file with the chat
- *   > h
- *     show this page
- *
- * - out
- *   logs you out and closes the program
- *
- ****************************/
 
+/**
+ * @brief this enum is used to return the type of the command
+ * 
+ */
 typedef enum
 {
     COMMAND_HELP,
@@ -69,19 +28,36 @@ typedef enum
     COMMAND_ERROR
 } DeviceCommand;
 
+/**
+ * @brief this struct contains the type of the command and the arguments that were used
+ * 
+ */
 typedef struct
 {
     DeviceCommand command;
+
+    /**
+     * @brief argument count
+     */
     int argc;
+
+    /**
+     * @brief argument content
+     */
     char args[MAX_ARG_NUM - 1][INPUT_LEN];
 } DeviceCommandInfo;
 
+/**
+ * @brief this is used to select what commands are available
+ * 
+ */
 typedef enum
 {
     MODE_LOGIN,
     MODE_STANDARD,
     MODE_CHAT
 } CommandMode;
+
 /**
  * @brief requires an input from stdin
  *

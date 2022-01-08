@@ -1,7 +1,7 @@
 #include "cli.h"
 
 UserName CLIActiveUsername = {.str = {0}};
-Password CLIActivePassword = {.str = {0}};
+Password CLIActivePassword = {.data = {0}};
 
 CommandMode CLIMode = MODE_LOGIN;
 
@@ -58,9 +58,10 @@ Available commands:\n\
      share a file with the chat\n\
    > h\n\
      shows a help page about chat commands\n\
+   if you want to send a message that starts with \"\\\" escape it with another \"\\\"\n\
 \n\
  - [log]out\n\
-   logs you out and closes the program (This command is only available after the login)\n\
+   logs you out and disconnects from the server (This command is only available after the login)\n\
 \n\
  - esc|exit\n\
    saves everything and closes the program\n");
@@ -276,7 +277,7 @@ void CLILogout(__attribute__((unused)) DeviceCommandInfo dci)
             FreeResources(); // we deallocate every chat structure used as it can cause problems if we login with another user
 
             memset(CLIActiveUsername.str, 0, USERNAME_MAX_LENGTH + 1);
-            memset(CLIActivePassword.str, 0, PASSWORD_MAX_LENGTH + 1);
+            memset(CLIActivePassword.data, 0, PASSWORD_SIZE);
             CLIMode = MODE_LOGIN;
             NetworkServerInfo.address.sin_port = 0;              // prevent auto reconnect
             for (size_t i = 3; i < NETWORK_MAX_CONNECTIONS; i++) // disconnect from every peer

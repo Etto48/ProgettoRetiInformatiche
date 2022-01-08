@@ -31,7 +31,7 @@ Available commands:\n\
 void CLIPrintConnectedUsers()
 {
     int column_size = 20;
-    char *labels[] = {"Username", "login time", "port"};
+    char *labels[] = {"Username", "login time", "address"};
     printf(" %*s | %*s | %*s\n", -column_size, labels[0], -column_size, labels[1], -column_size, labels[2]);
     printf("----------------------+----------------------+----------------------\n");
     for (IndexEntry *i = IndexList; i; i = i->next)
@@ -47,13 +47,18 @@ void CLIPrintConnectedUsers()
                      login_time.tm_hour,
                      login_time.tm_min,
                      login_time.tm_sec);
-            printf(" %*s | %*s | %*d\n",
+            char ip_buf[16];
+            char net_buf[21];
+            uint32_t ip = htonl(i->ip);
+            inet_ntop(AF_INET,&ip,ip_buf,16);
+            snprintf(net_buf,21,"%s:%d",ip_buf,i->port);
+            printf(" %*s | %*s | %*s\n",
                    -column_size,
                    i->user_dest.str,
                    -column_size,
                    time_buf,
                    -column_size,
-                   i->port);
+                   net_buf);
         }
     }
 }

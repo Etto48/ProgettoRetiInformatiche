@@ -38,7 +38,7 @@ UserName CreateUserName(const char *username)
 Password CreatePassword(const char *password)
 {
     Password ret;
-    memset(ret.str, 0, PASSWORD_MAX_LENGTH + 1);
-    calc_sha_256(ret.str, password, strlen(password));
+    memset(ret.data, 0, PASSWORD_SIZE);
+    calc_sha_256(ret.data, password, strlen(password));
     return ret;
 }

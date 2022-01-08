@@ -48,7 +48,7 @@ bool AuthRegister(UserName username, Password password)
     AuthEntry *new_entry = (AuthEntry *)malloc(sizeof(AuthEntry));
     new_entry->next = AuthList;
     new_entry->username = CreateUserName(username.str);
-    memcpy(new_entry->password.str, password.str, PASSWORD_MAX_LENGTH + 1);
+    memcpy(new_entry->password.data, password.data, PASSWORD_SIZE);
     AuthList = new_entry;
     return true;
 }
@@ -57,7 +57,7 @@ bool AuthCheck(UserName username, Password password)
 {
     for (AuthEntry *i = AuthList; i; i = i->next)
     {
-        if (strncmp(username.str, i->username.str, USERNAME_MAX_LENGTH) == 0 && memcmp(password.str, i->password.str, PASSWORD_MAX_LENGTH) == 0)
+        if (strncmp(username.str, i->username.str, USERNAME_MAX_LENGTH) == 0 && memcmp(password.data, i->password.data, PASSWORD_SIZE) == 0)
             return true;
     }
     return false;
@@ -99,7 +99,7 @@ bool AuthLoad(const char *filename)
     {
         AuthEntry new_entry;
         memset(new_entry.username.str, 0, USERNAME_MAX_LENGTH + 1);
-        memset(new_entry.password.str, 0, PASSWORD_MAX_LENGTH + 1);
+        memset(new_entry.password.data, 0, PASSWORD_SIZE);
         reads = read(fd, new_entry.username.str, USERNAME_MAX_LENGTH);
         if (reads == 0) // EOF
             break;
@@ -108,8 +108,8 @@ bool AuthLoad(const char *filename)
             error = true;
             break;
         }
-        reads = read(fd, new_entry.password.str, PASSWORD_MAX_LENGTH);
-        if (reads < PASSWORD_MAX_LENGTH) // Corrupted file
+        reads = read(fd, new_entry.password.data, PASSWORD_SIZE);
+        if (reads < PASSWORD_SIZE) // Corrupted file
         {
             error = true;
             break;
@@ -141,7 +141,7 @@ bool AuthSave(const char *filename)
     {
         if (write(fd, i->username.str, USERNAME_MAX_LENGTH) < USERNAME_MAX_LENGTH)
             return false;
-        if (write(fd, i->password.str, PASSWORD_MAX_LENGTH) < PASSWORD_MAX_LENGTH)
+        if (write(fd, i->password.data, PASSWORD_SIZE) < PASSWORD_SIZE)
             return false;
     }
     close(fd);

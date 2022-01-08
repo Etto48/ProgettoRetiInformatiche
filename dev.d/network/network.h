@@ -23,6 +23,10 @@ extern uint32_t NetworkServerAddress;
  */
 extern bool NetworkShutdownRequested;
 
+/**
+ * @brief once we receive a message from the server it's added to a list made of this struct
+ * 
+ */
 typedef struct _ServerMessage
 {
     MessageHeader header;
@@ -30,6 +34,10 @@ typedef struct _ServerMessage
     struct _ServerMessage *next;
 } ServerMessage;
 
+/**
+ * @brief all the info about the server + the message list
+ * 
+ */
 typedef struct
 {
     bool connected;
@@ -39,7 +47,12 @@ typedef struct
     ServerMessage *message_list_tail;
 } ServerConnectionInfo;
 
+/**
+ * @brief we use ServerConnectionInfo just for this
+ * 
+ */
 extern ServerConnectionInfo NetworkServerInfo;
+
 /**
  * @brief handles a generic message sending it to the appropriate handler
  *

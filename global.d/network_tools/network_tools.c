@@ -91,9 +91,8 @@ void NetworkDeserializeMessageSignup(size_t payload_size, const uint8_t *payload
     if (payload_size == MESSAGE_SIGNUP_SIZE && payload && username && password)
     {
         memcpy(username->str, payload, USERNAME_MAX_LENGTH);
-        memcpy(password->str, payload + USERNAME_MAX_LENGTH, PASSWORD_MAX_LENGTH);
+        memcpy(password->data, payload + USERNAME_MAX_LENGTH, PASSWORD_SIZE);
         username->str[USERNAME_MAX_LENGTH] = '\0';
-        password->str[PASSWORD_MAX_LENGTH] = '\0';
     }
     else
         DebugLog("SIGNUP deserialization error");
@@ -104,9 +103,8 @@ void NetworkDeserializeMessageLogin(size_t payload_size, const uint8_t *payload,
     {
         *port = ntohs(*(uint16_t *)payload);
         memcpy(username->str, payload + sizeof(uint16_t), USERNAME_MAX_LENGTH);
-        memcpy(password->str, payload + sizeof(uint16_t) + USERNAME_MAX_LENGTH, PASSWORD_MAX_LENGTH);
+        memcpy(password->data, payload + sizeof(uint16_t) + USERNAME_MAX_LENGTH, PASSWORD_SIZE);
         username->str[USERNAME_MAX_LENGTH] = '\0';
-        password->str[PASSWORD_MAX_LENGTH] = '\0';
     }
     else
         DebugLog("LOGIN deserialization error");
@@ -249,18 +247,18 @@ bool NetworkSendMessageResponse(int sockfd, bool ok)
 }
 bool NetworkSendMessageSignup(int sockfd, UserName username, Password password)
 {
-    uint8_t payload[USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH];
+    uint8_t payload[USERNAME_MAX_LENGTH + PASSWORD_SIZE];
     memcpy(payload, username.str, USERNAME_MAX_LENGTH);
-    memcpy(payload + USERNAME_MAX_LENGTH, password.str, PASSWORD_MAX_LENGTH);
+    memcpy(payload + USERNAME_MAX_LENGTH, password.data, PASSWORD_SIZE);
 
     NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_SIGNUP, NULL, )
 }
 bool NetworkSendMessageLogin(int sockfd, uint16_t port, UserName username, Password password)
 {
-    uint8_t payload[2 + USERNAME_MAX_LENGTH + PASSWORD_MAX_LENGTH];
+    uint8_t payload[2 + USERNAME_MAX_LENGTH + PASSWORD_SIZE];
     *(uint16_t *)payload = htons(port);
     memcpy(payload + 2, username.str, USERNAME_MAX_LENGTH);
-    memcpy(payload + 2 + USERNAME_MAX_LENGTH, password.str, PASSWORD_MAX_LENGTH);
+    memcpy(payload + 2 + USERNAME_MAX_LENGTH, password.data, PASSWORD_SIZE);
 
     NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_LOGIN, NULL, )
 }
