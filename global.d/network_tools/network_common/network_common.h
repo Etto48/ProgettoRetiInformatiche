@@ -8,7 +8,7 @@
 #include "../../debug/debug.h"
 #include "../network_tools.h"
 
-#define NETWORK_MAX_CONNECTIONS 1024
+#define NETWORK_MAX_CONNECTIONS FD_SETSIZE
 
 typedef struct
 {
