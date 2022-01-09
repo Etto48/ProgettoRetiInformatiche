@@ -411,7 +411,7 @@ char *ChatNewFilePath(char *filename)
         if (try == 0)
             snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s/%s", CHAT_FILE_DIR, CLIActiveUsername.str, filename);
         else
-            snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s/%s_%lu%s", CHAT_FILE_DIR, CLIActiveUsername.str, filename_no_ext, try, filename + filename_no_ext_len);
+            snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s/%s_%lu%s", CHAT_FILE_DIR, CLIActiveUsername.str, filename_no_ext, (uint64_t)try, filename + filename_no_ext_len);
 
         struct stat s;
         // we eliminate the race condition using the username in the path
