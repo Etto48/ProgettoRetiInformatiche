@@ -131,16 +131,21 @@ bool ChatLoad(UserName user)
             uint8_t direction;
             uint8_t read_b;
             uint32_t content_len;
-            if (read(chat_fd, &timestamp, sizeof(uint64_t)) == 0)
+            if (read(chat_fd, &timestamp, sizeof(uint64_t)) <= 0)
                 break; // EOF
             timestamp = ntohq(timestamp);
-            if(read(chat_fd, &type, sizeof(uint8_t))<0) break;
-            if(read(chat_fd, &direction, sizeof(uint8_t))<0) break;
-            if(read(chat_fd, &read_b, sizeof(uint8_t))<0) break;
-            if(read(chat_fd, &content_len, sizeof(uint32_t))<0) break;
+            if (read(chat_fd, &type, sizeof(uint8_t)) < 0)
+                break;
+            if (read(chat_fd, &direction, sizeof(uint8_t)) < 0)
+                break;
+            if (read(chat_fd, &read_b, sizeof(uint8_t)) < 0)
+                break;
+            if (read(chat_fd, &content_len, sizeof(uint32_t)) < 0)
+                break;
             content_len = ntohl(content_len);
             char *buf = (char *)malloc(sizeof(char) * (content_len + 1));
-            if(read(chat_fd, buf, sizeof(char) * content_len)<0) break;
+            if (read(chat_fd, buf, sizeof(char) * content_len) < 0)
+                break;
             buf[content_len] = '\0';
 
             ChatAddMessage(user,
@@ -180,12 +185,18 @@ bool ChatSave()
                 uint32_t content_len = htonl(strlen(j->content));
                 uint64_t timestamp = htonq(j->timestamp);
 
-                if(write(chat_fd, &timestamp, sizeof(uint64_t))<0) break;
-                if(write(chat_fd, j->type == CHAT_MESSAGE_FILE ? "F" : "T", sizeof(uint8_t))<0) break;
-                if(write(chat_fd, j->direction == CHAT_MESSAGE_RECEIVED ? "R" : "S", sizeof(uint8_t))<0) break;
-                if(write(chat_fd, j->read ? "*" : " ", sizeof(uint8_t))<0) break;
-                if(write(chat_fd, &content_len, sizeof(uint32_t))<0) break;
-                if(write(chat_fd, j->content, ntohl(content_len))<0) break;
+                if (write(chat_fd, &timestamp, sizeof(uint64_t)) < 0)
+                    break;
+                if (write(chat_fd, j->type == CHAT_MESSAGE_FILE ? "F" : "T", sizeof(uint8_t)) < 0)
+                    break;
+                if (write(chat_fd, j->direction == CHAT_MESSAGE_RECEIVED ? "R" : "S", sizeof(uint8_t)) < 0)
+                    break;
+                if (write(chat_fd, j->read ? "*" : " ", sizeof(uint8_t)) < 0)
+                    break;
+                if (write(chat_fd, &content_len, sizeof(uint32_t)) < 0)
+                    break;
+                if (write(chat_fd, j->content, ntohl(content_len)) < 0)
+                    break;
             }
             close(chat_fd);
         }
@@ -200,7 +211,8 @@ void ChatWrite()
     char text[CHAT_MAX_MESSAGE_LEN];
     memset(text, 0, CHAT_MAX_MESSAGE_LEN);
     // get a line from stdin
-    if(!fgets(text, CHAT_MAX_MESSAGE_LEN, stdin)) return;
+    if (!fgets(text, CHAT_MAX_MESSAGE_LEN, stdin))
+        return;
     // we erase the stdin line to overwrite it afterwards using ChatPrintMessage
     printf("\033[1A\r");
     *strrchr(text, '\n') = '\0';
@@ -266,7 +278,8 @@ char *ChatGetFilename(UserName dst)
     char *dirname = ChatGetDirname();
     if (dirname)
     {
-        if(strlen(dirname)>FILENAME_MAX-26) return NULL;
+        if (strlen(dirname) > FILENAME_MAX - 26)
+            return NULL;
         strncpy(dirname_cpy, dirname, FILENAME_MAX - 26);
         snprintf(filename_tmp_buffer, FILENAME_MAX, "%s/%s.chat", dirname_cpy, dst.str);
         return filename_tmp_buffer;
@@ -448,8 +461,8 @@ void ChatSaveMessageFile(uint32_t payload_size, const uint8_t *payload)
     }
     else
     {
-        if(write(file_fd, file, file_len)<0)
-            printf("Error saving %s\n",file_path);
+        if (write(file_fd, file, file_len) < 0)
+            printf("Error saving %s\n", file_path);
         close(file_fd);
     }
 

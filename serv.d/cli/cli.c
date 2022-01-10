@@ -50,8 +50,8 @@ void CLIPrintConnectedUsers()
             char ip_buf[16];
             char net_buf[22];
             uint32_t ip = htonl(i->ip);
-            inet_ntop(AF_INET,&ip,ip_buf,16);
-            snprintf(net_buf,22,"%s:%d",ip_buf,i->port);
+            inet_ntop(AF_INET, &ip, ip_buf, 16);
+            snprintf(net_buf, 22, "%s:%d", ip_buf, i->port);
             printf(" %*s | %*s | %*s\n",
                    -column_size,
                    i->user_dest.str,

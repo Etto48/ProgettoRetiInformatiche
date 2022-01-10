@@ -7,7 +7,7 @@
 
 /**
  * @brief this enum is used to return the type of the command
- * 
+ *
  */
 typedef enum
 {
@@ -30,7 +30,7 @@ typedef enum
 
 /**
  * @brief this struct contains the type of the command and the arguments that were used
- * 
+ *
  */
 typedef struct
 {
@@ -49,7 +49,7 @@ typedef struct
 
 /**
  * @brief this is used to select what commands are available
- * 
+ *
  */
 typedef enum
 {

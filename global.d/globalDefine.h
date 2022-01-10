@@ -7,7 +7,7 @@
 
 /**
  * @brief we use this to store a username, the size of the array is USERNAME_MAX_LENGTH + 1 because of the null termination
- * 
+ *
  */
 typedef struct
 {
@@ -16,7 +16,7 @@ typedef struct
 
 /**
  * @brief we use this to store a password hashed with SHA256
- * 
+ *
  */
 typedef struct
 {

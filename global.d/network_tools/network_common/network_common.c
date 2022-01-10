@@ -190,9 +190,9 @@ void NetworkReceiveNewData(int sockfd)
 
             if (NetworkConnectedDevices[sockfd].mh.type > MAX_MESSAGE_TYPE) // if an invalid header was provided ignore size
                 NetworkConnectedDevices[sockfd].mh.payload_size = 0;
-            if(NetworkConnectedDevices[sockfd].mh.payload_size)
+            if (NetworkConnectedDevices[sockfd].mh.payload_size)
                 NetworkConnectedDevices[sockfd].receive_buffer = (uint8_t *)malloc(NetworkConnectedDevices[sockfd].mh.payload_size);
-            else 
+            else
                 NetworkConnectedDevices[sockfd].receive_buffer = NULL;
             NetworkConnectedDevices[sockfd].received_bytes = 0;
             NetworkConnectedDevices[sockfd].header_received = true;
@@ -201,7 +201,7 @@ void NetworkReceiveNewData(int sockfd)
         if (NetworkConnectedDevices[sockfd].header_received && NetworkConnectedDevices[sockfd].received_bytes == NetworkConnectedDevices[sockfd].mh.payload_size)
         { // payload completely received
             NetworkHandleNewMessage(sockfd);
-            if(NetworkConnectedDevices[sockfd].receive_buffer)
+            if (NetworkConnectedDevices[sockfd].receive_buffer)
                 free(NetworkConnectedDevices[sockfd].receive_buffer);
             NetworkConnectedDevices[sockfd].receive_buffer = NULL;
             NetworkConnectedDevices[sockfd].header_received = false;
