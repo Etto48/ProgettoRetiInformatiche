@@ -49,7 +49,7 @@ RelayMessage *RelayHangingFindFirst(RelayMessage *message_list, UserName *src, U
 {
     for (RelayMessage *i = message_list; i; i = i->next)
     {
-        if ((!src || strcmp(i->src.str, src->str) == 0) && (!dst || strcmp(i->dst.str, dst->str) == 0))
+        if ((!src || strncmp(i->src.str, src->str, USERNAME_MAX_LENGTH) == 0) && (!dst || strncmp(i->dst.str, dst->str, USERNAME_MAX_LENGTH) == 0))
             return i;
     }
     return NULL;
@@ -60,7 +60,7 @@ size_t RelayHangingCount(UserName *src, UserName *dst)
     size_t count = 0;
     for (RelayMessage *i = RelayHangingList; i; i = i->next)
     {
-        if ((!src || strcmp(i->src.str, src->str) == 0) && (!dst || strcmp(i->dst.str, dst->str) == 0))
+        if ((!src || strncmp(i->src.str, src->str, USERNAME_MAX_LENGTH) == 0) && (!dst || strncmp(i->dst.str, dst->str, USERNAME_MAX_LENGTH) == 0))
             count++;
     }
     return count;
@@ -72,7 +72,7 @@ RelayMessage *RelayHangingPopFirst(UserName *src, UserName *dst)
     RelayMessage *i = NULL;
     for (i = RelayHangingList; i; i = i->next)
     {
-        if ((!src || strcmp(i->src.str, src->str) == 0) && (!dst || strcmp(i->dst.str, dst->str) == 0))
+        if ((!src || strncmp(i->src.str, src->str, USERNAME_MAX_LENGTH) == 0) && (!dst || strncmp(i->dst.str, dst->str, USERNAME_MAX_LENGTH) == 0))
             break;
         last = i;
     }

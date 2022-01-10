@@ -42,7 +42,7 @@ bool AuthRegister(UserName username, Password password)
 
     for (AuthEntry *i = AuthList; i; i = i->next)
     {
-        if (strcmp(username.str, i->username.str) == 0)
+        if (strncmp(username.str, i->username.str, USERNAME_MAX_LENGTH) == 0)
             return false;
     }
     AuthEntry *new_entry = (AuthEntry *)malloc(sizeof(AuthEntry));
