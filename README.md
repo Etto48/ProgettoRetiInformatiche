@@ -21,6 +21,8 @@ Per ricevere una lista di messaggi in attesa da un dato utente dobbiamo mandare 
 Opzionalmente possiamo mandare un pacchetto di tipo MESSAGE_HANGING vuoto per ottenere una lista degli utenti che ci hanno mandato un messaggio in modalità relay, la risposta sarà formata da una lista di pacchetti di tipo MESSAGE_HANGING contenenti ognuno un username, questa è terminata da un pacchetto di tipo MESSAGE_RESPONSE (senza errori) 
 ### Protocollo di connessione P2P
 Si dovrà richiedere la porta su cui sta in ascolto l’altro peer al server tramite un pacchetto di tipo MESSAGE_USERINFO_REQ e dovremo attendere un pacchetto di tipo MESSAGE_USERINFO_RES come risposta. Una volta ottenuta la porta dell’altro peer va aperta una connessione TCP con esso e va inviato un pacchetto di tipo MESSAGE_LOGIN (senza password e porta) per fornire il nostro username. A questo punto possiamo inviare e ricevere pacchetti di tipo MESSAGE_DATA su quella connessione
+### Gestione degli errori
+Se inviamo un pacchetto al server e questo genera un errore di qualche tipo (signup con uno username già reistrato, credenziali di login errate, ecc…) viene inviato una pacchetto di tipo MESSAGE_RESPONSE (con errore) invece della risposta attesa
 ## Gestione delle richieste lato server
 Il server gestisce le richieste in modo **sequenziale** con *select*, ho fatto questa scelta per evitare la complessità che deriva dalla programmazione concorrente e per facilitare la condivisione delle strutture dati comuni a tutte le connessioni.
 
