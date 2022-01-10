@@ -367,7 +367,7 @@ void CLIChatFile(DeviceCommandInfo dci)
     uint8_t *file_buffer = (uint8_t *)malloc(st.st_size);
     read(fd, file_buffer, st.st_size);
     close(fd);
-    printf("\e[1A\r");
+    printf("\033[1A\r");
     time_t timestamp = time(NULL);
     for (ChatTarget *i = ChatTargetList; i; i = i->next)
     {

@@ -202,7 +202,7 @@ void ChatWrite()
     // get a line from stdin
     fgets(text, CHAT_MAX_MESSAGE_LEN, stdin);
     // we erase the stdin line to overwrite it afterwards using ChatPrintMessage
-    printf("\e[1A\r");
+    printf("\033[1A\r");
     *strrchr(text, '\n') = '\0';
     time_t timestamp = time(NULL);
     for (ChatTarget *i = ChatTargetList; i; i = i->next)

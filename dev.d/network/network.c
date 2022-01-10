@@ -10,7 +10,7 @@ ServerConnectionInfo NetworkServerInfo = {
         .sin_family = AF_INET,
         .sin_addr = {0},
         .sin_port = 0,
-        .sin_zero = {}},
+        .sin_zero = {0}},
     .message_list_head = NULL,
     .message_list_tail = NULL};
 

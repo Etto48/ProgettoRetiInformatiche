@@ -6,7 +6,7 @@ DEFINE_LIST		:=	$(MODE)
 CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c99
 
 ifeq ($(MODE),DEBUG)
-	CARGS		+=	-ggdb -Wextra
+	CARGS		+=	-ggdb -Wextra -pedantic
 else ifeq ($(MODE),RELEASE)
 	CARGS		+=	-O3
 endif

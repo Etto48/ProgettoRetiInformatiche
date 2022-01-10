@@ -264,7 +264,7 @@ bool NetworkSendMessageLogin(int sockfd, uint16_t port, UserName username, Passw
 }
 bool NetworkSendMessageLogout(int sockfd)
 {
-    uint8_t payload[0];
+    uint8_t* payload = NULL;
 
     NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_LOGOUT, NULL, )
 }
