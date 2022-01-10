@@ -11,6 +11,16 @@ Ogni pacchetto è composto da un header e da un payload
     |Tipo del messaggio|Lunghezza del payload|
 
 - Payload: cambia struttura a seconda del tipo del messaggio, questa è documentata nel dettaglio in [global.d/network\_tools/network\_tools.h](global.d/network\_tools/network\_tools.h)
+### Protocollo di scambio dei messaggi
+Un pacchetto di tipo MESSAGE_DATA contiene un messaggo di testo o file (specificato all’interno del pacchetto) e può essere inviato al destinatario (modalità P2P) o al server (modalità relay), in entrambi i casi arriverà al destinatario (in modalità relay dovrà essere richiesto con un pacchetto di tipo MESSAGE_HANGING contenente l’username del mittente)
+
+Se si utilizza la modalità relay si riceverà un messaggio MESSAGE_SYNCREAD nel momento in cui il destinatario riceve il messaggio o quando faremo login se il messaggio è stato ricevuto mentre eravamo offline
+### Protocollo di ricezione dei messaggi inviati in modalità relay
+Per ricevere una lista di messaggi in attesa da un dato utente dobbiamo mandare al server un pacchetto di tipo MESSAGE_HANGING contenente l’username dell’utente da cui vogliamo riceve i messaggi, a questo punto dobbiamo ricevere una serie di pacchetti di tipo MESSAGE_DATA terminata da un pacchetto di tipo MESSAGE_RESPONSE (senza errori)
+
+Opzionalmente possiamo mandare un pacchetto di tipo MESSAGE_HANGING vuoto per ottenere una lista degli utenti che ci hanno mandato un messaggio in modalità relay, la risposta sarà formata da una lista di pacchetti di tipo MESSAGE_HANGING contenenti ognuno un username, questa è terminata da un pacchetto di tipo MESSAGE_RESPONSE (senza errori) 
+### Protocollo di connessione P2P
+Si dovrà richiedere la porta su cui sta in ascolto l’altro peer al server tramite un pacchetto di tipo MESSAGE_USERINFO_REQ e dovremo attendere un pacchetto di tipo MESSAGE_USERINFO_RES come risposta. Una volta ottenuta la porta dell’altro peer va aperta una connessione TCP con esso e va inviato un pacchetto di tipo MESSAGE_LOGIN (senza password e porta) per fornire il nostro username. A questo punto possiamo inviare e ricevere pacchetti di tipo MESSAGE_DATA su quella connessione
 ## Gestione delle richieste lato server
 Il server gestisce le richieste in modo **sequenziale** con *select*, ho fatto questa scelta per evitare la complessità che deriva dalla programmazione concorrente e per facilitare la condivisione delle strutture dati comuni a tutte le connessioni.
 
