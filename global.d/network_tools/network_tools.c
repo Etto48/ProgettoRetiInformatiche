@@ -330,7 +330,7 @@ bool NetworkSendMessageDataFile(int sockfd, UserName src_username, UserName dst_
         return false;
     }
     uint8_t *file_buffer = (uint8_t *)malloc(st.st_size);
-    read(fd, file_buffer, st.st_size);
+    if(read(fd, file_buffer, st.st_size)<0) return false;
     close(fd);
     size_t basename_offset = ToolsBasename(filename);
 

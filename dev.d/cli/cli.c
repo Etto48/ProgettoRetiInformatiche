@@ -365,7 +365,11 @@ void CLIChatFile(DeviceCommandInfo dci)
         return;
     }
     uint8_t *file_buffer = (uint8_t *)malloc(st.st_size);
-    read(fd, file_buffer, st.st_size);
+    if(read(fd, file_buffer, st.st_size)!=st.st_size)
+    {
+        printf("Error reading %s\n", filename);
+        return;
+    }
     close(fd);
     printf("\033[1A\r");
     time_t timestamp = time(NULL);

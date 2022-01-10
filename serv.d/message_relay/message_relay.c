@@ -125,33 +125,33 @@ bool RelayLoad(const char *filename)
         if (read(fd, src.str, USERNAME_MAX_LENGTH) == 0)
             break;
         src.str[USERNAME_MAX_LENGTH] = '\0';
-        read(fd, dst.str, USERNAME_MAX_LENGTH);
+        if(read(fd, dst.str, USERNAME_MAX_LENGTH)<0) break;
         dst.str[USERNAME_MAX_LENGTH] = '\0';
-        read(fd, &timestamp, sizeof(uint64_t));
+        if(read(fd, &timestamp, sizeof(uint64_t))<0) break;
         timestamp = ntohq(timestamp);
-        read(fd, &type, sizeof(char));
+        if(read(fd, &type, sizeof(char))<0) break;
         switch (type)
         {
         case 'F':
         {
             uint32_t filename_len;
-            read(fd, &filename_len, sizeof(uint32_t));
+            if(read(fd, &filename_len, sizeof(uint32_t))<0) goto endloop;
             filename_len = ntohl(filename_len);
             filename = (char *)malloc(filename_len + 1);
-            read(fd, filename, filename_len);
+            if(read(fd, filename, filename_len)<0) goto endloop;
             filename[filename_len] = '\0';
-            read(fd, &data_len, sizeof(uint32_t));
+            if(read(fd, &data_len, sizeof(uint32_t))<0) goto endloop;
             data_len = ntohl(data_len);
             data = (uint8_t *)malloc(data_len);
-            read(fd, data, data_len);
+            if(read(fd, data, data_len)<0) goto endloop;
         }
         break;
         case 'T':
         {
-            read(fd, &data_len, sizeof(uint32_t));
+            if(read(fd, &data_len, sizeof(uint32_t))<0) goto endloop;
             data_len = ntohl(data_len);
             data = (uint8_t *)malloc(data_len + 1);
-            read(fd, data, data_len);
+            if(read(fd, data, data_len)<0) goto endloop;
             data[data_len] = '\0';
         }
         break;
@@ -165,6 +165,8 @@ bool RelayLoad(const char *filename)
             free(filename);
         free(data);
     }
+endloop:
+
     close(fd);
     return true;
 }
@@ -179,34 +181,36 @@ bool RelaySave(const char *filename)
     }
     for (RelayMessage *i = RelayHangingList; i; i = i->next)
     {
-        write(fd, i->src.str, USERNAME_MAX_LENGTH);
-        write(fd, i->dst.str, USERNAME_MAX_LENGTH);
+        if(write(fd, i->src.str, USERNAME_MAX_LENGTH)<0) break;
+        if(write(fd, i->dst.str, USERNAME_MAX_LENGTH)<0) break;
         uint64_t timestamp = htonq(i->timestamp);
-        write(fd, &timestamp, sizeof(uint64_t));
+        if(write(fd, &timestamp, sizeof(uint64_t))<0) break;
         switch (i->type)
         {
         case RELAY_MESSAGE_FILE:
         {
-            write(fd, "F", sizeof(char));
+            if(write(fd, "F", sizeof(char))<0) goto endloop;
             uint32_t filename_len = htonl(strlen(i->filename));
-            write(fd, &filename_len, sizeof(uint32_t));
-            write(fd, i->filename, strlen(i->filename));
+            if(write(fd, &filename_len, sizeof(uint32_t))<0) goto endloop;
+            if(write(fd, i->filename, strlen(i->filename))<0) goto endloop;
             uint32_t file_len = htonl(i->data_size);
-            write(fd, &file_len, sizeof(uint32_t));
-            write(fd, i->data, i->data_size);
+            if(write(fd, &file_len, sizeof(uint32_t))<0) goto endloop;
+            if(write(fd, i->data, i->data_size)<0) goto endloop;
         }
         break;
 
         case RELAY_MESSAGE_TEXT:
         {
-            write(fd, "T", sizeof(char));
+            if(write(fd, "T", sizeof(char))<0) goto endloop;
             uint32_t text_len = htonl(strlen((char *)i->data));
-            write(fd, &text_len, sizeof(uint32_t));
-            write(fd, i->data, strlen((char *)i->data));
+            if(write(fd, &text_len, sizeof(uint32_t))<0) goto endloop;
+            if(write(fd, i->data, strlen((char *)i->data))<0) goto endloop;
         }
         break;
         }
     }
+endloop:
+
     close(fd);
     return true;
 }
@@ -308,9 +312,9 @@ bool RelaySyncreadLoad(const char *filename)
         if (read(fd, src.str, USERNAME_MAX_LENGTH) == 0)
             break;
         src.str[USERNAME_MAX_LENGTH] = '\0';
-        read(fd, dst.str, USERNAME_MAX_LENGTH);
+        if(read(fd, dst.str, USERNAME_MAX_LENGTH)<0) break;
         dst.str[USERNAME_MAX_LENGTH] = '\0';
-        read(fd, &timestamp, sizeof(uint64_t));
+        if(read(fd, &timestamp, sizeof(uint64_t))<0) break;
         timestamp = ntohq(timestamp);
 
         RelaySyncreadAdd(src, dst, timestamp);
@@ -330,9 +334,9 @@ bool RelaySyncreadSave(const char *filename)
     for (RelaySyncreadNotice *i = RelaySyncreadList; i; i = i->next)
     {
         uint64_t timestamp = htonq(i->timestamp);
-        write(fd, i->src.str, USERNAME_MAX_LENGTH);
-        write(fd, i->dst.str, USERNAME_MAX_LENGTH);
-        write(fd, &timestamp, sizeof(uint64_t));
+        if(write(fd, i->src.str, USERNAME_MAX_LENGTH)<0) break;
+        if(write(fd, i->dst.str, USERNAME_MAX_LENGTH)<0) break;
+        if(write(fd, &timestamp, sizeof(uint64_t))<0) break;
     }
     close(fd);
     return true;

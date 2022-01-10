@@ -40,18 +40,18 @@ void CLIPrintConnectedUsers()
         {
             char time_buf[21];
             struct tm login_time = *localtime(&i->timestamp_login);
-            snprintf(time_buf, 21, "%02d/%02d/%d %02d:%02d:%02d",
-                     login_time.tm_mday,
-                     login_time.tm_mon + 1,
-                     login_time.tm_year + 1900,
-                     login_time.tm_hour,
-                     login_time.tm_min,
-                     login_time.tm_sec);
+            snprintf(time_buf, 21, "%02u/%02u/%04u %02u:%02u:%02u",
+                     login_time.tm_mday % 100,
+                     (login_time.tm_mon + 1) % 100,
+                     (login_time.tm_year + 1900) % 10000,
+                     login_time.tm_hour % 100,
+                     login_time.tm_min % 100,
+                     login_time.tm_sec % 100);
             char ip_buf[16];
-            char net_buf[21];
+            char net_buf[22];
             uint32_t ip = htonl(i->ip);
             inet_ntop(AF_INET,&ip,ip_buf,16);
-            snprintf(net_buf,21,"%s:%d",ip_buf,i->port);
+            snprintf(net_buf,22,"%s:%d",ip_buf,i->port);
             printf(" %*s | %*s | %*s\n",
                    -column_size,
                    i->user_dest.str,
