@@ -6,16 +6,16 @@ void CLIHandleInput()
     switch (sc)
     {
     case COMMAND_HELP:
-        printf("\
-Available commands:\n\
- - help\n\
-   show this message\n\
-\n\
- - list\n\
-   show a list of connected users\n\
-\n\
- - esc|exit\n\
-   stop the server and exit\n");
+        printf(
+            "Available commands:\n"
+            " - help\n"
+            "   show this message\n"
+            "\n"
+            " - list\n"
+            "   show a list of connected users\n"
+            "\n"
+            " - esc|exit\n"
+            "   stop the server and exit\n");
         break;
     case COMMAND_LIST:
         CLIPrintConnectedUsers();

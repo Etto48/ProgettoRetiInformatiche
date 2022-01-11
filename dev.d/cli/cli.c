@@ -20,64 +20,64 @@ void CLIHandleInput()
         {
         case COMMAND_HELP:
             if (CLIMode != MODE_CHAT)
-                printf("\
-Available commands:\n\
- - help\n\
-   (This command is available before and after the login) shows a command list + instructions\n\
-\n\
- - signup <server port> <username> <password>\n\
-   request the creation of an account to the main server located on port <server port>\n\
-\n\
- - [log]in <server port> <username> <password>\n\
-   request a login to the main server located on port <server port>\n\
-\n\
- - hanging\n\
-   request a list of users who sent you a message while you was offline (This command is only available after the login)\n\
-\n\
- - show <username>\n\
-   request a list of hanging messages from <username> (This command is only available after the login)\n\
-\n\
- - rmchat <username>\n\
-   delete the chat history with <username> and remove it from the\n\
-   contact list\n\
-\n\
- - users\n\
-   it's equivalent to \\u but can be used outside the chat\n\
-\n\
- - chat <username>\n\
-   you can start a chat with <username> with this command\n\
-   once in a chat you can use the following commands\n\
-   prefixing them with a \"\\\" (This command is only available after the login)\n\
-   > q\n\
-     close the chat\n\
-   > u\n\
-     list online users available for chat\n\
-   > a <username>\n\
-     add a user to the chat\n\
-   > f <filename>\n\
-     share a file with the chat\n\
-   > h\n\
-     shows a help page about chat commands\n\
-   if you want to send a message that starts with \"\\\" escape it with another \"\\\"\n\
-\n\
- - [log]out\n\
-   logs you out and disconnects from the server (This command is only available after the login)\n\
-\n\
- - esc|exit\n\
-   saves everything and closes the program\n");
+                printf(
+                    "Available commands:\n"
+                    " - help\n"
+                    "   (This command is available before and after the login) shows a command list + instructions\n"
+                    "\n"
+                    " - signup <server port> <username> <password>\n"
+                    "   request the creation of an account to the main server located on port <server port>\n"
+                    "\n"
+                    " - [log]in <server port> <username> <password>\n"
+                    "   request a login to the main server located on port <server port>\n"
+                    "\n"
+                    " - hanging\n"
+                    "   request a list of users who sent you a message while you was offline (This command is only available after the login)\n"
+                    "\n"
+                    " - show <username>\n"
+                    "   request a list of hanging messages from <username> (This command is only available after the login)\n"
+                    "\n"
+                    " - rmchat <username>\n"
+                    "   delete the chat history with <username> and remove it from the\n"
+                    "   contact list\n"
+                    "\n"
+                    " - users\n"
+                    "   it's equivalent to \\u but can be used outside the chat\n"
+                    "\n"
+                    " - chat <username>\n"
+                    "   you can start a chat with <username> with this command\n"
+                    "   once in a chat you can use the following commands\n"
+                    "   prefixing them with a \"\\\" (This command is only available after the login)\n"
+                    "   > q\n"
+                    "     close the chat\n"
+                    "   > u\n"
+                    "     list online users available for chat\n"
+                    "   > a <username>\n"
+                    "     add a user to the chat\n"
+                    "   > f <filename>\n"
+                    "     share a file with the chat\n"
+                    "   > h\n"
+                    "     shows a help page about chat commands\n"
+                    "   if you want to send a message that starts with \"\\\" escape it with another \"\\\"\n"
+                    "\n"
+                    " - [log]out\n"
+                    "   logs you out and disconnects from the server (This command is only available after the login)\n"
+                    "\n"
+                    " - esc|exit\n"
+                    "   saves everything and closes the program\n");
             else
-                printf("\
-Chat commands:\n\
- \\q\n\
-   close the chat\n\
- \\u\n\
-   list online users available for chat\n\
- \\a <username>\n\
-   add a user to the chat\n\
- \\f <filename>\n\
-   share a file with the chat\n\
- \\h\n\
-   shows a help page about chat commands\n");
+                printf(
+                    "Chat commands:\n"
+                    " \\q\n"
+                    "   close the chat\n"
+                    " \\u\n"
+                    "   list online users available for chat\n"
+                    " \\a <username>\n"
+                    "   add a user to the chat\n"
+                    " \\f <filename>\n"
+                    "   share a file with the chat\n"
+                    " \\h\n"
+                    "   shows a help page about chat commands\n");
             break;
         case COMMAND_SIGNUP:
             CLISignup(dci);

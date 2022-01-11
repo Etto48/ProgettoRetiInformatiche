@@ -2,11 +2,14 @@ CC 				:=	gcc
 
 MODE			:=	DEBUG
 
-DEFINE_LIST		:=	$(MODE)
-CARGS			:=	-Wall $(addprefix -D, $(DEFINE_LIST)) -std=c99
+GIT_BRANCH		:= 	$(shell git rev-parse --abbrev-ref HEAD)
+GIT_COMMITN		:=	$(shell git rev-list --count $(GIT_BRANCH))
+
+DEFINE_LIST		:=	$(MODE) VERSION=$(GIT_COMMITN)
+CARGS			:=	-Wall -Wextra -pedantic $(addprefix -D, $(DEFINE_LIST)) -std=c99
 
 ifeq ($(MODE),DEBUG)
-	CARGS		+=	-ggdb -Wextra -pedantic
+	CARGS		+=	-ggdb
 else ifeq ($(MODE),RELEASE)
 	CARGS		+=	-O3
 endif

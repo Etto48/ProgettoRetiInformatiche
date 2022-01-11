@@ -14,7 +14,7 @@ int main(int argc, char **argv)
         NetworkServerAddress = *(uint32_t *)(server_host->h_addr_list[0]);
     else
         NetworkServerAddress = inet_addr(SERVER_DEFAULT_ADDRESS);
-    printf("Device started on port %u\n", device_port);
+    printf("Device v%u started on port %u\n",VERSION, device_port);
     printf("Type \"help\" for a list of commands\n");
     NetworkMainLoop(device_port);
 }
