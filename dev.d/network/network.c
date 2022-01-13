@@ -363,8 +363,20 @@ void NetworkDeletedConnectionHook(int sockfd)
     {
         if ((target = ChatTargetFind(ncd->username)))
         {
+#ifdef SPECIFICATION_STRICT
+            if(ChatTargetList && ChatTargetList->next)
+            { // we are in a group chat
+                ChatRemoveTarget(ncd->username);
+                printf("%s was removed from the group chat because it is now offline\n", ncd->username.str);
+            }
+            else
+            {
+#endif
             target->sockfd = -1;
             printf("%s disconnected, switching to relay mode\n", ncd->username.str);
+#ifdef SPECIFICATION_STRICT
+            }
+#endif
         }
         else
             printf("%s disconnected\n", ncd->username.str);

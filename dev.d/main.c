@@ -2,9 +2,15 @@
 
 int main(int argc, char **argv)
 {
+#ifdef SPECIFICATION_STRICT
+    if (argc != 2)
+    {
+        printf("Usage: ./dev <listening port>\n");
+#else
     if (argc < 2 || argc > 3)
     {
         printf("Usage: ./dev <listening port> [server hostname|ip]\n");
+#endif
         return -1;
     }
     uint16_t device_port = atoi(argv[1]);

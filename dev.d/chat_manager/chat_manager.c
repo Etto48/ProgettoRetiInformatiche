@@ -69,7 +69,7 @@ int ChatConnectTo(UserName username, uint32_t ip, uint16_t port)
     return sockfd;
 }
 
-bool ChatAddTarget(UserName username)
+bool ChatAddTarget(UserName username, bool online_only)
 {
     // first we check if the user is already present in the target list
     if (ChatTargetFind(username))
@@ -89,7 +89,15 @@ bool ChatAddTarget(UserName username)
             // we try to connect to the requested user
             new_target->sockfd = ChatConnectTo(username, ip, port);
             if (new_target->sockfd < 0)
-                printf("%s is offline, connecting in relay mode\n", username.str);
+            {
+                if(online_only)
+                {
+                    free(new_target);
+                    return false;
+                }
+                else
+                    printf("%s is offline, connecting in relay mode\n", username.str);
+            }
             else
                 printf("%s is online, connecting in p2p mode\n", username.str);
             new_target->next = ChatTargetList;
@@ -104,6 +112,32 @@ bool ChatAddTarget(UserName username)
     }
     else // we are offline
         return false;
+}
+
+bool ChatRemoveTarget(UserName username)
+{
+    ChatTarget* last = NULL;
+    ChatTarget* i = NULL;
+    for(i = ChatTargetList; i; i=i->next)
+    {
+        if(strncmp(i->dst.str,username.str,USERNAME_MAX_LENGTH)==0)
+            break;
+        last = i;
+    }
+    if(i)
+    {
+        if(!last)
+        { // head
+            ChatTargetList = i->next;       
+        }
+        else
+        {
+            last->next = i->next;
+        }
+        free(i);
+        return true;
+    }
+    else return false;
 }
 
 bool ChatLoad(UserName user)

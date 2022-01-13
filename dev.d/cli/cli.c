@@ -238,7 +238,7 @@ void CLIChat(DeviceCommandInfo dci)
     {
         printf("You can't chat with yourself\n");
     }
-    else if (ChatAddTarget(target))
+    else if (ChatAddTarget(target,false))
     {
         CLIMode = MODE_CHAT;
         if (!ChatSyncWith(target))
@@ -336,6 +336,15 @@ void CLIChatUsers(__attribute__((unused)) DeviceCommandInfo dci)
 }
 void CLIChatAdd(DeviceCommandInfo dci)
 {
+    bool online_only = false;
+#ifdef SPECIFICATION_STRICT
+    online_only = true;
+    if(ChatTargetList && ChatTargetList->sockfd < 0)
+    {
+        printf("You can't create a group now because you're chatting with an offline user\n");
+        return;
+    }
+#endif
     UserName target = CreateUserName(dci.args[0]);
     if (strncmp(target.str, CLIActiveUsername.str, USERNAME_MAX_LENGTH) == 0)
     {
@@ -345,13 +354,17 @@ void CLIChatAdd(DeviceCommandInfo dci)
     {
         printf("You're already chatting with %s", target.str);
     }
-    else if (ChatAddTarget(target))
+    else if (ChatAddTarget(target,online_only))
     {
         printf("%s added to the chat\n", target.str);
     }
     else
     {
+#ifdef SPECIFICATION_STRICT
+        printf("%s is not a valid username or it is offline\n", target.str);
+#else
         printf("%s is not a valid username\n", target.str);
+#endif
     }
 }
 void CLIChatFile(DeviceCommandInfo dci)

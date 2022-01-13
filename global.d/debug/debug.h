@@ -10,7 +10,7 @@
         printf("\n");         \
     }
 #else
-#define DebugTag(str)
-#define dbgerror(str)
-#define DebugLog(args)
+#define DebugTag(str)   {}
+#define dbgerror(str)   {}
+#define DebugLog(args)  {}
 #endif

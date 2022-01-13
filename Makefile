@@ -1,11 +1,14 @@
 CC 				:=	gcc
 
+#available modes: DEBUG, RELEASE
 MODE			:=	DEBUG
+#available specifications: LOOSE, STRICT
+SPECIFICATION	:=	LOOSE
 
 GIT_BRANCH		:= 	$(shell git rev-parse --abbrev-ref HEAD)
 GIT_COMMITN		:=	$(shell git rev-list --count $(GIT_BRANCH))
 
-DEFINE_LIST		:=	$(MODE) VERSION=$(GIT_COMMITN)
+DEFINE_LIST		:=	$(MODE) VERSION=$(GIT_COMMITN) SPECIFICATION_$(SPECIFICATION)
 CARGS			:=	-Wall -Wextra -pedantic $(addprefix -D, $(DEFINE_LIST)) -std=c99
 
 ifeq ($(MODE),DEBUG)

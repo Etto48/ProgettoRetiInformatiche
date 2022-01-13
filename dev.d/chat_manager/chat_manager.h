@@ -194,9 +194,18 @@ void ChatWrite();
  * @brief ask to the server how to reach a specified username and add it's info the the chat list
  *
  * @param username target username
+ * @param online_only if set to true the operation will fail if the user is offline
  * @return true if user added correctly,
  */
-bool ChatAddTarget(UserName username);
+bool ChatAddTarget(UserName username, bool online_only);
+
+/**
+ * @brief remove a user from the target list if present
+ * 
+ * @param username target username
+ * @return true if the user was found
+ */
+bool ChatRemoveTarget(UserName username);
 
 /**
  * @brief close the chat and deallocate the target list
