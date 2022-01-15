@@ -13,8 +13,10 @@ size_t ToolsBasename(const char *path)
 
 uint64_t htonq(uint64_t quad)
 {
-    unsigned char out[8] = {quad >> 56, quad >> 48, quad >> 40, quad >> 32, quad >> 24, quad >> 16, quad >> 8, quad};
-    return *(uint64_t *)out;
+    uint8_t out[8] = {quad >> 56, quad >> 48, quad >> 40, quad >> 32, quad >> 24, quad >> 16, quad >> 8, quad};
+    uint64_t ret;
+    memcpy(&ret,out,sizeof(uint64_t));
+    return ret;
 }
 
 uint64_t ntohq(uint64_t quad)

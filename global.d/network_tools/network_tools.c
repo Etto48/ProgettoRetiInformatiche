@@ -256,9 +256,10 @@ bool NetworkSendMessageSignup(int sockfd, UserName username, Password password)
 bool NetworkSendMessageLogin(int sockfd, uint16_t port, UserName username, Password password)
 {
     uint8_t payload[2 + USERNAME_MAX_LENGTH + PASSWORD_SIZE];
-    *(uint16_t *)payload = htons(port);
-    memcpy(payload + 2, username.str, USERNAME_MAX_LENGTH);
-    memcpy(payload + 2 + USERNAME_MAX_LENGTH, password.data, PASSWORD_SIZE);
+    port = htons(port);
+    memcpy(payload,&port,sizeof(uint16_t));
+    memcpy(payload + sizeof(uint16_t), username.str, USERNAME_MAX_LENGTH);
+    memcpy(payload + sizeof(uint16_t) + USERNAME_MAX_LENGTH, password.data, PASSWORD_SIZE);
 
     NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_LOGIN, NULL, )
 }
@@ -288,8 +289,10 @@ bool NetworkSendMessageUserinfoReq(int sockfd, UserName username)
 bool NetworkSendMessageUserinfoRes(int sockfd, uint32_t ip, uint16_t port)
 {
     uint8_t payload[MESSAGE_USERINFO_RES_SIZE];
-    *(uint32_t *)(payload) = htonl(ip);
-    *(uint16_t *)(payload + sizeof(uint32_t)) = htons(port);
+    ip = htonl(ip);
+    port = htons(port);
+    memcpy(payload,&ip,sizeof(uint32_t));
+    memcpy(payload + sizeof(uint32_t),&port,sizeof(uint16_t));
 
     NETWORK_SEND_MESSAGE_EPILOGUE(MESSAGE_USERINFO_RES, NULL, )
 }
